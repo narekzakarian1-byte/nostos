@@ -678,7 +678,17 @@
     "worldRadius": 260,
     "enemyDotRadius": 2.5,
     "playerDotRadius": 3.5,
-    "fogAlpha": 0.75
+    "fogAlpha": 0.75,
+  "_mapNote": "Полная карта. Зоны рисуются рамкой и подписью: без названий карта — тёмный прямоугольник с точками, по которому нельзя сказать ни где ты, ни куда идти. Неоткрытая зона гасится, но подпись остаётся — остров Одиссей видит с моря, а не выучивает ногами.",
+  "map": {
+   "zoneEdgeWidth": 1,
+   "zoneEdgeAlpha": 0.28,
+   "zoneEdgeDash": [4, 5],
+   "zoneLabelInset": 11,
+   "unknownFade": 0.42,
+   "landingRadius": 6,
+   "landingWidth": 1.6
+  }
   },
   "audio": {
     "hitHz": 200,

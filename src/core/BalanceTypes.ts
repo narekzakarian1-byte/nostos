@@ -450,6 +450,17 @@ export interface MinimapConfig {
   readonly enemyDotRadius: number;
   readonly playerDotRadius: number;
   readonly fogAlpha: number;
+  /** Полная карта: рамки и подписи зон, метка точки высадки. */
+  readonly map: {
+    readonly zoneEdgeWidth: number;
+    readonly zoneEdgeAlpha: number;
+    readonly zoneEdgeDash: readonly number[];
+    readonly zoneLabelInset: number;
+    /** Насколько гасится неоткрытая зона. */
+    readonly unknownFade: number;
+    readonly landingRadius: number;
+    readonly landingWidth: number;
+  };
   readonly _note?: string;
 }
 

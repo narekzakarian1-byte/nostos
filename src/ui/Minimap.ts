@@ -1,6 +1,7 @@
 import { getBalance } from '../core/Balance.ts';
 import type { Game } from '../core/Game.ts';
 import { drawNodeMark, drawPlayerMark } from './MapMarks.ts';
+import { drawZones } from './MapZones.ts';
 import { glyph } from './Glyphs.ts';
 import { panel, text, ui } from './UiKit.ts';
 
@@ -91,10 +92,10 @@ export function drawFullMap(
   ctx.beginPath();
   ctx.rect(originX, originY, w, h);
   ctx.clip();
-  drawWorldContents(ctx, game, (x, y) => ({
-    x: originX + x * scale,
-    y: originY + y * scale,
-  }), scale);
+  const project = (x: number, y: number) => ({ x: originX + x * scale, y: originY + y * scale });
+  // Зоны кладутся между дорогой и значками узлов: подпись места должна лежать
+  // поверх тумана, но под плашкой врага — иначе название закрывает цель.
+  drawWorldContents(ctx, game, project, scale, () => drawZones(ctx, game, project));
   ctx.restore();
 
   panel(ctx, originX, originY, w, h, { radius: u.radius });
@@ -110,6 +111,7 @@ function drawWorldContents(
   game: Game,
   project: Project,
   scale: number,
+  betweenRoadAndMarks?: () => void,
 ): void {
   const { minimap } = getBalance();
   const u = ui();
@@ -137,6 +139,7 @@ function drawWorldContents(
   ctx.globalAlpha = 1;
 
   drawMapRoad(ctx, game, project, scale);
+  betweenRoadAndMarks?.();
 
   for (const enemy of game.enemies) {
     if (!enemy.alive || !fog.isVisitedAt(enemy.x, enemy.y)) continue;
