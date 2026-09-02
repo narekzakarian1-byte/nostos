@@ -3,7 +3,7 @@ import { bestType } from '../core/Combat.ts';
 import type { DamageType } from '../core/BalanceTypes.ts';
 import type { Game } from '../core/Game.ts';
 import { swingPhase, swingPush } from '../juice/BodyAnim.ts';
-import { rigPose, walkPhase } from '../juice/RigPose.ts';
+import { rigPose, stroke, walkPhase } from '../juice/RigPose.ts';
 import type { WeaponPartId } from './rig/RigParts.ts';
 import { degToRad } from '../juice/Ease.ts';
 import type { Enemy } from '../world/Enemy.ts';
@@ -49,6 +49,7 @@ export function drawPlayer(ctx: CanvasRenderingContext2D, game: Game): void {
   const moving = game.input.isHeld;
   const walk = walkPhase(player.walked);
   const bob = moving ? Math.sin(walk) * u.walkBobAmp : 0;
+  const type = strikingType(game);
 
   drawBody(ctx, {
     x: player.x, y: player.y, size: render.playerSize,
@@ -61,12 +62,13 @@ export function drawPlayer(ctx: CanvasRenderingContext2D, game: Game): void {
     bob,
     rig: {
       pose: rigPose({
-        swing: swingPhase(player.attackCooldown, getBalance().anim.windupSec),
+        swing: swingPhase(player.attackCooldown, stroke(type).windupSec),
+        type,
         walk,
         moving,
         elapsed: game.elapsed,
       }),
-      weapon: handWeapon(game),
+      weapon: WEAPON_ART[type],
     },
   });
 }
@@ -112,14 +114,21 @@ interface Push {
 
 const STILL: Push = { x: 0, y: 0, tilt: 0 };
 
-/** Выпад игрока к цели. Фаза берётся из счётчика удара, своих часов нет. */
+/**
+ * Выпад игрока к цели. Фаза берётся из счётчика удара, своих часов нет.
+ * Длина выпада — из профиля типа: копьё выстреливает корпусом вдвое дальше
+ * меча, палица почти стоит на месте и отыгрывает вес наклоном.
+ */
 function playerPush(game: Game): Push {
   const target = game.target;
   if (!target || !game.player.alive) return STILL;
-  const { anim } = getBalance();
-  const phase = swingPhase(game.player.attackCooldown, anim.windupSec);
-  const distance = swingPush(phase, anim.windupLean, anim.lungeUnits);
-  return toward(target.x - game.player.x, target.y - game.player.y, distance);
+  const hand = stroke(strikingType(game));
+  const phase = swingPhase(game.player.attackCooldown, hand.windupSec);
+  const distance = swingPush(phase, hand.windupLean, hand.lungeUnits);
+  return toward(
+    target.x - game.player.x, target.y - game.player.y,
+    distance, hand.lungeUnits, hand.tiltDeg,
+  );
 }
 
 /** Замах врага. Только у сцепленных: у прочих счётчик удара стоит на месте. */
@@ -128,7 +137,10 @@ function enemyPush(enemy: Enemy, game: Game): Push {
   const { anim } = getBalance();
   const phase = swingPhase(enemy.attackCooldown, anim.enemyWindupSec);
   const distance = swingPush(phase, anim.windupLean, anim.enemyLungeUnits);
-  return toward(game.player.x - enemy.x, game.player.y - enemy.y, distance);
+  return toward(
+    game.player.x - enemy.x, game.player.y - enemy.y,
+    distance, anim.enemyLungeUnits, anim.swingTiltDeg,
+  );
 }
 
 /**
@@ -136,14 +148,18 @@ function enemyPush(enemy: Enemy, game: Game): Push {
  * с выпадом одной величиной: фигура отклоняется назад на замахе и валится
  * вперёд на проводке сама, без второй кривой, которая могла бы разойтись.
  */
-function toward(dx: number, dy: number, distance: number): Push {
-  const { anim } = getBalance();
+function toward(
+  dx: number, dy: number,
+  distance: number,
+  lunge: number,
+  tiltDeg: number,
+): Push {
   const length = Math.hypot(dx, dy) || 1;
-  const lean = distance / anim.lungeUnits;
+  const lean = lunge > 0 ? distance / lunge : 0;
   return {
     x: (dx / length) * distance,
     y: (dy / length) * distance,
-    tilt: degToRad(anim.swingTiltDeg) * lean * Math.sign(dx || 1),
+    tilt: degToRad(tiltDeg) * lean * Math.sign(dx || 1),
   };
 }
 
@@ -185,14 +201,22 @@ const WEAPON_ART: Record<DamageType, WeaponPartId> = {
   slash: 'sword',
   pierce: 'spear',
   // Своей булавы пока нет, дробящий берёт меч: узнаваемый силуэт в руке лучше
-  // пустого кулака. Появится арт — правится здесь одной строкой.
+  // пустого кулака. Появится арт — правится здесь одной строкой. Жест при
+  // этом уже свой: замах из-за головы читается как палица и с мечом в руке.
   crush: 'sword',
 };
 
-function handWeapon(game: Game): WeaponPartId {
+/**
+ * Чем игрок бьёт прямо сейчас — тот тип, который пробивает эту защиту лучше
+ * всех. Залп идёт всеми тремя оружиями сразу (Combat.hitDamage), поэтому
+ * «надетого» оружия в игре нет; показывается решающее. Тот же bestType красит
+ * дугу удара и стоит за тремя иконками над врагом, так что жест фигуры,
+ * цвет следа и иконки говорят одно и то же.
+ */
+export function strikingType(game: Game): DamageType {
   const target = game.target;
   // Без цели выбирать не против кого — рука держит рубящее по умолчанию.
-  if (!target) return WEAPON_ART.slash;
+  if (!target) return 'slash';
   const player = game.player;
-  return WEAPON_ART[bestType(player.stats, player.weapons, target.def)];
+  return bestType(player.stats, player.weapons, target.def);
 }

@@ -204,19 +204,36 @@ export interface JuiceConfig {
 }
 
 /**
+ * Жест одного типа оружия. Перекрывает общие числа AnimConfig и RigConfig:
+ * копьё колет, меч рубит дугой, палица бьёт сверху.
+ */
+export interface WeaponStroke {
+  readonly restArmDeg: number;
+  readonly windupArmDeg: number;
+  readonly strikeArmDeg: number;
+  readonly weaponGripDeg: number;
+  readonly windupSec: number;
+  readonly lungeUnits: number;
+  readonly windupLean: number;
+  readonly tiltDeg: number;
+  readonly arcSpanDeg: number;
+  readonly arcWidth: number;
+  readonly _note?: string;
+}
+
+/**
  * Анимация тел и удара. Числа держатся отдельно от juice: там вес удара
  * (hitstop, тряска), здесь — движение фигур. Все длительности в секундах
  * игрового времени.
  */
 export interface AnimConfig {
-  readonly windupSec: number;
+  /** Профиль удара по типу оружия: копьё колет, меч рубит, палица бьёт сверху. */
+  readonly strokes: Readonly<Record<DamageType, WeaponStroke>>;
+  /** Общее для всех фигур. Всё, что зависит от типа оружия, — в strokes. */
   readonly windupLean: number;
   readonly strikeSec: number;
-  readonly lungeUnits: number;
   readonly swingTiltDeg: number;
   readonly arcRadiusScale: number;
-  readonly arcSpanDeg: number;
-  readonly arcWidth: number;
   readonly arcAlpha: number;
   readonly hitFlashSec: number;
   readonly flashAlpha: number;

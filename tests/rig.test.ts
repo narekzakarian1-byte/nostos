@@ -1,21 +1,27 @@
 import { describe, it, expect } from 'vitest';
 import { getBalance } from '../src/core/Balance.ts';
 import { swingPhase } from '../src/juice/BodyAnim.ts';
-import { rigPose, walkPhase } from '../src/juice/RigPose.ts';
+import { rigPose, stroke, walkPhase } from '../src/juice/RigPose.ts';
+import { DAMAGE_TYPES } from '../src/core/Combat.ts';
+import type { DamageType } from '../src/core/BalanceTypes.ts';
 import { ODYSSEUS_RIG, WEAPON_PARTS } from '../src/ui/rig/RigParts.ts';
 
 const balance = getBalance();
 const rig = balance.anim.rig;
 const period = 1 / balance.combat.baseAttackSpeed;
 
-const STILL = { walk: 0, moving: false, elapsed: 0 };
+const STILL: { walk: number; moving: boolean; elapsed: number; type: DamageType } = {
+  walk: 0, moving: false, elapsed: 0, type: 'slash',
+};
+// Меч — эталонный жест, от него отсчитываются два других (balance.anim.strokes).
+const sword = stroke('slash');
 
 /** Поза в момент, когда до следующего удара осталось `cooldown` секунд. */
 function poseAt(cooldown: number, extra: Partial<typeof STILL> = {}) {
+  const merged = { ...STILL, ...extra };
   return rigPose({
-    swing: swingPhase(cooldown, balance.anim.windupSec),
-    ...STILL,
-    ...extra,
+    swing: swingPhase(cooldown, stroke(merged.type).windupSec),
+    ...merged,
   });
 }
 
@@ -23,23 +29,52 @@ describe('rigPose — рука с оружием', () => {
   it('между ударами рука висит в покое', () => {
     // Середина периода: проводка догорела, замах ещё не начался.
     const pose = poseAt(period / 2);
-    expect(pose.armMainDeg).toBeCloseTo(rig.restArmDeg, 6);
+    expect(pose.armMainDeg).toBeCloseTo(sword.restArmDeg, 6);
   });
 
   it('на замахе рука уходит назад, на контакте выбрасывается вперёд', () => {
     const windup = poseAt(0.02).armMainDeg;
     const contact = poseAt(period).armMainDeg;
-    expect(windup).toBeLessThan(rig.restArmDeg);
-    expect(contact).toBeGreaterThan(rig.restArmDeg);
+    expect(windup).toBeLessThan(sword.restArmDeg);
+    expect(contact).toBeGreaterThan(sword.restArmDeg);
     // Замах и проводка идут в разные стороны — иначе удара не видно.
-    expect(contact - windup).toBeGreaterThan(rig.strikeArmDeg);
+    expect(contact - windup).toBeGreaterThan(sword.strikeArmDeg);
   });
 
   it('проводка затухает к покою, а не обрывается', () => {
     const at = (t: number) => poseAt(period - t).armMainDeg;
     expect(at(0)).toBeGreaterThan(at(balance.anim.strikeSec / 2));
     expect(at(balance.anim.strikeSec / 2)).toBeGreaterThan(at(balance.anim.strikeSec));
-    expect(at(balance.anim.strikeSec)).toBeCloseTo(rig.restArmDeg, 6);
+    expect(at(balance.anim.strikeSec)).toBeCloseTo(sword.restArmDeg, 6);
+  });
+});
+
+describe('rigPose — жест зависит от типа оружия', () => {
+  it('у каждого типа свой профиль удара', () => {
+    for (const type of DAMAGE_TYPES) expect(stroke(type)).toBeDefined();
+  });
+
+  it('копьё колет, а не рубит: разворот руки меньше, выпад корпуса больше', () => {
+    const spear = stroke('pierce');
+    expect(Math.abs(spear.windupArmDeg)).toBeLessThan(Math.abs(sword.windupArmDeg));
+    expect(spear.strikeArmDeg).toBeLessThan(sword.strikeArmDeg);
+    expect(spear.lungeUnits).toBeGreaterThan(sword.lungeUnits);
+    // След укола — короткая черта вдоль удара, а не полумесяц.
+    expect(spear.arcSpanDeg).toBeLessThan(sword.arcSpanDeg / 2);
+  });
+
+  it('палица бьёт сверху: замах дольше и дальше за голову, выпад короче', () => {
+    const club = stroke('crush');
+    expect(club.windupArmDeg).toBeLessThan(sword.windupArmDeg);
+    expect(club.windupSec).toBeGreaterThan(sword.windupSec);
+    expect(club.lungeUnits).toBeLessThan(sword.lungeUnits);
+    // Вес отыгрывается наклоном корпуса, раз не длиной выпада.
+    expect(club.tiltDeg).toBeGreaterThan(sword.tiltDeg);
+  });
+
+  it('три типа дают три разные позы в один и тот же момент удара', () => {
+    const angles = DAMAGE_TYPES.map((type) => poseAt(0.02, { type }).armMainDeg);
+    expect(new Set(angles).size).toBe(DAMAGE_TYPES.length);
   });
 });
 

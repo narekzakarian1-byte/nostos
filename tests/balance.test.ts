@@ -145,7 +145,9 @@ describe('balance.json — форма конфига', () => {
     // Иначе окна замаха и проводки перекрываются, и фигура на контакте
     // одновременно отклоняется назад и выпадает вперёд.
     const period = 1 / balance.combat.baseAttackSpeed;
-    expect(balance.anim.windupSec + balance.anim.strikeSec).toBeLessThan(period);
+    for (const type of ['pierce', 'slash', 'crush'] as const) {
+      expect(balance.anim.strokes[type].windupSec + balance.anim.strikeSec).toBeLessThan(period);
+    }
     expect(balance.anim.enemyWindupSec + balance.anim.strikeSec).toBeLessThan(period);
     // Вспышка не должна пережить сам удар: подсветка длиннее размена читается
     // как состояние врага, а не как попадание.

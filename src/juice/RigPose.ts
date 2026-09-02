@@ -1,6 +1,12 @@
 import { getBalance } from '../core/Balance.ts';
+import type { DamageType, WeaponStroke } from '../core/BalanceTypes.ts';
 import type { SwingPhase } from './BodyAnim.ts';
 import { easeInQuad, easeOutCubic } from './Ease.ts';
+
+/** Жест типа оружия. Всё, что зависит от того, чем именно бьют. */
+export function stroke(type: DamageType): WeaponStroke {
+  return getBalance().anim.strokes[type];
+}
 
 /**
  * Поза бумажной куклы: углы всех костей в градусах.
@@ -15,6 +21,8 @@ import { easeInQuad, easeOutCubic } from './Ease.ts';
  */
 export interface RigPoseInput {
   readonly swing: SwingPhase;
+  /** Чем бьют прямо сейчас — от типа зависит весь жест руки. */
+  readonly type: DamageType;
   /** Фаза шага в радианах. Считается из пути, а не из времени. */
   readonly walk: number;
   readonly moving: boolean;
@@ -45,7 +53,8 @@ export function walkPhase(walked: number): number {
 
 export function rigPose(input: RigPoseInput): RigPose {
   const { rig } = getBalance().anim;
-  const swingDeg = armSwingDeg(input.swing);
+  const hand = stroke(input.type);
+  const swingDeg = armSwingDeg(input.swing, hand);
   // sin шага, погашенный на месте: стоя игрок не перебирает ногами.
   const step = input.moving ? Math.sin(input.walk) : 0;
   const wind = Math.sin(input.elapsed * rig.cloakWindHz * Math.PI * 2);
@@ -53,7 +62,7 @@ export function rigPose(input: RigPoseInput): RigPose {
   return {
     // Рука с оружием: замах поверх ходьбы. Складываются, а не выбирают одно из
     // двух, — иначе на бегу удар выглядит как подмена картинки.
-    armMainDeg: rig.restArmDeg + swingDeg + step * rig.walkArmDeg,
+    armMainDeg: hand.restArmDeg + swingDeg + step * rig.walkArmDeg,
     // Задняя рука идёт в противофазу: так шаг читается даже когда ног не видно.
     armOffDeg: rig.offArmDeg - step * rig.walkArmDeg,
     legFrontDeg: step * rig.walkLegDeg,
@@ -61,7 +70,7 @@ export function rigPose(input: RigPoseInput): RigPose {
     // Плащ отстаёт от корпуса на четверть периода и всегда живёт от ветра,
     // даже когда игрок стоит.
     cloakDeg: -step * rig.cloakWalkDeg + wind * rig.cloakWindDeg,
-    weaponDeg: rig.weaponGripDeg,
+    weaponDeg: hand.weaponGripDeg,
     liftFront: rig.walkLiftUnits * Math.max(0, step),
     liftBack: rig.walkLiftUnits * Math.max(0, -step),
   };
@@ -71,12 +80,12 @@ export function rigPose(input: RigPoseInput): RigPose {
  * Угол руки от удара. Форма повторяет swingPush один в один: рука отводится
  * назад на замахе и выбрасывается вперёд в момент контакта. Две разные кривые
  * здесь развели бы оружие и выпад корпуса — удар перестал бы читаться как один
- * жест.
+ * жест. Амплитуды берутся из профиля типа: у копья разворот почти нулевой,
+ * у палицы рука уходит за голову.
  */
-function armSwingDeg(phase: SwingPhase): number {
-  const { rig } = getBalance().anim;
+function armSwingDeg(phase: SwingPhase, hand: WeaponStroke): number {
   return (
-    rig.strikeArmDeg * (1 - easeOutCubic(phase.strike)) +
-    rig.windupArmDeg * easeInQuad(phase.windup)
+    hand.strikeArmDeg * (1 - easeOutCubic(phase.strike)) +
+    hand.windupArmDeg * easeInQuad(phase.windup)
   );
 }

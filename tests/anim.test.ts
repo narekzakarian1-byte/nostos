@@ -4,48 +4,59 @@ import { BodyAnim, swingPhase, swingPush } from '../src/juice/BodyAnim.ts';
 import { easeOutBack, easeOutCubic } from '../src/juice/Ease.ts';
 import { Particles } from '../src/juice/Particles.ts';
 import { Rng } from '../src/core/Rng.ts';
+import { DAMAGE_TYPES } from '../src/core/Combat.ts';
 
 const balance = getBalance();
 const anim = balance.anim;
 const period = 1 / balance.combat.baseAttackSpeed;
 const STEP = 1 / balance.loop.tickHz;
+// Числа замаха живут по типам оружия (balance.anim.strokes). Меч — эталон,
+// на нём и проверяется форма кривой; инвариант окон проверяется на всех трёх.
+const sword = balance.anim.strokes.slash;
 
 describe('swingPhase — фаза удара из счётчика перезарядки', () => {
   it('окна замаха и проводки не пересекаются: иначе фигура рвётся на контакте', () => {
-    expect(anim.windupSec + anim.strikeSec).toBeLessThan(period);
+    // У каждого типа свой замах, и длинный замах палицы обязан укладываться
+    // в период наравне с коротким уколом копья.
+    for (const type of DAMAGE_TYPES) {
+      expect(
+        balance.anim.strokes[type].windupSec + anim.strikeSec,
+        `замах ${type} не влезает в период удара`,
+      ).toBeLessThan(period);
+    }
     expect(anim.enemyWindupSec + anim.strikeSec).toBeLessThan(period);
   });
 
   it('между ударами фигура стоит ровно', () => {
     // Середина периода: проводка прошлого удара догорела, замах следующего
     // ещё не начался.
-    const phase = swingPhase(period / 2, anim.windupSec);
+    const phase = swingPhase(period / 2, sword.windupSec);
     expect(phase.windup).toBe(0);
     expect(phase.strike).toBe(1);
-    expect(swingPush(phase, anim.windupLean, anim.lungeUnits)).toBe(0);
+    expect(swingPush(phase, sword.windupLean, sword.lungeUnits)).toBe(0);
   });
 
   it('замах растёт к контакту и отклоняет фигуру назад', () => {
-    const early = swingPhase(anim.windupSec * 0.8, anim.windupSec);
-    const late = swingPhase(anim.windupSec * 0.1, anim.windupSec);
+    const early = swingPhase(sword.windupSec * 0.8, sword.windupSec);
+    const late = swingPhase(sword.windupSec * 0.1, sword.windupSec);
     expect(late.windup).toBeGreaterThan(early.windup);
-    const push = swingPush(late, anim.windupLean, anim.lungeUnits);
+    const push = swingPush(late, sword.windupLean, sword.lungeUnits);
     expect(push).toBeLessThan(0);
-    expect(push).toBeGreaterThanOrEqual(-anim.windupLean);
+    expect(push).toBeGreaterThanOrEqual(-sword.windupLean);
   });
 
   it('на контакте выпад максимален и гаснет к концу проводки', () => {
-    const contact = swingPhase(period, anim.windupSec);
+    const contact = swingPhase(period, sword.windupSec);
     expect(contact.strike).toBe(0);
-    expect(swingPush(contact, anim.windupLean, anim.lungeUnits)).toBeCloseTo(anim.lungeUnits, 6);
+    expect(swingPush(contact, sword.windupLean, sword.lungeUnits)).toBeCloseTo(sword.lungeUnits, 6);
 
-    const mid = swingPhase(period - anim.strikeSec / 2, anim.windupSec);
-    const midPush = swingPush(mid, anim.windupLean, anim.lungeUnits);
+    const mid = swingPhase(period - anim.strikeSec / 2, sword.windupSec);
+    const midPush = swingPush(mid, sword.windupLean, sword.lungeUnits);
     expect(midPush).toBeGreaterThan(0);
-    expect(midPush).toBeLessThan(anim.lungeUnits);
+    expect(midPush).toBeLessThan(sword.lungeUnits);
 
-    const done = swingPhase(period - anim.strikeSec, anim.windupSec);
-    expect(swingPush(done, anim.windupLean, anim.lungeUnits)).toBeCloseTo(0, 6);
+    const done = swingPhase(period - anim.strikeSec, sword.windupSec);
+    expect(swingPush(done, sword.windupLean, sword.lungeUnits)).toBeCloseTo(0, 6);
   });
 });
 
