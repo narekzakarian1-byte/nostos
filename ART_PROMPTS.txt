@@ -23,6 +23,14 @@ NOSTOS — ПРОМПТЫ ДЛЯ ВИЗУАЛА
 ядовито-зелёном #00FF00, я вырежу скриптом. Бесшовный тайл почти никто
 не умеет с первого раза — присылай как есть, дошью сам.
 
+ВАЖНО, ПРАВКА ОТ ISLANDS.md §1.3: свет во всей игре идёт СПРАВА и чуть в
+сторону зрителя (balance.json props.lightX/Y/Z = 0.42/0.15/0.8), тень уходит
+влево-вверх. Промпт ruin-gate ниже просит свет слева — так больше не делать,
+объект будет освещён навстречу всей сцене.
+
+Этот файл описывает общий кит и остров 1. Все тринадцать островов — их биомы,
+объекты, враги, боссы и промпты к ним — в ISLANDS.md.
+
 Статус: [ГОТОВО] = уже стоит в игре. [НУЖНО] = слот подключён в коде,
 ждёт файла. [ОТКЛЮЧЁН] = файл был, но оказался негодным и убран.
 Как только файл появится по указанному пути — включится без правок кода.
@@ -351,3 +359,80 @@ Simple flat icon, mace/crush damage type symbol, minimalist ancient
 Greek war-club/mace-head silhouette, pure solid white fill, no outline
 color, no shading, no gradient, transparent background, centered,
 game UI icon, crisp clean edges, 128x128
+
+─────────────────────────────────────────────────────────────────
+БУМАЖНАЯ КУКЛА — ДЕТАЛИ ПЕРСОНАЖА
+─────────────────────────────────────────────────────────────────
+
+Персонаж режется на части и собирается ригом (src/ui/rig/). Тогда замах
+считается углами, а не кадрами, и любое оружие в сокете кисти машется само.
+Покадровые спрайт-листы не годятся: нейросеть не держит персонажа
+одинаковым между кадрами, а число кадров множится на число оружий.
+
+Одна рука и одна нога — вторые получаются зеркалом в коде. Поэтому
+деталей шесть, а не восемь.
+
+МОДЕЛЬ: Recraft V4.1, model_type=standard, resolution=1k.
+  Векторные режимы (vector/utility_vector) отдают SVG и дают синий ореол
+  по контуру волос и лишние цветные пятна на плечах — проверено.
+ПАЛИТРА (жёстко, параметр colors):
+  #080D14 #D9762B #E8DCC8 #8C6636 #C4342B #C98B5E
+ФОН: параметр background_color = #00FF00, дальше python3 tools/cutout.py
+
+ОБЩИЙ ХВОСТ ко всем деталям:
+  Flat cel-shaded vector-style illustration, bold closed dark outline
+  around the entire silhouette, one hard light from the upper right, no
+  cast shadow, no ground plane, single isolated object centered,
+  isolated on flat solid green background, no text, no labels, no
+  watermark, no frame border.
+
+Пивот задаётся ориентацией в кадре, поэтому её надо называть явно:
+конечность — суставом ВВЕРХУ кадра, оружие — рукоятью ВНИЗУ.
+
+[ГОТОВО] entities/odysseus/torso.png
+Flat 2D game sprite asset: a single articulated paper-puppet body piece
+- the TORSO ONLY of an ancient Greek hero, Odysseus. Head with dark
+curly hair, short beard and a bronze headband, shoulders, chest, and a
+cream belted tunic skirt with a leather baldric. NO ARMS and NO LEGS
+attached: clean rounded shoulder sockets and hip sockets where the limbs
+would join. Seen from a 60-degree top-down game camera, so the head and
+shoulders read from slightly above. + ОБЩИЙ ХВОСТ
+
+[ГОТОВО] entities/odysseus/arm.png
+...a single detached ARM, an articulated paper-puppet limb piece. One
+bare muscular male arm only, no body attached. The rounded shoulder cap
+is at the very TOP of the frame, the arm extends straight DOWN the
+frame, slightly bent at the elbow, ending at the bottom with an open
+hand whose fingers are curled into a grip as if holding a weapon handle.
+Sun-tanned skin, a brown leather bracer strap on the forearm. + ХВОСТ
+  Кулак важнее раскрытой ладони: рукоять в раскрытых пальцах не читается.
+
+[ГОТОВО] entities/odysseus/leg.png
+...a single detached LEG. One bare muscular male leg only, no body
+attached. The rounded hip joint is at the very TOP of the frame, the leg
+extends straight DOWN, slightly bent at the knee, ending at the bottom
+with a foot in a laced brown leather sandal with straps wound up the
+calf. + ХВОСТ
+
+[ГОТОВО] entities/odysseus/cloak.png
+...an empty flowing CLOAK alone, a cape garment with nobody wearing it.
+Terracotta orange wool cloak seen from behind, the narrow neck opening
+and clasp at the TOP of the frame, the fabric widening and flaring
+toward the bottom with wind-blown folds and a ragged hem. No person, no
+body, no head, no arms inside the cloak, just the garment. + ХВОСТ
+  Брать симметричный, а не развевающийся: ветер добавляет код (anim.rig),
+  а запечённая в картинке поза с кодом дерётся.
+
+[ГОТОВО] entities/odysseus/sword.png
+...an ancient Greek bronze xiphos short sword. The leather-wrapped grip
+and pommel are at the very BOTTOM of the frame, the straight bronze
+leaf-shaped blade points straight UP, simple crossguard between them.
+No hand holding it. + ХВОСТ
+
+[ГОТОВО] entities/odysseus/spear.png
+...an ancient Greek dory spear. A long straight wooden shaft running
+vertically, a bronze leaf-shaped spearhead at the very TOP, a bronze
+butt-spike at the very BOTTOM, a leather grip wrap around the lower
+middle of the shaft. No hand holding it. + ХВОСТ
+
+[НУЖНО] entities/odysseus/mace.png — дробящий тип берёт меч, пока его нет.

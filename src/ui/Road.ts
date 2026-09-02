@@ -1,7 +1,9 @@
 import { getBalance } from '../core/Balance.ts';
 import type { Game } from '../core/Game.ts';
 import type { Camera } from './Camera.ts';
-import { SPRITES } from './AssetManifest.ts';
+import { currentIslandId } from '../world/Island.ts';
+import { SPRITES, type SpriteId } from './AssetManifest.ts';
+import { islandRoad } from './IslandArt.ts';
 import { sprites } from './Sprites.ts';
 import { roundRectPath } from './UiKit.ts';
 
@@ -17,9 +19,10 @@ export function drawRoad(ctx: CanvasRenderingContext2D, game: Game, camera: Came
   const points = game.scenery.roadPoints;
   if (points.length < 2) return;
 
-  const img = sprites.get('road-segment');
+  const id = islandRoad(currentIslandId());
+  const img = sprites.get(id);
   if (img) {
-    tileRoad(ctx, img, points, scenery.roadWidth);
+    tileRoad(ctx, img, id, points, scenery.roadWidth);
     return;
   }
 
@@ -78,10 +81,11 @@ function drawStones(ctx: CanvasRenderingContext2D, game: Game, camera: Camera): 
 function tileRoad(
   ctx: CanvasRenderingContext2D,
   img: CanvasImageSource,
+  id: SpriteId,
   points: readonly { x: number; y: number }[],
   thickness: number,
 ): void {
-  const def = SPRITES['road-segment'];
+  const def = SPRITES[id];
   const tileWidth = (def.width / def.height) * thickness;
   for (let i = 0; i < points.length - 1; i++) {
     const a = points[i]!;

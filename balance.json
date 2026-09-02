@@ -458,7 +458,22 @@
     "particleSpread": 1.1,
     "particleGravity": 110.0,
     "particleSize": 2.2,
-    "particleMax": 96
+    "particleMax": 96,
+    "rig": {
+      "_note": "Углы костей бумажной куклы, в градусах. Своих часов у рига нет: замах берётся из swingPhase (те же часы, что урон), шаг — из player.walked, ветер — из накопленного времени фиксированного тика. Поэтому анимация не может разъехаться с логикой, а hitstop морозит её вместе с миром.",
+      "restArmDeg": 6.0,
+      "windupArmDeg": -58.0,
+      "strikeArmDeg": 78.0,
+      "offArmDeg": -12.0,
+      "walkLegDeg": 20.0,
+      "walkArmDeg": 14.0,
+      "walkLiftUnits": 0.6,
+      "cloakWalkDeg": 9.0,
+      "cloakWindDeg": 5.0,
+      "cloakWindHz": 1.1,
+      "backLimbShade": 0.62,
+      "weaponGripDeg": -46.0
+    }
   },
   "monetization": {
     "firstOfferAfterMinutes": 60,
@@ -626,6 +641,7 @@
       "wood": ["#88603E", "#68482E", "#442E1E"],
       "ember": ["#FABA50", "#E87C2E", "#B2401E"]
     },
+    "_islandPropsNote": "Пропы островов — картинки, а не геометрия (ui/props/Pictures.ts): они рисуются пачкой под один промпт, поэтому ракурс и свет внутри острова сходятся сами. Размеры Исмары взяты из islands/01-ismaros.md, раздел «Объекты».",
     "_sizesNote": "Размер в единицах мира; fit говорит, по какой стороне тела он задан. Игрок — 44, поэтому ворота вдвое выше него, а плитка втрое ниже.",
     "sizes": {
       "prop-column": { "fit": "height", "value": 90 },
@@ -636,7 +652,12 @@
       "prop-rock": { "fit": "height", "value": 24 },
       "prop-rock-small": { "fit": "height", "value": 13 },
       "prop-rubble": { "fit": "width", "value": 19 },
-      "prop-campfire": { "fit": "width", "value": 33 }
+      "prop-campfire": { "fit": "width", "value": 33 },
+      "prop-vine-trellis": { "fit": "height", "value": 70 },
+      "prop-wine-press": { "fit": "width", "value": 60 },
+      "prop-cart-broken": { "fit": "width", "value": 55 },
+      "prop-palisade-burnt": { "fit": "height", "value": 60 },
+      "prop-hut-burnt": { "fit": "height", "value": 85 }
     }
   },
   "fog": {

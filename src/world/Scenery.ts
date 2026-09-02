@@ -4,8 +4,10 @@ import type { Enemy } from './Enemy.ts';
 import { grassTufts, type GrassTuft } from './Grass.ts';
 import { roadStones, type RoadStone } from './Road.ts';
 
-/** Совпадает с PropId в ui/props/Models.ts — тип не импортируется оттуда,
- *  чтобы world/ не тянул зависимость на ui/ (CLAUDE.md: слои разделены). */
+/** Совпадает с PropId в ui/props/Models.ts и PicturePropId в ui/props/Pictures.ts
+ *  — типы не импортируются оттуда, чтобы world/ не тянул зависимость на ui/
+ *  (CLAUDE.md: слои разделены). Чем проп нарисован — геометрией или картинкой —
+ *  world/ не знает и знать не должен: здесь только раскладка по земле. */
 export type DecorId =
   | 'prop-column'
   | 'prop-column-broken'
@@ -15,24 +17,65 @@ export type DecorId =
   | 'prop-rock'
   | 'prop-rock-small'
   | 'prop-rubble'
-  | 'prop-campfire';
+  | 'prop-campfire'
+  | 'prop-vine-trellis'
+  | 'prop-wine-press'
+  | 'prop-cart-broken'
+  | 'prop-palisade-burnt'
+  | 'prop-hut-burnt';
+
+interface DecorSet {
+  /** Крупное, вокруг чего собирается группа. */
+  readonly anchors: readonly DecorId[];
+  /** Мелочь вокруг якоря. */
+  readonly satellites: readonly DecorId[];
+}
 
 // Якорь кластера — то крупное, вокруг чего собирается группа. Ворота вдвое
 // выше игрока и перекрывают его собой, поэтому это один слот из восьми:
 // попадайся они наравне с обломками, остров превратился бы в частокол,
 // сквозь который не видно врагов.
-const ANCHORS: readonly DecorId[] = [
-  'prop-column', 'prop-column-broken', 'prop-ruin-gate', 'prop-column-broken',
-  'prop-campfire', 'prop-column', 'prop-column-broken', 'prop-rock',
-];
+//
+// Мелочи большинство, и она намеренно низкая: плитки и камни набирают
+// плотность картинки, но не перекрывают врагов и не спорят за внимание с тремя
+// иконками над ними.
+const COMMON: DecorSet = {
+  anchors: [
+    'prop-column', 'prop-column-broken', 'prop-ruin-gate', 'prop-column-broken',
+    'prop-campfire', 'prop-column', 'prop-column-broken', 'prop-rock',
+  ],
+  satellites: [
+    'prop-rubble', 'prop-rock', 'prop-rubble', 'prop-amphora', 'prop-rock-small',
+    'prop-rubble', 'prop-column-drum', 'prop-rock', 'prop-rubble', 'prop-rock-small',
+  ],
+};
 
-// Мелочь вокруг якоря. Её большинство, и она намеренно низкая: плитки и камни
-// набирают плотность картинки, но не перекрывают врагов и не спорят за
-// внимание с тремя иконками над ними.
-const SATELLITES: readonly DecorId[] = [
-  'prop-rubble', 'prop-rock', 'prop-rubble', 'prop-amphora', 'prop-rock-small',
-  'prop-rubble', 'prop-column-drum', 'prop-rock', 'prop-rubble', 'prop-rock-small',
-];
+/**
+ * Декор по островам. Остров без записи берёт общий набор — так следующий
+ * подключается одной строкой, а не правкой раскладки.
+ *
+ * Исмара: разграбленный час назад город на виноградниках (islands/01-ismaros.md).
+ * Хижина и частокол вдвое выше прочих якорей, поэтому их по одному слоту из
+ * восьми — по той же причине, что и ворот. Общие обломки остаются в наборе:
+ * по концепции острова колонна, амфора и валун переиспользуются.
+ */
+const BY_ISLAND: Readonly<Record<string, DecorSet>> = {
+  ismaros: {
+    anchors: [
+      'prop-vine-trellis', 'prop-hut-burnt', 'prop-vine-trellis', 'prop-cart-broken',
+      'prop-column-broken', 'prop-palisade-burnt', 'prop-vine-trellis', 'prop-wine-press',
+    ],
+    satellites: [
+      'prop-rubble', 'prop-rock', 'prop-amphora', 'prop-rock-small',
+      'prop-rubble', 'prop-column-drum', 'prop-rock', 'prop-rubble',
+      'prop-amphora', 'prop-rock-small',
+    ],
+  },
+};
+
+function decorSet(islandId: string): DecorSet {
+  return BY_ISLAND[islandId] ?? COMMON;
+}
 
 export interface DecorPlacement {
   readonly id: DecorId;
@@ -63,8 +106,8 @@ export class Scenery {
   readonly grass: readonly GrassTuft[];
   readonly border: { x: number; y: number; width: number; height: number };
 
-  constructor(rng: Rng, bounds: SceneryBounds, enemies: readonly Enemy[]) {
-    this.props = scatterProps(rng, bounds, enemies);
+  constructor(rng: Rng, bounds: SceneryBounds, enemies: readonly Enemy[], islandId = '') {
+    this.props = scatterProps(rng, bounds, enemies, decorSet(islandId));
     this.roadPoints = roadSpine(rng, bounds);
     this.roadStones = roadStones(rng, this.roadPoints);
     this.grass = grassTufts(rng, bounds);
@@ -82,6 +125,7 @@ function scatterProps(
   rng: Rng,
   bounds: SceneryBounds,
   enemies: readonly Enemy[],
+  set: DecorSet,
 ): DecorPlacement[] {
   const { scenery } = getBalance();
   const placed: DecorPlacement[] = [];
@@ -90,12 +134,14 @@ function scatterProps(
   for (let cluster = 0; placed.length < scenery.propCount; cluster++) {
     const center = clusterCenter(rng, bounds, enemies, centers);
     centers.push(center);
-    placed.push({ id: ANCHORS[cluster % ANCHORS.length]!, x: center.x, y: center.y });
+    placed.push({ id: set.anchors[cluster % set.anchors.length]!, x: center.x, y: center.y });
 
     const around: DecorPlacement[] = [];
     for (let i = 0; i < scenery.clusterSatellites; i++) {
       if (placed.length + around.length >= scenery.propCount) break;
-      const id = SATELLITES[(cluster * scenery.clusterSatellites + i) % SATELLITES.length]!;
+      const id = set.satellites[
+        (cluster * scenery.clusterSatellites + i) % set.satellites.length
+      ]!;
       around.push({ id, ...satelliteSpot(rng, bounds, center, around) });
     }
     placed.push(...around);

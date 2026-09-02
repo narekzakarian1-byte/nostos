@@ -237,6 +237,24 @@ export interface AnimConfig {
   readonly particleGravity: number;
   readonly particleSize: number;
   readonly particleMax: number;
+  readonly rig: RigConfig;
+  readonly _note?: string;
+}
+
+/** Углы костей бумажной куклы. Все — в градусах, кроме частот и долей. */
+export interface RigConfig {
+  readonly restArmDeg: number;
+  readonly windupArmDeg: number;
+  readonly strikeArmDeg: number;
+  readonly offArmDeg: number;
+  readonly walkLegDeg: number;
+  readonly walkArmDeg: number;
+  readonly walkLiftUnits: number;
+  readonly cloakWalkDeg: number;
+  readonly cloakWindDeg: number;
+  readonly cloakWindHz: number;
+  readonly backLimbShade: number;
+  readonly weaponGripDeg: number;
   readonly _note?: string;
 }
 

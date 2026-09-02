@@ -1,7 +1,7 @@
 // Собирает копию проекта, где дев-панель не вырезается, во временный каталог.
 // Нужен, потому что в обычной сборке import.meta.env.DEV статически ложно
 // и ветка с панелью до бандла не доезжает.
-import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 
 const OUT = '.devsmoke';
@@ -16,6 +16,14 @@ mkdirSync(SRC, { recursive: true });
 for (const entry of ['src', 'public', 'index.html', 'balance.json', 'vite.config.ts', 'tsconfig.json']) {
   cpSync(entry, `${SRC}/${entry}`, { recursive: true });
 }
+// Раскладки островов (world/Layout.ts) лежат рядом с их описаниями в islands/,
+// потому что правит их дизайнер, а не код. Каталог целиком копировать нельзя —
+// там же исходники арта на сотни мегабайт, поэтому берутся только сами схемы.
+mkdirSync(`${SRC}/islands`, { recursive: true });
+for (const file of readdirSync('islands').filter((f) => f.endsWith('.layout.json'))) {
+  cpSync(`islands/${file}`, `${SRC}/islands/${file}`);
+}
+
 const main = `${SRC}/src/main.ts`;
 writeFileSync(
   main,

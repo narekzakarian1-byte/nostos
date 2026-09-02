@@ -4,7 +4,7 @@ import type { Enemy } from '../world/Enemy.ts';
 import type { DecorPlacement } from '../world/Scenery.ts';
 import type { Camera } from './Camera.ts';
 import { drawEnemyBody, drawPlayer } from './Figures.ts';
-import { propMetrics } from './props/Bake.ts';
+import { propBox } from './props/Prop.ts';
 import { drawProp } from './Terrain.ts';
 
 /**
@@ -72,10 +72,10 @@ export function depthOrder(
 function visibleProps(game: Game, camera: Camera): DecorPlacement[] {
   const visible: DecorPlacement[] = [];
   for (const prop of game.scenery.props) {
-    const m = propMetrics(prop.id);
+    const box = propBox(prop.id);
     // Запас берётся полный: проп стоит подошвой в prop.y и растёт вверх, а
     // тень уходит вбок — габарит в метриках уже посчитан вместе с ней.
-    if (camera.isVisible(prop.x, prop.y, m.width, m.height)) visible.push(prop);
+    if (camera.isVisible(prop.x, prop.y, box.width, box.height)) visible.push(prop);
   }
   return visible;
 }

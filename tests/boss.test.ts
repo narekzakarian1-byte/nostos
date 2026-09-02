@@ -4,6 +4,8 @@ import { Game } from '../src/core/Game.ts';
 import type { Input } from '../src/core/Input.ts';
 import { applyBossRegen, bossArenaPoint, bossRegen, createBoss } from '../src/world/Boss.ts';
 import { Gate } from '../src/world/Gate.ts';
+import { currentIslandId } from '../src/world/Island.ts';
+import { islandLayout, toWorld } from '../src/world/Layout.ts';
 import { clearNodes } from '../src/save/Save.ts';
 import { DAMAGE_TYPES } from '../src/core/Combat.ts';
 import { rewardKill } from '../src/player/Rewards.ts';
@@ -55,9 +57,15 @@ describe('Островной босс', () => {
     expect(boss.hp).toBe(boss.maxHp);
   });
 
-  it('стоит на арене в верху острова и не ходит по маршруту', () => {
+  it('стоит на арене из раскладки острова и не ходит по маршруту', () => {
     const game = makeGame();
-    const arena = bossArenaPoint(game.worldWidth, game.worldHeight);
+    const layout = islandLayout(currentIslandId());
+    // Арена берётся из раскладки (world/Layout.ts), а у острова без неё —
+    // из прежней формулы. Проверяются оба пути, чтобы островá без схемы
+    // не сломались молча.
+    const arena = layout
+      ? toWorld(layout.arena, { width: game.worldWidth, height: game.worldHeight })
+      : bossArenaPoint(game.worldWidth, game.worldHeight);
     expect(game.boss.x).toBeCloseTo(arena.x, 6);
     expect(game.boss.y).toBeCloseTo(arena.y, 6);
     expect(game.boss.patrol).toBeNull();

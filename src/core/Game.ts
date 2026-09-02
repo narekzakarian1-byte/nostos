@@ -9,6 +9,8 @@ import type { Input } from './Input.ts';
 import { Player } from '../player/Player.ts';
 import { applyBossRegen, bossRegen } from '../world/Boss.ts';
 import { Fog } from '../world/Fog.ts';
+import { currentIslandId } from '../world/Island.ts';
+import { islandLayout, toWorld } from '../world/Layout.ts';
 import { Gate, type Attempt } from '../world/Gate.ts';
 import { Scenery } from '../world/Scenery.ts';
 import { SpawnManager } from '../world/SpawnManager.ts';
@@ -39,6 +41,7 @@ export class Game {
   readonly scenery: Scenery;
   readonly fog: Fog;
   /** Полноэкранная карта поверх игры. Джойстик, пока открыта, не двигает игрока. */
+  elapsed = 0;
   mapOpen = false;
   /** Экран характеристик и инвентаря. Ведёт себя так же: игра под ним замирает по вводу. */
   statsOpen = false;
@@ -86,12 +89,21 @@ export class Game {
     this.hitstop = new Hitstop(freeze);
 
     const { render } = getBalance();
-    const startX = worldWidth / 2;
-    // Старт отодвинут от края острова на экран: камера всегда держит игрока в
-    // центре (Camera.follow), и у самого края полэкрана занимала бы пустота
-    // за границей.
-    const screenHeight = worldHeight / render.worldScreensY;
-    const startY = worldHeight - screenHeight * render.playerStartInsetScreens;
+    // Точка высадки берётся из раскладки острова: у Исмары это галечный берег
+    // внизу по центру, и от него читается вся ось острова (world/Layout.ts).
+    // Острова без раскладки стартуют по-прежнему — отодвинутыми от края на
+    // экран, потому что камера держит игрока в центре (Camera.follow) и у
+    // самого края полэкрана занимала бы пустота за границей.
+    const layout = islandLayout(currentIslandId());
+    const landing = layout
+      ? toWorld(layout.landing, { width: worldWidth, height: worldHeight })
+      : {
+          x: worldWidth / 2,
+          y: worldHeight
+            - (worldHeight / render.worldScreensY) * render.playerStartInsetScreens,
+        };
+    const startX = landing.x;
+    const startY = landing.y;
     this.player = new Player(startX, startY, worldWidth, worldHeight);
     const bounds = {
       width: worldWidth,
@@ -103,7 +115,7 @@ export class Game {
     this.spawns = new SpawnManager(this.rng, seed, bounds);
     // После спавна: тем же rng, чтобы прогон по сиду оставался единой
     // воспроизводимой последовательностью (так же уже устроен SpawnManager выше).
-    this.scenery = new Scenery(this.rng, bounds, this.spawns.enemies);
+    this.scenery = new Scenery(this.rng, bounds, this.spawns.enemies, currentIslandId());
     this.fog = new Fog(worldWidth, worldHeight);
     this.fog.reveal(startX, startY);
   }
@@ -189,6 +201,9 @@ export class Game {
   }
 
   tick(dt: number): void {
+    // Накопленное игровое время. Растёт только на фиксированном шаге, поэтому
+    // им можно качать плащ и траву, не заводя вторых часов рядом с логикой.
+    this.elapsed += dt;
     stepPatrols(this.enemies, (enemy) => this.engagement.has(enemy), dt);
 
     if (this.player.alive) {

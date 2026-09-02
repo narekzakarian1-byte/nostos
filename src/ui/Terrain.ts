@@ -1,9 +1,11 @@
 import { getBalance } from '../core/Balance.ts';
 import type { Game } from '../core/Game.ts';
 import type { DecorPlacement } from '../world/Scenery.ts';
+import { currentIslandId } from '../world/Island.ts';
 import { SPRITES } from './AssetManifest.ts';
 import type { Camera } from './Camera.ts';
-import { drawPropSolid } from './props/Bake.ts';
+import { islandBorder } from './IslandArt.ts';
+import { paintProp } from './props/Prop.ts';
 import { drawRoad } from './Road.ts';
 import { sprites } from './Sprites.ts';
 import { ui } from './UiKit.ts';
@@ -101,7 +103,8 @@ function drawBorder(ctx: CanvasRenderingContext2D, game: Game): void {
   const { scenery, palette } = getBalance();
   const b = game.scenery.border;
 
-  const img = sprites.get('border-wall');
+  const id = islandBorder(currentIslandId());
+  const img = sprites.get(id);
   if (!img) {
     ctx.strokeStyle = palette.borderStone;
     ctx.lineWidth = scenery.borderThickness;
@@ -109,7 +112,7 @@ function drawBorder(ctx: CanvasRenderingContext2D, game: Game): void {
     return;
   }
 
-  const def = SPRITES['border-wall'];
+  const def = SPRITES[id];
   const thickness = scenery.borderThickness * 4; // текстура толще линии-заглушки, иначе не читается
   const tileW = (def.width / def.height) * thickness;
   const x2 = b.x + b.width;
@@ -130,7 +133,7 @@ function drawBorder(ctx: CanvasRenderingContext2D, game: Game): void {
  * касания это начало координат модели по построению (ui/props/Bake.ts).
  */
 export function drawProp(ctx: CanvasRenderingContext2D, prop: DecorPlacement): void {
-  drawPropSolid(ctx, prop.id, prop.x, prop.y);
+  paintProp(ctx, prop.id, prop.x, prop.y);
 }
 
 /** Повторяет спрайт плашками вдоль прямого отрезка — общий приём для дороги и границы. */

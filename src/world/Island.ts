@@ -25,6 +25,16 @@ export function enemyBaseDef(n: number, tier: EnemyTier): number {
   return f.enemyBaseDef(enemyDefense.baseDef, islandPower(n), enemyTiers[tier].defMult);
 }
 
+/**
+ * id острова, на котором идёт игра прямо сейчас. Им выбирается арт
+ * (ui/IslandArt.ts) и набор декора (world/Scenery.ts). Пока остров один и
+ * задан в prototype.islandNumber — когда появится переход между островами,
+ * менять придётся только здесь.
+ */
+export function currentIslandId(): string {
+  return islandDef(getBalance().prototype.islandNumber).id;
+}
+
 export function islandDef(n: number): IslandDef {
   const island = getBalance().islands.list.find((entry) => entry.n === n);
   if (!island) throw new Error(`NOSTOS: острова ${n} нет в balance.json`);

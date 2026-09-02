@@ -1,9 +1,14 @@
 import { getBalance } from '../core/Balance.ts';
+import { bestType } from '../core/Combat.ts';
+import type { DamageType } from '../core/BalanceTypes.ts';
 import type { Game } from '../core/Game.ts';
 import { swingPhase, swingPush } from '../juice/BodyAnim.ts';
+import { rigPose, walkPhase } from '../juice/RigPose.ts';
+import type { WeaponPartId } from './rig/RigParts.ts';
 import { degToRad } from '../juice/Ease.ts';
 import type { Enemy } from '../world/Enemy.ts';
-import { ENEMY_SPRITES_BY_TIER } from './AssetManifest.ts';
+import { currentIslandId } from '../world/Island.ts';
+import { enemySpriteChain } from './IslandArt.ts';
 import { drawBody } from './Body.ts';
 import { short } from './Format.ts';
 import type { SpriteId } from './AssetManifest.ts';
@@ -39,10 +44,11 @@ export function drawPlayer(ctx: CanvasRenderingContext2D, game: Game): void {
   const push = playerPush(game);
 
   // Покачивание считается от пройденного пути, а не от времени: на месте
-  // игрок стоит ровно, а на любой скорости шаг остаётся шагом.
-  const bob = game.input.isHeld
-    ? Math.sin(player.walked * u.walkBobHz * 0.1) * u.walkBobAmp
-    : 0;
+  // игрок стоит ровно, а на любой скорости шаг остаётся шагом. Ноги куклы идут
+  // от этой же фазы — иначе шаг разойдётся с покачиванием и фигура «поплывёт».
+  const moving = game.input.isHeld;
+  const walk = walkPhase(player.walked);
+  const bob = moving ? Math.sin(walk) * u.walkBobAmp : 0;
 
   drawBody(ctx, {
     x: player.x, y: player.y, size: render.playerSize,
@@ -53,6 +59,15 @@ export function drawPlayer(ctx: CanvasRenderingContext2D, game: Game): void {
     pushX: push.x, pushY: push.y,
     tilt: push.tilt,
     bob,
+    rig: {
+      pose: rigPose({
+        swing: swingPhase(player.attackCooldown, getBalance().anim.windupSec),
+        walk,
+        moving,
+        elapsed: game.elapsed,
+      }),
+      weapon: handWeapon(game),
+    },
   });
 }
 
@@ -150,10 +165,34 @@ function drawRankRing(ctx: CanvasRenderingContext2D, enemy: Enemy): void {
   ctx.restore();
 }
 
-/** Первый загруженный спрайт из цепочки запасных вариантов для тира. */
+/**
+ * Первый загруженный спрайт из цепочки для тира: сначала фигура своего острова,
+ * за ней общие запасные (ui/IslandArt.ts).
+ */
 function enemySprite(enemy: Enemy): SpriteId | undefined {
-  for (const id of ENEMY_SPRITES_BY_TIER[enemy.tier]) {
+  for (const id of enemySpriteChain(currentIslandId(), enemy.tier)) {
     if (sprites.get(id)) return id;
   }
   return undefined;
+}
+
+/**
+ * Что у Одиссея в руке. Не произвольная картинка, а то оружие, которым он
+ * сейчас реально бьёт: тот же bestType, что красит дугу удара и три иконки над
+ * врагом. Значит по фигуре видно выбор игры ещё до того, как посчитан урон.
+ */
+const WEAPON_ART: Record<DamageType, WeaponPartId> = {
+  slash: 'sword',
+  pierce: 'spear',
+  // Своей булавы пока нет, дробящий берёт меч: узнаваемый силуэт в руке лучше
+  // пустого кулака. Появится арт — правится здесь одной строкой.
+  crush: 'sword',
+};
+
+function handWeapon(game: Game): WeaponPartId {
+  const target = game.target;
+  // Без цели выбирать не против кого — рука держит рубящее по умолчанию.
+  if (!target) return WEAPON_ART.slash;
+  const player = game.player;
+  return WEAPON_ART[bestType(player.stats, player.weapons, target.def)];
 }
