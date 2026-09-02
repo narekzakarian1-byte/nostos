@@ -7,6 +7,14 @@ import { Stats } from '../core/Stats.ts';
 import { startingWeapons, type Weapon } from './Weapon.ts';
 import { startingArmor, type Armor } from './Armor.ts';
 
+/** Прямоугольник суши. Считает его world/Scenery.ts — там же, где стена. */
+export interface LandRect {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+}
+
 export class Player implements Regenerating {
   readonly stats = new Stats();
   /** Вспышка, отдача, распад, появление. Тикается логикой, читается рендером. */
@@ -30,15 +38,14 @@ export class Player implements Regenerating {
   walked = 0;
 
   readonly startX: number;
-  startY: number;
-  private readonly worldWidth: number;
-  private worldHeight: number;
+  readonly startY: number;
+  /** Суша острова: за стену игрок не выходит. */
+  private readonly land: LandRect;
 
-  constructor(startX: number, startY: number, worldWidth: number, worldHeight: number) {
+  constructor(startX: number, startY: number, land: LandRect) {
     this.startX = startX;
     this.startY = startY;
-    this.worldWidth = worldWidth;
-    this.worldHeight = worldHeight;
+    this.land = land;
     this.x = startX;
     this.y = startY;
     this.hp = this.maxHp;
@@ -70,9 +77,13 @@ export class Player implements Regenerating {
     this.facingAngle = Math.atan2(dirY, dirX);
     this.walked += step;
 
+    // Ограничение идёт по точке КАСАНИЯ земли, а не по коробке фигуры: стоя
+    // вплотную к стене, игрок закрывает её собой — так и должно быть. Раньше
+    // клампа по суше не было вовсе, и за стеной оставалась полоса, по которой
+    // можно было уйти на чёрное поле за островом.
     const half = render.playerSize / 2;
-    this.x = clamp(this.x, half, this.worldWidth - half);
-    this.y = clamp(this.y, render.hudHeight + half, this.worldHeight - half);
+    this.x = clamp(this.x, this.land.x, this.land.x + this.land.width);
+    this.y = clamp(this.y, this.land.y - half, this.land.y + this.land.height - half);
   }
 
   die(): void {
@@ -91,18 +102,6 @@ export class Player implements Regenerating {
     this.timeSinceDamage = Number.POSITIVE_INFINITY;
     this.attackCooldown = 0;
     this.anim.spawn();
-  }
-
-  /** Окно браузера меняет высоту, когда Safari прячет адресную строку. */
-  setWorldHeight(height: number): void {
-    const { render } = getBalance();
-    this.worldHeight = height;
-    const half = render.playerSize / 2;
-    // Та же формула, что и в Game: иначе ресайз возвращал бы точку респауна
-    // вплотную к краю острова.
-    const screenHeight = height / render.worldScreensY;
-    this.startY = height - screenHeight * render.playerStartInsetScreens;
-    this.y = Math.min(this.y, height - half);
   }
 
   /** Дев-панель может уронить maxHp ниже текущего HP. */

@@ -12,7 +12,7 @@ import { Fog } from '../world/Fog.ts';
 import { currentIslandId } from '../world/Island.ts';
 import { islandLayout, toWorld } from '../world/Layout.ts';
 import { Gate, type Attempt } from '../world/Gate.ts';
-import { Scenery } from '../world/Scenery.ts';
+import { borderRect, Scenery } from '../world/Scenery.ts';
 import { SpawnManager } from '../world/SpawnManager.ts';
 import { stepPatrols } from '../world/Patrol.ts';
 import { defenseProfile } from '../world/EnemyFactory.ts';
@@ -104,7 +104,6 @@ export class Game {
         };
     const startX = landing.x;
     const startY = landing.y;
-    this.player = new Player(startX, startY, worldWidth, worldHeight);
     const bounds = {
       width: worldWidth,
       height: worldHeight,
@@ -112,6 +111,7 @@ export class Game {
       startX,
       startY,
     };
+    this.player = new Player(startX, startY, borderRect(bounds));
     this.spawns = new SpawnManager(this.rng, seed, bounds);
     // После спавна: тем же rng, чтобы прогон по сиду оставался единой
     // воспроизводимой последовательностью (так же уже устроен SpawnManager выше).

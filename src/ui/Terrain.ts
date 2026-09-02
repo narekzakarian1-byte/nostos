@@ -66,9 +66,10 @@ function drawGrass(ctx: CanvasRenderingContext2D, game: Game, camera: Camera): v
 }
 
 /**
- * Всё, что за рамкой острова, глушится тёмным. Без этого за границей
- * тянется та же земля, и край острова читается как случайная линия посреди
- * поля, а не как конец суши.
+ * Всё, что за рамкой острова, закрывается наглухо. Полупрозрачная вуаль
+ * оставляла под собой ту же траву с теми же пучками, и край читался как
+ * недорисованный тайл, а не как конец суши. Ходить туда игрок больше не
+ * может (Player.move), значит и показывать там нечего.
  */
 function drawOutside(ctx: CanvasRenderingContext2D, game: Game, camera: Camera): void {
   const { palette } = getBalance();
@@ -80,7 +81,6 @@ function drawOutside(ctx: CanvasRenderingContext2D, game: Game, camera: Camera):
 
   ctx.save();
   ctx.fillStyle = palette.bgFar;
-  ctx.globalAlpha = 0.82;
   if (top < b.y) ctx.fillRect(left, top, right - left, Math.min(b.y, bottom) - top);
   const bEnd = b.y + b.height;
   if (bottom > bEnd) {

@@ -171,3 +171,33 @@ describe('Декор по зонам', () => {
     expect(beach?.props?.clusters ?? 0).toBeLessThan(village?.props?.clusters ?? 0);
   });
 });
+
+describe('Край острова', () => {
+  beforeEach(() => clearNodes());
+
+  it('игрок не выходит за стену ни в одну сторону', () => {
+    const game = makeGame();
+    const land = game.scenery.border;
+    const half = balance.render.playerSize / 2;
+    // Держим стик в угол достаточно долго, чтобы упереться.
+    for (const [dx, dy] of [[-1, -1], [1, 1], [-1, 1], [1, -1]] as const) {
+      for (let step = 0; step < 4000; step++) game.player.move(dx, dy, 1 / 60);
+      expect(game.player.x).toBeGreaterThanOrEqual(land.x - 0.001);
+      expect(game.player.x).toBeLessThanOrEqual(land.x + land.width + 0.001);
+      // Ограничение идёт по точке касания земли, а не по центру фигуры.
+      expect(game.player.y + half).toBeGreaterThanOrEqual(land.y - 0.001);
+      expect(game.player.y + half).toBeLessThanOrEqual(land.y + land.height + 0.001);
+    }
+  });
+
+  it('дорога не уходит за стену', () => {
+    const game = makeGame();
+    const land = game.scenery.border;
+    for (const path of game.scenery.roadPaths) {
+      for (const point of path.points) {
+        expect(point.y).toBeLessThanOrEqual(land.y + land.height + 0.001);
+        expect(point.y).toBeGreaterThanOrEqual(land.y - 0.001);
+      }
+    }
+  });
+});

@@ -13,6 +13,24 @@ import { roadStones, type RoadPath, type RoadStone } from './Road.ts';
 export type { DecorId, DecorPlacement } from './Decor.ts';
 export type { RoadPath } from './Road.ts';
 
+/**
+ * Прямоугольник суши: та часть мира, по которой можно ходить. Считается в
+ * одном месте, потому что по нему живут двое — стена по краю острова и
+ * ограничение движения игрока. Разъедься они, игрок оказался бы стоящим
+ * снаружи собственного острова, на чёрном поле за стеной.
+ */
+export function borderRect(bounds: SceneryBounds): {
+  x: number; y: number; width: number; height: number;
+} {
+  const { borderInset } = getBalance().scenery;
+  return {
+    x: borderInset,
+    y: bounds.top + borderInset,
+    width: bounds.width - borderInset * 2,
+    height: bounds.height - bounds.top - borderInset * 2,
+  };
+}
+
 export interface SceneryBounds {
   readonly width: number;
   readonly height: number;
@@ -57,13 +75,7 @@ export class Scenery {
     }
 
     this.grass = grassTufts(rng, bounds);
-    const { borderInset } = getBalance().scenery;
-    this.border = {
-      x: borderInset,
-      y: bounds.top + borderInset,
-      width: bounds.width - borderInset * 2,
-      height: bounds.height - bounds.top - borderInset * 2,
-    };
+    this.border = borderRect(bounds);
   }
 }
 
