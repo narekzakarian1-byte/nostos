@@ -105,16 +105,17 @@ export function scatterByZones(
     const area = clampRect(zoneRect(zone, bounds), bounds);
 
     for (let cluster = 0; cluster < set.clusters; cluster++) {
-      const center = clusterCenter(rng, area, enemies, centers, roads);
+      const anchor = set.anchors[cluster % set.anchors.length]!;
+      const center = clusterCenter(rng, area, enemies, centers, roads, anchor);
       centers.push(center);
-      placed.push({ id: set.anchors[cluster % set.anchors.length]!, x: center.x, y: center.y });
+      placed.push({ id: anchor, x: center.x, y: center.y });
 
       const around: DecorPlacement[] = [];
       for (let i = 0; i < scenery.clusterSatellites; i++) {
         const id = set.satellites[
           (cluster * scenery.clusterSatellites + i) % set.satellites.length
         ]!;
-        around.push({ id, ...satelliteSpot(rng, area, center, around, roads) });
+        around.push({ id, ...satelliteSpot(rng, area, center, around, roads, id, enemies) });
       }
       placed.push(...around);
     }
@@ -137,9 +138,10 @@ export function scatterProps(
   const area = clampRect({ x: 0, y: 0, width: bounds.width, height: bounds.height }, bounds);
 
   for (let cluster = 0; placed.length < scenery.propCount; cluster++) {
-    const center = clusterCenter(rng, area, enemies, centers, roads);
+    const anchor = set.anchors[cluster % set.anchors.length]!;
+    const center = clusterCenter(rng, area, enemies, centers, roads, anchor);
     centers.push(center);
-    placed.push({ id: set.anchors[cluster % set.anchors.length]!, x: center.x, y: center.y });
+    placed.push({ id: anchor, x: center.x, y: center.y });
 
     const around: DecorPlacement[] = [];
     for (let i = 0; i < scenery.clusterSatellites; i++) {
@@ -147,7 +149,7 @@ export function scatterProps(
       const id = set.satellites[
         (cluster * scenery.clusterSatellites + i) % set.satellites.length
       ]!;
-      around.push({ id, ...satelliteSpot(rng, area, center, around, roads) });
+      around.push({ id, ...satelliteSpot(rng, area, center, around, roads, id, enemies) });
     }
     placed.push(...around);
   }

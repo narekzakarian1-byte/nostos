@@ -6,6 +6,7 @@ import type { Regenerating } from '../core/Regen.ts';
 import { Stats } from '../core/Stats.ts';
 import { startingWeapons, type Weapon } from './Weapon.ts';
 import { startingArmor, type Armor } from './Armor.ts';
+import { slide, type Blocker, type Foot } from '../world/Blockers.ts';
 
 /** Прямоугольник суши. Считает его world/Scenery.ts — там же, где стена. */
 export interface LandRect {
@@ -41,14 +42,28 @@ export class Player implements Regenerating {
   readonly startY: number;
   /** Суша острова: за стену игрок не выходит. */
   private readonly land: LandRect;
+  /** Следы пропов на земле. Пустой список — препятствий нет. */
+  private readonly blockers: readonly Blocker[];
 
-  constructor(startX: number, startY: number, land: LandRect) {
+  constructor(
+    startX: number,
+    startY: number,
+    land: LandRect,
+    blockers: readonly Blocker[] = [],
+  ) {
     this.startX = startX;
     this.startY = startY;
     this.land = land;
+    this.blockers = blockers;
     this.x = startX;
     this.y = startY;
     this.hp = this.maxHp;
+  }
+
+  /** След ног на земле. Заметно меньше фигуры: упираться игрок должен подошвой. */
+  private get foot(): Foot {
+    const { footRx, footRy } = getBalance().player;
+    return { rx: footRx, ry: footRy };
   }
 
   /** Потолок HP с учётом брони: сет множит и здоровье (BALANCE.md §7.5). */
@@ -72,16 +87,27 @@ export class Player implements Regenerating {
     if (magnitude <= 0) return;
 
     const step = this.stats.moveSpeed * dt * Math.min(magnitude, 1);
-    this.x += (dirX / magnitude) * step;
-    this.y += (dirY / magnitude) * step;
+    // Препятствия считаются по точке касания земли: игрок обходит подошву
+    // хижины, а не её крышу.
+    const half = render.playerSize / 2;
+    const next = slide(
+      this.x, this.y + half,
+      this.x + (dirX / magnitude) * step,
+      this.y + half + (dirY / magnitude) * step,
+      this.foot,
+      this.blockers,
+    );
+    // Путь считается по фактическому смещению, а не по шагу: упёршись в
+    // частокол, игрок стоит на месте — и ноги на месте стоять обязаны тоже.
+    this.walked += Math.hypot(next.x - this.x, next.y - half - this.y);
+    this.x = next.x;
+    this.y = next.y - half;
     this.facingAngle = Math.atan2(dirY, dirX);
-    this.walked += step;
 
     // Ограничение идёт по точке КАСАНИЯ земли, а не по коробке фигуры: стоя
     // вплотную к стене, игрок закрывает её собой — так и должно быть. Раньше
     // клампа по суше не было вовсе, и за стеной оставалась полоса, по которой
     // можно было уйти на чёрное поле за островом.
-    const half = render.playerSize / 2;
     this.x = clamp(this.x, this.land.x, this.land.x + this.land.width);
     this.y = clamp(this.y, this.land.y - half, this.land.y + this.land.height - half);
   }

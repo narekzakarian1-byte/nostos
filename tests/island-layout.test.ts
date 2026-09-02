@@ -6,6 +6,7 @@ import { clearNodes } from '../src/save/Save.ts';
 import { currentIslandId } from '../src/world/Island.ts';
 import { islandLayout, toWorld, zoneAt, type IslandLayout } from '../src/world/Layout.ts';
 import { distanceToPaths } from '../src/world/Road.ts';
+import { blocked, blockersOf, footprintOf } from '../src/world/Blockers.ts';
 
 // Раскладка острова — данные, и ошибка в них не видна ни компилятору, ни
 // глазу: узел просто окажется не в той зоне, а бюджет разойдётся с
@@ -149,15 +150,17 @@ describe('Декор по зонам', () => {
     }
   });
 
-  it('ни один проп не стоит на дороге', () => {
+  it('ни один проп не стоит на дороге и не свешивается над ней', () => {
     const game = makeGame();
     const { roadClearance } = balance.scenery;
     for (const prop of game.scenery.props) {
+      const reach = footprintOf(prop.id)?.rx ?? 0;
       for (const path of game.scenery.roadPaths) {
         const gap = distanceToPaths(path.points, prop.x, prop.y);
-        // Половина ширины — сама дорога, roadClearance — обочина.
+        // Половина ширины — сама дорога, roadClearance — обочина, reach —
+        // след самого пропа: ворота в 120 единиц свешиваются створом.
         expect(gap, `${prop.id} лежит на дороге`).toBeGreaterThanOrEqual(
-          path.width / 2 + roadClearance - 0.001,
+          path.width / 2 + roadClearance + reach - 0.001,
         );
       }
     }
@@ -198,6 +201,59 @@ describe('Край острова', () => {
         expect(point.y).toBeLessThanOrEqual(land.y + land.height + 0.001);
         expect(point.y).toBeGreaterThanOrEqual(land.y - 0.001);
       }
+    }
+  });
+});
+
+describe('Препятствия', () => {
+  beforeEach(() => clearNodes());
+
+  const foot = { rx: balance.player.footRx, ry: balance.player.footRy };
+
+  it('сквозь сгоревшую хижину не пройти', () => {
+    const game = makeGame();
+    const blockers = blockersOf(game.scenery.props);
+    const hut = game.scenery.props.find((p) => p.id === 'prop-hut-burnt');
+    expect(hut).toBeDefined();
+
+    // Заходим на хижину снизу и упираемся.
+    game.player.x = hut!.x;
+    game.player.y = hut!.y + 140 - balance.render.playerSize / 2;
+    for (let step = 0; step < 600; step++) game.player.move(0, -1, 1 / 60);
+
+    const groundY = game.player.y + balance.render.playerSize / 2;
+    expect(blocked(game.player.x, groundY, foot, blockers)).toBe(false);
+    // И действительно упёрся, а не прошёл насквозь.
+    expect(groundY).toBeGreaterThan(hut!.y);
+  });
+
+  it('вдоль препятствия игрок скользит, а не залипает', () => {
+    const game = makeGame();
+    const hut = game.scenery.props.find((p) => p.id === 'prop-hut-burnt')!;
+    game.player.x = hut.x;
+    game.player.y = hut.y + 140 - balance.render.playerSize / 2;
+    for (let step = 0; step < 200; step++) game.player.move(0, -1, 1 / 60);
+
+    const stuckX = game.player.x;
+    // Упёрлись — и пошли по диагонали: боковая составляющая обязана работать.
+    for (let step = 0; step < 200; step++) game.player.move(1, -1, 1 / 60);
+    expect(Math.abs(game.player.x - stuckX)).toBeGreaterThan(1);
+  });
+
+  it('ни один узел не стоит внутри препятствия: до врага всегда можно дойти', () => {
+    const game = makeGame();
+    const blockers = blockersOf(game.scenery.props);
+    for (const enemy of game.enemies) {
+      expect(
+        blocked(enemy.x, enemy.y + enemy.size / 2, foot, blockers),
+        `узел ${enemy.tier} стоит в препятствии`,
+      ).toBe(false);
+    }
+  });
+
+  it('у мелочи следа нет: щебень и черепки игрока не цепляют', () => {
+    for (const id of ['prop-rubble', 'prop-rock-small', 'prop-amphora', 'prop-campfire'] as const) {
+      expect(footprintOf(id), id).toBeNull();
     }
   });
 });

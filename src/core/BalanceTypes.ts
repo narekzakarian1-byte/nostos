@@ -57,6 +57,9 @@ export type BaseStats = { readonly [K in StatKey]: number };
 
 export interface PlayerConfig {
   readonly baseStats: BaseStats;
+  /** Полуоси следа ног игрока на земле — по нему считаются препятствия. */
+  readonly footRx: number;
+  readonly footRy: number;
   readonly respawnDelay: number;
   readonly deathPenalty: string;
 }
@@ -394,6 +397,8 @@ export interface PropsConfig {
   readonly _lightNote?: string;
   readonly _shadeNote?: string;
   readonly _materialsNote?: string;
+  /** След пропа на земле. Пропа нет в таблице — сквозь него ходят. */
+  readonly footprints: Readonly<Record<string, { readonly rx: number; readonly ry: number }>>;
   readonly _sizesNote?: string;
 }
 

@@ -8,6 +8,7 @@ import { Rng } from './Rng.ts';
 import type { Input } from './Input.ts';
 import { Player } from '../player/Player.ts';
 import { applyBossRegen, bossRegen } from '../world/Boss.ts';
+import { blockersOf } from '../world/Blockers.ts';
 import { Fog } from '../world/Fog.ts';
 import { currentIslandId } from '../world/Island.ts';
 import { islandLayout, toWorld } from '../world/Layout.ts';
@@ -111,11 +112,15 @@ export class Game {
       startX,
       startY,
     };
-    this.player = new Player(startX, startY, borderRect(bounds));
     this.spawns = new SpawnManager(this.rng, seed, bounds);
     // После спавна: тем же rng, чтобы прогон по сиду оставался единой
     // воспроизводимой последовательностью (так же уже устроен SpawnManager выше).
     this.scenery = new Scenery(this.rng, bounds, this.spawns.enemies, currentIslandId());
+    // Игрок создаётся последним: ему нужны следы пропов, а те известны только
+    // после раскладки декора.
+    this.player = new Player(
+      startX, startY, borderRect(bounds), blockersOf(this.scenery.props),
+    );
     this.fog = new Fog(worldWidth, worldHeight);
     this.fog.reveal(startX, startY);
   }

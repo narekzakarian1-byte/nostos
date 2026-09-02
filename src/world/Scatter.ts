@@ -1,9 +1,10 @@
 import { getBalance } from '../core/Balance.ts';
 import type { Rng } from '../core/Rng.ts';
-import type { DecorPlacement } from './Decor.ts';
+import type { DecorId, DecorPlacement } from './Decor.ts';
 import type { Enemy } from './Enemy.ts';
 import type { Rect } from './Layout.ts';
 import { distanceToPaths, type RoadPath } from './Road.ts';
+import { footprintOf } from './Blockers.ts';
 
 /**
  * Геометрия расстановки: куда сесть группе и куда её мелочи.
@@ -35,31 +36,45 @@ export function clusterCenter(
   enemies: readonly Enemy[],
   centers: readonly Point[],
   roads: readonly RoadPath[],
+  prop: DecorId,
 ): Point {
   const { scenery } = getBalance();
   let spot = { x: area.x + area.width / 2, y: area.y + area.height / 2 };
-  // Запасной вариант: место, свободное хотя бы от дороги. В узкой зоне,
-  // которую тракт делит пополам, всех условий сразу может не найтись — и
-  // тогда лучше поставить кластер тесно к соседу, чем посреди дороги.
-  let offRoad: Point | null = null;
+  // Запасной вариант, если всех условий сразу не нашлось. Жёстких два —
+  // дорога и узлы: проп на тракте читается как ошибка, а проп поверх врага
+  // молча выкидывает узел из игры, потому что подойти к нему уже нельзя.
+  // Мягкое одно — зазор до соседнего кластера; им и жертвуем.
+  let fallback: Point | null = null;
 
-  for (let attempt = 0; attempt < 30; attempt++) {
+  for (let attempt = 0; attempt < 60; attempt++) {
     spot = {
       x: rng.range(area.x, area.x + area.width),
       y: rng.range(area.y, area.y + area.height),
     };
-    if (onRoad(roads, spot)) continue;
-    offRoad ??= spot;
-    const nearEnemy = enemies.some(
-      (e) => Math.hypot(e.x - spot.x, e.y - spot.y) < scenery.minSpacingFromEnemies,
-    );
+    if (onRoad(roads, spot, prop)) continue;
+    if (!clearOfEnemies(enemies, spot, prop)) continue;
+    fallback ??= spot;
     const nearCluster = centers.some(
       (c) => Math.hypot(c.x - spot.x, c.y - spot.y) < scenery.clusterSpacing,
     );
-    if (!nearEnemy && !nearCluster) return spot;
+    if (!nearCluster) return spot;
   }
 
-  return offRoad ?? spot;
+  return fallback ?? spot;
+}
+
+/**
+ * Зазор до узлов. Считается от точки КАСАНИЯ земли врага и с учётом следа
+ * пропа: хижина в сорока единицах от центра фигуры накрывает своим следом её
+ * подошву, и подойти к врагу становится нельзя.
+ */
+function clearOfEnemies(enemies: readonly Enemy[], spot: Point, prop: DecorId): boolean {
+  const { minSpacingFromEnemies } = getBalance().scenery;
+  const reach = footprintOf(prop)?.rx ?? 0;
+  const gap = minSpacingFromEnemies + reach;
+  return !enemies.some(
+    (e) => Math.hypot(e.x - spot.x, e.y + e.size / 2 - spot.y) < gap,
+  );
 }
 
 /** Спутник садится в кольцо вокруг якоря и не влезает в уже поставленных соседей. */
@@ -69,20 +84,23 @@ export function satelliteSpot(
   center: Point,
   around: readonly DecorPlacement[],
   roads: readonly RoadPath[],
+  prop: DecorId,
+  enemies: readonly Enemy[],
 ): Point {
   const { scenery } = getBalance();
   let spot = center;
-  let offRoad: Point | null = null;
+  let fallback: Point | null = null;
 
-  for (let attempt = 0; attempt < 12; attempt++) {
+  for (let attempt = 0; attempt < 16; attempt++) {
     const angle = rng.range(0, Math.PI * 2);
     const dist = rng.range(scenery.clusterInner, scenery.clusterRadius);
     spot = {
       x: clamp(center.x + Math.cos(angle) * dist, area.x, area.x + area.width),
       y: clamp(center.y + Math.sin(angle) * dist, area.y, area.y + area.height),
     };
-    if (onRoad(roads, spot)) continue;
-    offRoad ??= spot;
+    if (onRoad(roads, spot, prop)) continue;
+    if (!clearOfEnemies(enemies, spot, prop)) continue;
+    fallback ??= spot;
     const crowded = around.some(
       (p) => Math.hypot(p.x - spot.x, p.y - spot.y) < scenery.minSpacingInCluster,
     );
@@ -90,19 +108,22 @@ export function satelliteSpot(
   }
 
   // Ни одной свободной точки в кольце: садим спутник на сам якорь. Он там
-  // заведомо не на дороге — якорь уже проверен.
-  return offRoad ?? center;
+  // заведомо не на дороге и не на узле — якорь уже проверен.
+  return fallback ?? center;
 }
 
 /**
  * Проп на дороге — самый заметный признак раскиданного, а не поставленного
  * декора: телега поперёк тракта читается как ошибка, а не как разорённая
- * деревня. Полоса свободы шире самой дороги на roadClearance.
+ * деревня. Полоса свободы шире самой дороги на roadClearance и на след самого
+ * пропа: у ворот в 120 единиц центр может стоять в стороне, а половина
+ * створа всё равно висеть над кладкой.
  */
-function onRoad(roads: readonly RoadPath[], spot: Point): boolean {
+function onRoad(roads: readonly RoadPath[], spot: Point, prop: DecorId): boolean {
   const { roadClearance } = getBalance().scenery;
+  const reach = footprintOf(prop)?.rx ?? 0;
   for (const path of roads) {
-    if (distanceToPaths(path.points, spot.x, spot.y) < path.width / 2 + roadClearance) {
+    if (distanceToPaths(path.points, spot.x, spot.y) < path.width / 2 + roadClearance + reach) {
       return true;
     }
   }
