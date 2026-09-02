@@ -1,0 +1,353 @@
+NOSTOS — ПРОМПТЫ ДЛЯ ВИЗУАЛА
+=============================
+
+Формат для всех: вид сверху под наклоном ~60° (как в мобильной RPG,
+референс — папка «референс»), плоский стилизованный силуэт, палитра
+ниже. Без градиентов, без фоторендера, один источник света.
+
+Палитра (GDD.md §3 + скорректированная светлая земля):
+  фон дальний    #0F1B2E
+  фон средний    #1B2E45
+  силуэты        #080D14
+  акцент тёплый  #D9762B
+  акцент светлый #E8DCC8
+  опасность      #C4342B
+  земля (сочная трава, доминанта)      #3E7F3F
+  земля (трава в тени)                 #2D5E31
+  земля (трава на свету)               #4B8C43
+  земля (оливковая проплешина)         #6E8A4B
+  земля (сухая охра, редкий акцент)    #A8843F
+  земля (тимьян, мелкий акцент)        #77AC35
+
+Прозрачность: если генератор не умеет alpha-канал — делать на чистом
+ядовито-зелёном #00FF00, я вырежу скриптом. Бесшовный тайл почти никто
+не умеет с первого раза — присылай как есть, дошью сам.
+
+Статус: [ГОТОВО] = уже стоит в игре. [НУЖНО] = слот подключён в коде,
+ждёт файла. [ОТКЛЮЧЁН] = файл был, но оказался негодным и убран.
+Как только файл появится по указанному пути — включится без правок кода.
+
+РАЗМЕРЫ В ИГРЕ (единицы мира, не пиксели файла): игрок 44, враг обычный 30,
+элита 40, мини-босс 56. Генерить всё равно крупно (256-512 px), движок
+масштабирует сам.
+
+ЧЕГО НЕ ХВАТАЕТ ПРЯМО СЕЙЧАС, по убыванию заметности на экране:
+  1. ground/base.png переделать — сам назвал «безжизненным», сейчас ковёр
+  2. road/segment.png — дорога плоская коричневая лента
+  3. props: olive / rock — отключены; ruin-gate вернулись по новому контракту
+  4. borders/wall.png — граница острова тонкая серая линия
+  5. enemy-miniboss.png — не срочно: пока файла нет, мини-босс берёт силуэт
+     элиты покрупнее, а ранг держит золотое кольцо под ногами. Чёрного
+     квадрата больше нет.
+
+ИКОНКИ ТИПОВ УРОНА БОЛЬШЕ НЕ НУЖНЫ КАРТИНКАМИ.
+icons/pierce.png, icons/slash.png, icons/crush.png отключены: три иконки над
+врагом рисуются вектором в src/ui/TypeGlyphs.ts. Причина — они появляются в
+четырёх разных размерах (над врагом, в слоте оружия, на карте, в инвентаре) и
+перекрашиваются в цвет отношения атака/защита на каждом кадре. Растровому
+набору понадобился бы файл на каждый размер, и перекраска всё равно шла бы
+кодом. Файлы на диске оставлены, но движок их не грузит.
+
+Тем же вектором рисуются все иконки интерфейса (шестерёнка, сумка, магазин,
+череп, песочные часы, щит, звезда, сердце, замок, лупа) — src/ui/Glyphs.ts.
+
+
+─────────────────────────────────────────────────────────────────
+КОНТРАКТ СПРАЙТА — почему одни файлы вставали, а другие нет
+─────────────────────────────────────────────────────────────────
+
+Три правила, без которых объект не вырезается и не садится на землю.
+Они выведены из разбора olive.png, rock.png и первой версии ruin-gate.png,
+которые пришлось отключить.
+
+1. ТЕНИ В КАРТИНКЕ НЕТ. Старые промпты просили «soft drop shadow
+   underneath» — и эта тень потом неотделима от объекта, а движок рисует
+   поверх неё свою. Контактную тень рисует ui/Terrain.ts по footprint.
+
+2. ЗАМКНУТАЯ ТЁМНАЯ ОБВОДКА #080D14 ПО ВСЕМУ КОНТУРУ. Именно из-за её
+   отсутствия вырез и не получался: без неё цвет объекта перетекает в фон,
+   и порог по цвету режет либо с ореолом, либо по живому. С обводкой между
+   фоном и телом всегда лежит почти чёрная линия, и вырез становится
+   тривиальным.
+
+3. ФОН — РОВНЫЙ #00FF00, И НИ ОДНОГО ЗЕЛЁНОГО ПИКСЕЛЯ В САМОМ ОБЪЕКТЕ.
+   «transparent background» ChatGPT надёжно не умеет, просить бесполезно.
+
+Плюс: низ картинки = точка касания земли, без пустого поля под подошвой.
+Якорь и размер объекта задаются в src/ui/AssetManifest.ts (anchor, footprint).
+
+Вырезать: python3 tools/cutout.py <вход.png> public/art/props/<имя>.png 512
+Скрипт сам обрезает поля по альфе и давит зелёный отлив на кромке.
+
+─────────────────────────────────────────────────────────────────
+ЗЕМЛЯ / МИР
+─────────────────────────────────────────────────────────────────
+
+[ПЕРЕДЕЛАТЬ — текущий тайл читается как пустыня]
+public/art/ground/base.png — 512×512, бесшовный тайл
+
+ЧТО НЕ ТАК С ТЕКУЩИМ. Он пёстрый: мелкая крошка по всей площади, ни одного
+спокойного участка. Из-за этого поле выглядит выжженной пустыней, повтор тайла
+бросается в глаза при ходьбе, и — главное — земля спорит за внимание с тремя
+иконками над врагом, а это единственный механизм принятия решений в игре.
+
+ЧТО В РЕФЕРЕНСЕ (замерено пипеткой по скриншотам из папки «референс»):
+  трава основная      #3E7F3F   28-38% всех пикселей — почти плоская заливка
+  трава в тени        #2D5E31   крупные мягкие пятна, не крошка
+  трава на свету      #428240   едва отличается от основной
+  кустик-акцент       #77AC35   редкие мелкие мазки, 5-15 px
+  земля дороги        #9E7949   тёплая охра (отдельный тайл, road/segment.png)
+  камень              #96AA96   холодный серый, только в дороге и пропах
+
+Вывод: земля в референсе — это ФОН, а не текстура. Вся сочность там идёт от
+предметов сверху (деревья, заборы, камни, дорога), а не от рисунка травы.
+Нам нужно то же самое: спокойное сочное поле, на которое лягут греческие
+артефакты — колонны, амфоры, обломки, оливы.
+
+ПАЛИТРА ЗЕМЛИ (заменяет прежнюю кремовую, сеттинг тот же — весенний
+средиземноморский склон, не тропический газон и не пустыня):
+  трава основная       #3E7F3F  доминанта, больше половины площади
+  трава в тени         #2D5E31  крупные мягкие пятна
+  трава на свету       #4B8C43  чуть теплее и светлее основной
+  оливково-серая нота  #6E8A4B  выгоревшие проплешины, редко
+  сухая охра           #A8843F  очень редкие тёплые пятна, доли процента
+  тимьян/чабрец        #77AC35  мелкие кустики-акценты
+  известняк            #C9C3AE  редкие мелкие камушки
+
+ПРОМТ:
+
+Seamless tileable top-down ground texture for a stylized mobile game,
+lush spring Mediterranean Greek hillside meadow, mostly FLAT saturated
+grass green as a calm background, gentle large soft patches of darker
+and lighter green, very sparse tiny details only: a few small thyme and
+oregano scrub tufts, a few tiny pale limestone pebbles, one or two faint
+dry ochre patches, ~60-degree top-down angle, flat stylized vector-like
+illustration, hand-painted mobile game art, clean flat color fills with
+no grain and no speckle, no visible noise, low contrast, soft even
+lighting from one direction, no shadows cast by anything, calm and
+uncluttered, at least 70 percent of the surface must be plain unbroken
+grass, details must be small (5-20 px on a 512 px tile) and scattered
+far apart, no large objects, no rocks, no boulders, no trees, no bushes,
+no flowers, no columns, no ruins, no path, no road, no focal point,
+color palette: grass #3E7F3F dominant, shadow green #2D5E31, light green
+#4B8C43, olive #6E8A4B, sparse dry ochre #A8843F, thyme accent #77AC35,
+pale limestone #C9C3AE, edges must tile seamlessly and continuously,
+512x512
+
+NEGATIVE (если генератор принимает отдельным полем):
+desert, sand, dry, barren, arid, brown, beige, cream, dead grass, noise,
+grain, speckle, dense texture, busy pattern, high contrast, dark
+outlines, photorealistic, 3d render, gradient mesh, vignette, drop
+shadow, large rocks, trees, flowers, path, road, tiled seams, borders,
+frame, text, watermark
+
+ПОЧЕМУ ИМЕННО ТАК СФОРМУЛИРОВАНО:
+- «at least 70 percent plain unbroken grass» — единственная фраза, которая
+  реально удерживает генератор от ковра. Без неё он забивает деталями всё.
+- «no grain, no speckle, no noise» — трижды, потому что это ровно та ошибка,
+  которую он делает по умолчанию для слова «texture».
+- «no focal point», «no large objects» — крупный объект в тайле превращается
+  в узор из одинаковых пятен, как только начинаешь идти.
+- Размер деталей задан в пикселях тайла: 512 px тайла — это 512 единиц мира,
+  то есть примерно полторы ширины экрана и одиннадцать ширин игрока. Кустик
+  в 10 px выходит впятеро меньше игрока — ровно как в референсе.
+
+Вариант B (для чередования, если решим тайлить два тайла вперемешку):
+Same style, palette and flatness as the base Greek hillside grass tile,
+but with the balance shifted: slightly more olive #6E8A4B patches and one
+sparse dry ochre #A8843F area, still at least 70 percent plain grass,
+same seamless tiling, 512x512
+
+[НУЖНО] public/art/road/segment.png — 128×128, бесшовный тайл
+
+Seamless tileable top-down game texture, worn dirt and stone road
+segment, ancient Greek path, usable as a repeating strip tile,
+~60-degree top-down angle, flat stylized illustration, pale sun-
+bleached palette matching a Greek hillside ground tile: warm tan-brown
+dirt #B98A52, cream stone edging #E8DCC8, thin dark mortar lines
+#080D14, no gradients, no photo-real texture, bright airy lighting,
+edges must tile seamlessly along the long axis, 128x128
+
+
+[НУЖНО] public/art/borders/wall.png — 512×256
+
+Top-down game asset, rocky cliff wall / boundary ridge segment used as
+a horizontal repeating border strip, ~60-degree top-down angle, flat
+stylized illustration, pale limestone palette: cream stone #E8DCC8,
+muted grey-green rock #6B7264, near-black shadow #080D14, one hard
+light source, transparent background, isolated horizontal strip,
+tileable left-to-right, no ground beneath it, 512x256
+
+
+─────────────────────────────────────────────────────────────────
+ПРОПЫ (мелкий декор острова — Scenery.ts раскидывает их сам)
+─────────────────────────────────────────────────────────────────
+
+[ГОТОВО — вырезано из старого пустынного тайла заливкой по цвету фона;
+ в игре 19×33 единиц мира] public/art/props/column.png
+
+Top-down game prop, broken ancient Greek marble column / ruin
+fragment, ~60-degree top-down angle, flat stylized silhouette
+illustration, pale limestone palette: cream marble #E8DCC8, sage-olive
+shadow #8FA06B, near-black base shadow #080D14, one hard light source,
+soft drop shadow underneath, transparent background, isolated single
+object, no ground, 256x256
+
+[ОТКЛЮЧЁН — не вырезается: оранжевые просветы внутри кроны неотделимы от
+ кремового камня по цвету]
+public/art/props/olive.png — цель ~44×40 единиц мира
+Top-down game prop, single olive/cypress tree, ancient Greek
+Mediterranean, ~60-degree top-down angle, flat stylized silhouette
+illustration, sage-olive green canopy #8FA06B, near-black trunk
+shadow #080D14, cream rim-light #E8DCC8, soft drop shadow underneath,
+transparent background, isolated single object, 256x256
+
+[ОТКЛЮЧЁН — на светлой земле читался как синий ящик, а не как валун]
+public/art/props/rock.png — цель ~34×24 единиц мира
+Top-down game prop, single weathered limestone boulder / rock
+cluster, ~60-degree top-down angle, flat stylized silhouette
+illustration, pale cream stone #E8DCC8, sage-olive shadow #8FA06B,
+one hard light source, soft drop shadow underneath, transparent
+background, isolated single object, no ground, 256x256
+
+[ГОТОВО — в игре 80×90 единиц мира, вдвое выше игрока. Первый объект,
+ сделанный по контракту выше; вырезался с первого раза, зелёного ореола нет]
+public/art/props/ruin-gate.png
+Top-down mobile game prop, single isolated object: ancient Greek ruined
+temple gate — two weathered marble columns supporting a cracked stone
+lintel, one column chipped, a broken piece of the lintel missing.
+
+CAMERA — critical: fixed 60-degree top-down three-quarter view, as in a
+mobile action RPG. The viewer looks DOWN at the object from above and
+slightly in front. You must see the top surfaces: the top face of the
+lintel and the top face of each column capital are clearly visible.
+Orthographic projection, no lens perspective, no vanishing point, no
+converging lines, no wide-angle distortion, no eye-level view.
+
+LIGHT: exactly one hard light source from the upper-left at 45 degrees.
+Lit faces face up-left, shaded faces face down-right. Consistent across
+every surface.
+
+NO SHADOW: do not draw any shadow on the ground. No drop shadow, no
+contact shadow, no cast shadow, no dark ellipse, no soft blur under the
+object. Nothing beneath it at all. Shading ON the object itself is fine.
+
+BACKGROUND: completely flat, uniform, pure chroma green #00FF00, filling
+the entire frame edge to edge. No gradient, no texture, no vignette, no
+ground, no grass, no floor, no horizon, no props, no scenery.
+Absolutely no green of any kind anywhere on the object itself.
+
+OUTLINE — critical: a clean, closed, continuous near-black outline
+#080D14, 6-8 px thick, tracing the entire outer silhouette of the object
+where it meets the background, including the inner edge of the archway
+opening. No fuzzy edges, no anti-aliased halo, no glow, no feathering.
+
+STYLE: flat stylized vector illustration, bold clean shapes, chunky
+readable forms, hard-edged flat color fills, 3-4 tones per material
+(light / mid / dark). No gradients, no airbrush, no photorealism, no 3D
+render, no ambient occlusion, no specular highlights, no noise texture.
+
+PALETTE: cream limestone #E8DCC8 for lit marble, cool grey-blue #7A8494
+for mid tone, deep blue-slate #1B2E45 for shaded faces, near-black
+#080D14 for outline and deepest crevices, small sparse warm ochre
+#D9762B weathering stains as a subtle accent only.
+
+FRAMING: object centered horizontally, filling roughly 90% of the frame
+width and height. The base of both columns sits exactly on the bottom
+edge of the image, as if the object is standing on the bottom border.
+No empty margin below the base. The object is TALL — noticeably taller
+than wide, a monumental gate a person would walk under.
+
+Square image, 1024x1024. No text, no watermark, no logo, no signature,
+no UI, no character, no border frame around the image.
+
+[ГОТОВО — в игре 12×14 единиц мира] public/art/props/amphora.png
+Top-down game prop, ancient Greek terracotta amphora vase, intact,
+~60-degree top-down angle, flat stylized silhouette illustration,
+warm terracotta accent #D9762B, cream highlight rim #E8DCC8, near-
+black base shadow #080D14, soft drop shadow underneath, transparent
+background, isolated single object, 256x256
+
+[ГОТОВО — в игре 22×22 единиц мира] public/art/props/campfire.png
+Top-down game prop, campfire with stacked stones and small flame,
+~60-degree top-down angle, flat stylized silhouette illustration,
+warm orange-fire accent #D9762B, cream stone #E8DCC8, near-black
+shadow #080D14, soft drop shadow underneath, transparent background,
+isolated single object, 256x256
+
+
+─────────────────────────────────────────────────────────────────
+ПЕРСОНАЖИ
+─────────────────────────────────────────────────────────────────
+
+[ГОТОВО] public/art/entities/player.png — 256×256 (в игре 26×26)
+
+Top-down game character, Odysseus, ancient Greek hero, simple tunic
+and cloak, no visible weapon in hand (weapon is a separate overlay),
+~60-degree top-down angle showing head, shoulders and stance clearly,
+flat stylized silhouette illustration, near-black silhouette #080D14,
+warm terracotta accent #D9762B, cream highlight #E8DCC8, one hard
+light source, soft drop shadow underneath, transparent background,
+single character, centered, no ground, readable as a recognizable
+silhouette even in solid black, 256x256
+
+[ГОТОВО] public/art/entities/enemy-normal.png — 256×256 (в игре 22×22)
+
+Top-down game enemy, generic ancient Greek hostile warrior/creature
+(base grunt tier), ~60-degree top-down angle, flat stylized silhouette
+illustration, near-black silhouette #080D14, danger red accent
+#C4342B, cream rim-light #E8DCC8, one hard light source, soft drop
+shadow underneath, transparent background, single character, centered,
+no ground, simple weapon, 6 colors max, 256x256
+
+[ГОТОВО, но по факту тот же дизайн, что и normal, не крупнее и не наряднее —
+ не то эскалации, что просил ниже] public/art/entities/enemy-elite.png — 256×256 (в игре 30×30)
+
+Same enemy family as the base grunt but visibly more elaborate: extra
+armor plating, larger silhouette, more aggressive pose, ~60-degree
+top-down angle, flat stylized silhouette illustration, near-black
+silhouette #080D14, danger red accent #C4342B, warm accent #D9762B
+for elite trim, cream rim-light #E8DCC8, transparent background,
+single character, centered, no ground, 6 colors max, 256x256
+
+[НУЖНО] public/art/entities/enemy-miniboss.png — 256×256 (в игре 42×42)
+
+Same enemy family, largest and most imposing variant, mythic-scale
+ancient Greek monster silhouette, dramatic pose, ~60-degree top-down
+angle, flat stylized silhouette illustration, near-black silhouette
+#080D14, warm accent #D9762B (miniboss outline color), danger red
+#C4342B secondary accent, cream rim-light #E8DCC8, transparent
+background, single character, centered, no ground, 6 colors max,
+256x256
+
+ВАЖНО: все три врага — один и тот же силуэт, растущий в размере и
+деталях, а не три разных существа. Генерировать одной серией/сессией,
+чтобы стиль не разъехался.
+
+
+─────────────────────────────────────────────────────────────────
+ИКОНКИ ТИПОВ УРОНА (над врагом — EnemyBadge.ts красит их сам)
+─────────────────────────────────────────────────────────────────
+
+Обязательно ЧИСТО БЕЛЫЕ, без цвета, без тени, без градиента — цвет
+накладывается в коде (зелёный/серый/красный по ratio атака/защита).
+Если генератор добавит цвет — попроси убрать либо пришли как есть,
+переведу в альфа-маску сам.
+
+[ГОТОВО] public/art/icons/pierce.png — 128×128 (копьё)
+Simple flat icon, spear/pierce damage type symbol, minimalist ancient
+Greek spearhead silhouette, pure solid white fill, no outline color,
+no shading, no gradient, transparent background, centered, game UI
+icon, crisp clean edges, 128x128
+
+[ГОТОВО] public/art/icons/slash.png — 128×128 (меч)
+Simple flat icon, sword/slash damage type symbol, minimalist ancient
+Greek short-sword blade silhouette, pure solid white fill, no outline
+color, no shading, no gradient, transparent background, centered,
+game UI icon, crisp clean edges, 128x128
+
+[НУЖНО] public/art/icons/crush.png — 128×128 (палица)
+Simple flat icon, mace/crush damage type symbol, minimalist ancient
+Greek war-club/mace-head silhouette, pure solid white fill, no outline
+color, no shading, no gradient, transparent background, centered,
+game UI icon, crisp clean edges, 128x128

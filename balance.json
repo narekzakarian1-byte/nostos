@@ -1,0 +1,781 @@
+{
+  "_comment": "NOSTOS — единственный источник чисел. В коде не должно быть магических констант. Профиль переключается полем activeProfile.",
+  "version": 1,
+  "activeProfile": "prototype",
+  "combat": {
+    "typeExponent": 1.5,
+    "damageFloor": 0.05,
+    "damageCeil": 0.95,
+    "baseAttackSpeed": 1.0,
+    "engageRange": 48,
+    "disengageRange": 72
+  },
+  "icons": {
+    "greenAt": 1.5,
+    "redAt": 0.7
+  },
+  "statConversion": {
+    "critCap": 0.75,
+    "kCrit": 480,
+    "dodgeCap": 0.6,
+    "kDodge": 110,
+    "critMultBase": 1.5,
+    "kCritDamage": 130,
+    "_note": "kCrit, kDodge, kCritDamage восстановлены из скриншотов референса: 139 raw = 16.8%, 18 raw = 8.49%, 82 raw = 213%"
+  },
+  "regen": {
+    "player": {
+      "outOfCombatDelay": 3.0,
+      "rate": 0.04
+    },
+    "normal": {
+      "outOfCombatDelay": 4.0,
+      "rate": 0.06
+    },
+    "elite": {
+      "outOfCombatDelay": 4.5,
+      "rate": 0.055
+    },
+    "miniboss": {
+      "outOfCombatDelay": 5.0,
+      "rate": 0.045
+    },
+    "bossCombatRegen": 0.012,
+    "_note": "bossCombatRegen — единственный рычаг жёсткости всех гейтов. Реген врага выше игрока намеренно."
+  },
+  "player": {
+    "baseStats": {
+      "maxHp": 300,
+      "regen": 12,
+      "moveSpeed": 140,
+      "pierceAtk": 10,
+      "slashAtk": 10,
+      "crushAtk": 10,
+      "pierceDef": 5,
+      "slashDef": 5,
+      "crushDef": 5,
+      "crit": 0,
+      "dodge": 0,
+      "critDamage": 0
+    },
+    "respawnDelay": 1.5,
+    "deathPenalty": "none"
+  },
+  "growth": {
+    "gainRate": 1.0,
+    "diminishK": 5000,
+    "tierValue": {
+      "normal": 1,
+      "elite": 4,
+      "miniboss": 12,
+      "boss": 60
+    },
+    "_tierValueNote": "enemy_tier_value из BALANCE.md §8, в самом документе не определён. Полное значение = tierValue[тир] * islandPower(n). Задан явно, а не выведен из hpMult: это рычаг проверки 5 симулятора, при строгой пропорциональности HP доход статов в час выходит одинаковым на всех тирах и проверка становится пустой.",
+    "dropTable": {
+      "fast": [
+        "moveSpeed",
+        "dodge"
+      ],
+      "armored": [
+        "pierceDef",
+        "slashDef",
+        "crushDef"
+      ],
+      "heavy": [
+        "maxHp",
+        "regen"
+      ],
+      "striker": [
+        "pierceAtk",
+        "slashAtk",
+        "crushAtk",
+        "crit"
+      ]
+    }
+  },
+  "weapons": {
+    "model": "multiplier",
+    "_modelNote": "ATK_type = stat_atk[type] * weaponMult. weaponMult = rarityMult * (1 + levelStep*(level-1)). Оружие МНОЖИТ стат, а не прибавляется к нему. При аддитивной модели уровень оружия перестаёт влиять на урон уже к 3-му острову, и система копий обесценивается — проверено симулятором.",
+    "levelStep": 0.055,
+    "rarityMult": {
+      "common": 1.0,
+      "uncommon": 1.6,
+      "rare": 2.6,
+      "epic": 4.2,
+      "legendary": 6.8
+    },
+    "inheritLevelOnRarityUp": true,
+    "_note": "inheritLevelOnRarityUp — ключевое отличие от референса. НЕ выключать.",
+    "rarityUnlockIsland": {
+      "common": 1,
+      "uncommon": 3,
+      "rare": 6,
+      "epic": 9,
+      "legendary": 12
+    },
+    "_rarityNote": "Калибровка BALANCE.md §5.4 фиксирует зелёное оружие на острове 3, отсюда шаг в три острова.",
+    "slots": [
+      "pierce",
+      "slash",
+      "crush"
+    ],
+    "vipSlot": {
+      "enabled": true,
+      "unlockByPayment": true,
+      "unlockFreeAtIsland": 7,
+      "_note": "Бесплатный путь обязателен: 'слабее, потому что не дошёл' вместо 'слабее, потому что не заплатил'"
+    },
+    "rarityDropChance": 0.15,
+    "_rarityDropNote": "Шанс мини-босса уронить оружие следующей редкости своего типа. Единственный источник редкости в Фазе 1 — копии дают только уровни."
+  },
+  "armor": {
+    "model": "multiplier",
+    "_modelNote": "DEF_type = stat_def[type] * armorMult. Зеркало оружия (BALANCE.md §7.5): без второго множителя на защите трек выживания не догоняет экспоненту врага, и гейт не сводится ни при каких числах — проверено перебором параметров.",
+    "levelStep": 0.055,
+    "rarityMult": {
+      "common": 1.0,
+      "uncommon": 1.6,
+      "rare": 2.6,
+      "epic": 4.2,
+      "legendary": 6.8
+    },
+    "inheritLevelOnRarityUp": true,
+    "_note": "Наследование уровня действует и здесь: правило одно на всё снаряжение, иначе оно перестаёт быть правилом.",
+    "rarityUnlockIsland": {
+      "common": 1,
+      "uncommon": 3,
+      "rare": 6,
+      "epic": 9,
+      "legendary": 12
+    },
+    "slots": [
+      "pierce",
+      "slash",
+      "crush"
+    ],
+    "rarityDropChance": 0.15
+  },
+  "copies": {
+    "profiles": {
+      "prototype": {
+        "a": 0.25,
+        "b": 1.15,
+        "c": 1
+      },
+      "production": {
+        "a": 0.8,
+        "b": 1.4,
+        "c": 1
+      }
+    },
+    "drops": {
+      "miniboss": {
+        "min": 3,
+        "max": 8,
+        "chance": 1.0
+      },
+      "elite": {
+        "min": 1,
+        "max": 2,
+        "chance": 0.35
+      },
+      "normal": {
+        "min": 0,
+        "max": 0,
+        "chance": 0.0
+      }
+    }
+  },
+  "armorShards": {
+    "_note": "Осколки брони — своя валюта, отдельно от копий оружия. Форма блока та же, числа свои: темп защиты крутится независимо от темпа атаки.",
+    "profiles": {
+      "prototype": {
+        "a": 0.25,
+        "b": 1.15,
+        "c": 1
+      },
+      "production": {
+        "a": 0.8,
+        "b": 1.4,
+        "c": 1
+      }
+    },
+    "drops": {
+      "miniboss": {
+        "min": 3,
+        "max": 8,
+        "chance": 1.0
+      },
+      "elite": {
+        "min": 1,
+        "max": 2,
+        "chance": 0.35
+      },
+      "normal": {
+        "min": 0,
+        "max": 0,
+        "chance": 0.0
+      }
+    }
+  },
+  "enemyTiers": {
+    "normal": {
+      "hpMult": 1.0,
+      "dpsMult": 1.0,
+      "defMult": 1.0,
+      "respawnSec": [
+        60,
+        120
+      ]
+    },
+    "elite": {
+      "hpMult": 4.0,
+      "dpsMult": 1.8,
+      "defMult": 1.6,
+      "respawnSec": [
+        480,
+        900
+      ]
+    },
+    "miniboss": {
+      "hpMult": 12.0,
+      "dpsMult": 2.5,
+      "defMult": 2.2,
+      "respawnSec": [
+        900,
+        1800
+      ]
+    },
+    "boss": {
+      "hpMult": 60.0,
+      "dpsMult": 4.0,
+      "defMult": 3.0,
+      "respawnSec": [
+        14400,
+        43200
+      ]
+    }
+  },
+  "enemyDefense": {
+    "baseDef": 12,
+    "weaknessMult": 0.35,
+    "resistMult": 2.5,
+    "neutralMult": 1.0,
+    "bossResistOthers": true,
+    "_bossNote": "У босса два не-слабых типа стойкие, а не нейтральные. Выведено из калибровки §5.4 при исходных множителях (0.5/1.0/2.0): с двумя стойкими остров 3 давал 552 DPS против цели 555, с нейтральными 637. После подъёма защиты абсолютные числа §5.4 больше не сходятся — кривая силы всё равно требует отдельной настройки, см. красные проверки симулятора.",
+    "_note": "Защита врага по типу = baseDef * powerBase^(n-1) * defMult(tier) * профиль(weakness/resist/neutral). Обычные враги получают случайный профиль, боссы — фиксированный из islands.list.",
+    "_ratioNote": "Защита подобрана так, чтобы отношение атака/защита жило в крутой части кривой урона. При baseDef 6 атака игрока превышала защиту в 20-30 раз, множитель упирался в потолок 0.95, и треугольник типов не работал вообще: перестановка защит не меняла урон. Теперь на острове 1 три иконки дают зелёную, серую и красную."
+  },
+  "islands": {
+    "baseHp": 100,
+    "baseDps": 8,
+    "powerBase": 2.0,
+    "minibossesPerIsland": 5,
+    "normalsPerIsland": 12,
+    "elitesPerIsland": 4,
+    "_bossArchetypeNote": "Какие статы даёт убитый островной босс (growth.dropTable). heavy — здоровье и реген: гейт проверяет выживание, и награда за него лежит на том же треке, что и проверка.",
+    "bossArchetype": "heavy",
+    "list": [
+      {
+        "n": 1,
+        "id": "ismaros",
+        "name": "Исмара",
+        "boss": "Вождь киконов",
+        "bossWeakness": "slash"
+      },
+      {
+        "n": 2,
+        "id": "lotus",
+        "name": "Земля лотофагов",
+        "boss": "Страж лотоса",
+        "bossWeakness": "pierce"
+      },
+      {
+        "n": 3,
+        "id": "cyclops",
+        "name": "Остров циклопов",
+        "boss": "Полифем",
+        "bossWeakness": "crush"
+      },
+      {
+        "n": 4,
+        "id": "aeolia",
+        "name": "Остров Эола",
+        "boss": "Хранитель ветров",
+        "bossWeakness": "pierce"
+      },
+      {
+        "n": 5,
+        "id": "telepylos",
+        "name": "Телепил",
+        "boss": "Антифат",
+        "bossWeakness": "crush"
+      },
+      {
+        "n": 6,
+        "id": "aiaia",
+        "name": "Эея",
+        "boss": "Цирцея",
+        "bossWeakness": "slash"
+      },
+      {
+        "n": 7,
+        "id": "hades",
+        "name": "Врата Аида",
+        "boss": "Тень Ахилла",
+        "bossWeakness": "pierce"
+      },
+      {
+        "n": 8,
+        "id": "sirens",
+        "name": "Остров сирен",
+        "boss": "Сирены",
+        "bossWeakness": "slash"
+      },
+      {
+        "n": 9,
+        "id": "strait",
+        "name": "Пролив",
+        "boss": "Скилла и Харибда",
+        "bossWeakness": "pierce"
+      },
+      {
+        "n": 10,
+        "id": "thrinacia",
+        "name": "Тринакия",
+        "boss": "Бык Гелиоса",
+        "bossWeakness": "crush"
+      },
+      {
+        "n": 11,
+        "id": "ogygia",
+        "name": "Огигия",
+        "boss": "Калипсо",
+        "bossWeakness": "slash"
+      },
+      {
+        "n": 12,
+        "id": "scheria",
+        "name": "Схерия",
+        "boss": "Страж феаков",
+        "bossWeakness": "crush"
+      },
+      {
+        "n": 13,
+        "id": "ithaca",
+        "name": "Итака",
+        "boss": "Антиной и женихи",
+        "bossWeakness": "any"
+      }
+    ]
+  },
+  "gateTargets": {
+    "firstAttemptProgressMin": 0.4,
+    "firstAttemptProgressMax": 0.6,
+    "minTimeToDeathSec": 40,
+    "prepTimeMinutes": {
+      "early": [
+        20,
+        40
+      ],
+      "mid": [
+        60,
+        180
+      ],
+      "late": [
+        180,
+        720
+      ]
+    },
+    "powerGapRatio": {
+      "islands1to4": 1.75,
+      "islands5to9": 2.25,
+      "islands10to13": 2.75
+    },
+    "weaponDpsGain": {
+      "fromLevel": 1,
+      "toLevel": 30,
+      "minRatio": 3.0
+    }
+  },
+  "sim": {
+    "travelSecondsPerNode": 5
+  },
+  "juice": {
+    "hitstopMs": 70,
+    "hitstopCritMs": 110,
+    "screenshakeBase": 3.0,
+    "screenshakeCrit": 7.0,
+    "slowmoOnBossKill": {
+      "scale": 0.25,
+      "durationMs": 900
+    },
+    "soundPitchJitter": 0.15,
+    "damageNumberLifeMs": 700,
+    "hapticsOn": [
+      "crit",
+      "kill",
+      "bossKill",
+      "death"
+    ],
+    "screenshakeDecayMs": 260,
+    "hapticsMs": {
+      "crit": 12,
+      "kill": 28,
+      "bossKill": 60,
+      "death": 70
+    }
+  },
+  "anim": {
+    "_note": "Анимация тел и удара. Все длительности — в секундах ИГРОВОГО времени: hitstop замораживает их вместе с логикой, и на попадании картинка застывает целиком. Фаза замаха не хранится нигде, а считается из attackCooldown (juice/BodyAnim.swingPhase) — анимация и урон идут по одним часам и не могут разъехаться.",
+    "windupSec": 0.22,
+    "windupLean": 3.0,
+    "strikeSec": 0.18,
+    "lungeUnits": 6.0,
+    "swingTiltDeg": 14,
+    "arcRadiusScale": 1.15,
+    "arcSpanDeg": 110,
+    "arcWidth": 3.5,
+    "arcAlpha": 0.8,
+    "hitFlashSec": 0.09,
+    "flashAlpha": 0.8,
+    "squashAmount": 0.18,
+    "recoilUnits": 3.0,
+    "recoilCritScale": 1.8,
+    "recoilSec": 0.22,
+    "deathSec": 0.34,
+    "deathRiseUnits": 6.0,
+    "deathSpinDeg": 40,
+    "deathStretch": 0.55,
+    "spawnSec": 0.3,
+    "spawnOvershoot": 1.9,
+    "enemyWindupSec": 0.3,
+    "enemyLungeUnits": 4.0,
+    "particlesPerHit": 7,
+    "particlesCritScale": 2,
+    "particleLifeSec": 0.35,
+    "particleSpeed": 48.0,
+    "particleSpread": 1.1,
+    "particleGravity": 110.0,
+    "particleSize": 2.2,
+    "particleMax": 96
+  },
+  "monetization": {
+    "firstOfferAfterMinutes": 60,
+    "powerOffersAfterDays": 7,
+    "sellCopiesDirectly": false,
+    "_note": "Копии не продаём напрямую — только множитель на их получение. Гринд остаётся адресным.",
+    "offers": {
+      "respawnSkip": {
+        "tier": "convenience",
+        "priceUsd": 0.99
+      },
+      "extraBossTry": {
+        "tier": "convenience",
+        "priceUsd": 0.99
+      },
+      "autoCollect": {
+        "tier": "convenience",
+        "priceUsd": 2.99
+      },
+      "offlineDouble": {
+        "tier": "convenience",
+        "priceUsd": 4.99
+      },
+      "vipSlot": {
+        "tier": "power",
+        "priceUsd": 9.99
+      },
+      "copyMultiplier": {
+        "tier": "power",
+        "priceUsd": 19.99,
+        "mult": 2.0
+      },
+      "shipSkin": {
+        "tier": "cosmetic",
+        "priceUsd": 4.99
+      }
+    }
+  },
+  "offline": {
+    "enabled": true,
+    "capHours": 4,
+    "efficiency": 0.5
+  },
+  "loop": {
+    "tickHz": 60,
+    "maxStepsPerFrame": 240,
+    "_note": "maxStepsPerFrame выше 100 обязателен: при ускорении 100x кадру нужно 100 тиков."
+  },
+  "rng": {
+    "defaultSeed": 1337
+  },
+  "prototype": {
+    "islandNumber": 1,
+    "_note": "Обстановка сцены прототипа. Уходит, когда появятся настоящие острова."
+  },
+  "devPanel": {
+    "timeScales": [
+      1,
+      10,
+      100
+    ]
+  },
+  "render": {
+    "virtualWidth": 360,
+    "playerSize": 92,
+    "iconOffset": 18,
+    "hudHeight": 52,
+    "damageNumberRise": 26,
+    "damageNumberFontSize": 13,
+    "damageNumberCritScale": 1.7,
+    "enemyMinSpacing": 132,
+    "enemySpawnMargin": 52,
+    "playerStartInsetScreens": 1.0,
+    "_note": "Мир считается в виртуальных единицах шириной virtualWidth — это размер ОДНОГО экрана, от него же считается scale. Сам мир шире и выше экрана в worldScreensX/Y раз.",
+    "worldScreensX": 3,
+    "worldScreensY": 3,
+    "enemySizeByTier": {
+      "normal": 36,
+      "elite": 48,
+      "miniboss": 68,
+      "boss": 120
+    },
+    "upgradePanelHeight": 96,
+    "toastSeconds": 2.5,
+    "_bossArenaNote": "Босс стоит в верхней части острова, на арене. Игрок стартует внизу — чтобы дойти до гейта, остров нужно пересечь, и по дороге он видит, чем ещё не закрыт.",
+    "bossArena": {
+      "radius": 96,
+      "insetScreens": 0.55,
+      "ringWidth": 3
+    },
+    "_respawnDialNote": "Циферблат на месте убитого узла: тёмный диск, дуга остатка времени и столбик делений по тиру. Без него убитый узел просто исчезает, и персистентная карта читается как пустая — в референсе именно эти циферблаты держат весь смысл таймеров.",
+    "respawnDial": {
+      "radius": 14,
+      "thickness": 4,
+      "pipWidth": 5.5,
+      "pipHeight": 3,
+      "pipGap": 1.6,
+      "labelOffset": 9,
+      "alpha": 0.85
+    },
+    "_worldNote": "Мир больше экрана в worldScreensX/Y раз по каждой оси: узлы карты не помещаются на один телефонный экран, а «идти к конкретному мини-боссу» должно быть буквальным действием в обе стороны."
+  },
+  "joystick": {
+    "_note": "Фиксированный джойстик внизу экрана (формат из референса). Координаты — виртуальные экранные единицы, без привязки к камере. bottomMargin обязан быть больше render.upgradePanelHeight + baseRadius — иначе кольцо стоит в мёртвой зоне: полоса панели перехватывает тач по всей ширине экрана, включая нарисованное кольцо.",
+    "baseRadius": 34,
+    "knobRadius": 15,
+    "maxDragRadius": 34,
+    "deadzoneRadius": 4,
+    "bottomMargin": 140
+  },
+  "scenery": {
+    "_note": "Декор мира: россыпь пропов, дорога-стержень от старта игрока к дальнему краю, граница острова. Текстур дороги/границы пока нет — заливка цветом, как враг без спрайта.",
+    "_clusterNote": "Пропы ставятся кластерами, а не равномерно: в референсе плотность картинки набирается группами — крупный обломок и россыпь мелочи вокруг, — а равномерный посев даёт одинокие предметы на пустом поле. Крупных якорей мало, основная масса это плоские плитки и камни: они не перекрывают врагов и не спорят за внимание с тремя иконками.",
+    "propCount": 260,
+    "clusterSatellites": 4,
+    "clusterRadius": 74,
+    "clusterInner": 14,
+    "clusterSpacing": 132,
+    "minSpacingInCluster": 13,
+    "minSpacingFromEnemies": 40,
+    "borderInset": 16,
+    "borderThickness": 6,
+    "roadWidth": 70,
+    "_roadStoneNote": "Дорога в референсе — мощёная, а не полоса заливки: видны отдельные камни и тёмный край. На четверть экрана плоская заливка читается как дыра в текстуре.",
+    "roadEdgeWidth": 8,
+    "roadStoneStep": 10,
+    "roadStonesPerStep": 4,
+    "roadStoneSize": 17,
+    "roadStoneSizeJitter": 0.45,
+    "roadStoneInset": 6,
+    "roadStoneSeam": 2.2,
+    "_grassNote": "Пучки травы: мелочь, которой много. Большая однотонная заливка читается как незаполненный фон, сколько ни правь её тон — в референсе землю оживляет именно эта россыпь.",
+    "grassCount": 900,
+    "grassSize": 9,
+    "grassSizeJitter": 0.4,
+    "grassLean": 0.5,
+    "grassWidth": 2,
+    "roadWaypoints": 5,
+    "roadJitter": 60
+  },
+  "props": {
+    "_note": "Пропы рисуются геометрией, а не картинками: одна камера и один свет на весь остров — тогда два объекта физически не могут разойтись по ракурсу или направлению тени. Форма самих объектов — в src/ui/props/Models.ts, как векторные пути иконок в Glyphs.ts.",
+    "cameraTiltDeg": 55,
+    "_lightNote": "Свет сверху-справа. Из него же считается снос тени: тень выходит резкой полигональной копией силуэта влево и чуть вниз, а не эллипсом под ногами.",
+    "lightX": 0.42,
+    "lightY": 0.15,
+    "lightZ": 0.8,
+    "_shadeNote": "half-lambert с округлением до shadeSteps ступеней. Округление и даёт фасетку: внутри грани градиента нет.",
+    "shadeGain": 0.78,
+    "shadeBias": 0.32,
+    "shadeSteps": 5,
+    "_shadowMeasureNote": "Тень на траве в референсе — #244F24: та же зелень, что и трава, но на 40% темнее и без потери насыщенности. Тёмный сине-зелёный давал грязное пятно, а не тень, и сцена читалась как наклейки на газоне.",
+    "shadowAlpha": 0.72,
+    "shadowColor": "#244F24",
+    "contactAlpha": 0.55,
+    "contactSpread": 0.46,
+    "contactSquash": 0.55,
+    "seamWidth": 0.9,
+    "_materialsNote": "Три тона на материал: освещённая грань, боковая, теневая. Камень холодный серо-голубой и заметно светлее травы — так замерено по референсу; тёплый кремовый на зелёном не отделяется.",
+    "materials": {
+      "marble": ["#B4BCC9", "#8B97AE", "#616D8A"],
+      "stone": ["#8B97B4", "#6C7899", "#4C5677"],
+      "rubble": ["#828FB6", "#68759E", "#4E5980"],
+      "clay": ["#C6743E", "#9C542C", "#643420"],
+      "wood": ["#88603E", "#68482E", "#442E1E"],
+      "ember": ["#FABA50", "#E87C2E", "#B2401E"]
+    },
+    "_sizesNote": "Размер в единицах мира; fit говорит, по какой стороне тела он задан. Игрок — 44, поэтому ворота вдвое выше него, а плитка втрое ниже.",
+    "sizes": {
+      "prop-column": { "fit": "height", "value": 90 },
+      "prop-column-broken": { "fit": "height", "value": 35 },
+      "prop-column-drum": { "fit": "width", "value": 25 },
+      "prop-ruin-gate": { "fit": "height", "value": 120 },
+      "prop-amphora": { "fit": "height", "value": 23 },
+      "prop-rock": { "fit": "height", "value": 24 },
+      "prop-rock-small": { "fit": "height", "value": 13 },
+      "prop-rubble": { "fit": "width", "value": 19 },
+      "prop-campfire": { "fit": "width", "value": 33 }
+    }
+  },
+  "fog": {
+    "_note": "Сетка тумана войны: клетка становится видна, когда игрок оказался в revealRadius от её центра. Не сохраняется — CLAUDE.md запрещает localStorage до Фазы 3.",
+    "cellSize": 60,
+    "revealRadius": 90
+  },
+  "minimap": {
+    "_note": "Круглая миникарта в углу экрана: игрок в центре, показан worldRadius мировых единиц вокруг него. Полная карта — та же отрисовка на весь мир по тапу.",
+    "screenRadius": 56,
+    "margin": 14,
+    "worldRadius": 260,
+    "enemyDotRadius": 2.5,
+    "playerDotRadius": 3.5,
+    "fogAlpha": 0.75
+  },
+  "audio": {
+    "hitHz": 200,
+    "critHz": 420,
+    "killHz": 120,
+    "deathHz": 70,
+    "durationMs": 70,
+    "gain": 0.12
+  },
+  "patrol": {
+    "_note": "Враги ходят по замкнутому маршруту вокруг своей точки, а не преследуют игрока. Маршрут один и тот же круг за кругом: его видно заранее, и подход к узлу становится расчётом, а не реакцией. Фаза и радиус берутся из того же rng, что и раскладка узлов, поэтому прогон по сиду воспроизводим.",
+    "kindByTier": {
+      "normal": ["circle", "line", "eight"],
+      "elite": ["circle", "line"],
+      "miniboss": ["guard"]
+    },
+    "radius": {
+      "min": 22,
+      "max": 46
+    },
+    "speedByTier": {
+      "normal": 24,
+      "elite": 17,
+      "miniboss": 0
+    },
+    "circleAspect": 0.62,
+    "eightPerimeterK": 6.1,
+    "pauseInCombat": true,
+    "_pauseNote": "Маршрут замирает, пока враг сцеплен с игроком: иначе враг уходит из радиуса сам, и решение «дожать или отойти» принимает за игрока не он, а таймер траектории.",
+    "pathAlpha": 0.34,
+    "pathWidth": 2,
+    "pathDash": [5, 7]
+  },
+  "ui": {
+    "_note": "Метрики и цвета интерфейса по референсу: толстый тёмный контур, скруглённые плашки, белый текст с обводкой. Отдельно от palette — palette описывает мир и три иконки типов (GDD §3), ui описывает панели поверх мира.",
+    "outline": 2.5,
+    "radius": 7,
+    "margin": 10,
+    "slotBottom": 30,
+    "buttonSize": 34,
+    "buttonGap": 8,
+    "pillHeight": 22,
+    "pillPad": 7,
+    "slotSize": 52,
+    "slotGap": 5,
+    "slotChip": 18,
+    "barHeight": 10,
+    "playerBarWidth": 72,
+    "playerBarOffset": -6,
+    "enemyBarWidth": 42,
+    "enemyBarOffset": 9,
+    "chipSize": 14,
+    "chipGap": 3,
+    "chipOffset": 5,
+    "fontSmall": 9,
+    "fontBody": 11,
+    "fontTitle": 15,
+    "textOutline": 3,
+    "shadowAlpha": 0.55,
+    "shadowScale": 0.6,
+    "_shadowLeanNote": "Тень фигуры уезжает по тому же свету, что и тени пропов (props.lightX/Y). Доля от высоты фигуры: на нуле тень лежит ровно под ногами и сцена распадается на два разных освещения.",
+    "shadowLean": 0.24,
+    "walkBobAmp": 1.6,
+    "walkBobHz": 5.5,
+    "joystickArrow": 9,
+    "joystickAlpha": 0.3,
+    "sheetPad": 12,
+    "statTileHeight": 30,
+    "cardHeight": 54,
+    "_gateNote": "Экран прогресса по боссу (GDD §6.3). Полоса широкая и высокая намеренно: это единственный экран, который должен читаться как «я почти», а не как строка статистики.",
+    "gateBarWidth": 230,
+    "gateBarHeight": 22,
+    "gateSheetWidth": 290,
+    "gateSheetHeight": 190,
+    "colors": {
+      "outline": "#1C1712",
+      "panel": "#7A5334",
+      "panelDark": "#4C3220",
+      "panelInner": "#96693F",
+      "button": "#C9D2DC",
+      "buttonDark": "#8C97A6",
+      "buttonShop": "#4E9E4A",
+      "buttonBag": "#9A6438",
+      "text": "#FFFFFF",
+      "textDim": "#D8C6A8",
+      "hpEnemy": "#E23B34",
+      "hpPlayer": "#5FD65A",
+      "hpBack": "#2B2119",
+      "ready": "#5FD65A",
+      "gold": "#F2B233",
+      "alert": "#E8453C",
+      "chip": "#DCE3EA",
+      "ground": "#3E7F3F",
+      "sheet": "#3A2718",
+      "veil": "#0B0906"
+    },
+    "rarityColors": {
+      "common": "#B8C0CC",
+      "uncommon": "#57C84D",
+      "rare": "#3FBBEF",
+      "epic": "#B45BE8",
+      "legendary": "#F2B233"
+    }
+  },
+  "palette": {
+    "bgFar": "#0F1B2E",
+    "bgMid": "#1B2E45",
+    "silhouette": "#080D14",
+    "accentWarm": "#D9762B",
+    "accentLight": "#E8DCC8",
+    "danger": "#C4342B",
+    "iconGreen": "#5FA84E",
+    "iconGrey": "#7A8494",
+    "iconRed": "#C4342B",
+    "roadDirt": "#8C6636",
+    "roadEdge": "#8A6238",
+    "roadStoneLight": "#C99A62",
+    "roadStoneDark": "#B08550",
+    "borderStone": "#6B7264",
+    "grassTuft": "#5FA83E"
+  },
+  "save": {
+    "schemaVersion": 2,
+    "_note": "В Фазе 2 сохраняются ТОЛЬКО таймеры узлов. Статы, копии и оружие — Фаза 3.",
+    "_versionNote": "2 — в список узлов добавлен островной босс, индексы сдвинулись. Старое сохранение просто игнорируется: для этого версия и заведена."
+  }
+}
