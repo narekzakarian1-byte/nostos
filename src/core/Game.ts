@@ -245,6 +245,11 @@ export class Game {
     const damage = crit ? base * this.player.stats.critMult : base;
 
     target.hp -= damage;
+    // Гейт отмечается здесь, а не только в trackGate: если этим же тиком игрок
+    // умрёт, Gate.end() успеет закрыть попытку раньше, чем trackGate дойдёт до
+    // очереди, и последний удар пропадёт из процента. Игрок при этом видел, как
+    // шкала дёрнулась — и не увидел бы этого в итоге попытки.
+    if (target.tier === 'boss') this.gate.note(target.hpFraction);
     resetRegen(target);
     resetRegen(this.player); // урон нанесённый тоже закрывает окно регена
 
