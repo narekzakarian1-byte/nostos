@@ -8,3 +8,9 @@ coverage/
 .DS_Store
 *.log
 .devsmoke/
+
+# Собранный вырезатель фона (tools/matte.swift). Артефакт сборки.
+tools/matte
+
+# Кадры из tools/play.mjs. Артефакт прогона, не исходник.
+shots/

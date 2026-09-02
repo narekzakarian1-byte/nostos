@@ -11,7 +11,8 @@
     "test": "vitest run",
     "sim": "node src/sim/simulate.ts",
     "smoke": "npm run build && node tests/smoke.mjs",
-    "smoke:dev": "node tests/build-dev.mjs && node tests/smoke-dev.mjs .devsmoke"
+    "smoke:dev": "node tests/build-dev.mjs && node tests/smoke-dev.mjs .devsmoke",
+    "play": "node tools/play.mjs"
   },
   "devDependencies": {
     "typescript": "^5.9.3",
