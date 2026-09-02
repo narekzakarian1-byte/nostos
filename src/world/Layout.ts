@@ -1,5 +1,5 @@
 import type { DamageType } from '../core/BalanceTypes.ts';
-import type { DecorId } from './Scenery.ts';
+import type { DecorId } from './Decor.ts';
 import raw from '../../islands/01-ismaros.layout.json' with { type: 'json' };
 
 /**
@@ -45,6 +45,18 @@ export interface LandmarkDef {
   readonly at: LayoutPoint;
 }
 
+/**
+ * Набор декора зоны. Свой у каждой: на террасах шпалеры, в деревне пепелище,
+ * на берегу почти пусто. Общий набор на весь остров и давал винный пресс на
+ * площади храма — предмет переставал означать место.
+ */
+export interface ZoneProps {
+  /** Сколько групп сеется в зоне. Меньше групп — больше чистого поля вокруг врагов. */
+  readonly clusters: number;
+  readonly anchors: readonly DecorId[];
+  readonly satellites: readonly DecorId[];
+}
+
 export interface ZoneDef {
   readonly id: string;
   readonly name: string;
@@ -52,6 +64,7 @@ export interface ZoneDef {
   readonly rect: readonly [number, number, number, number];
   readonly nodes: ZoneBudget;
   readonly landmarks?: readonly LandmarkDef[];
+  readonly props?: ZoneProps;
 }
 
 /** Именованный узел, стоящий в конкретной точке: вождь у своего ландмарка. */

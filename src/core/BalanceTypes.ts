@@ -413,6 +413,10 @@ export interface SceneryConfig {
   readonly roadBranchWidth: number;
   /** Тёмный кант дороги и её кладка отдельными камнями. */
   readonly roadEdgeWidth: number;
+  /** Полоса вдоль дороги, свободная от декора. */
+  readonly roadClearance: number;
+  /** Отбивка декора от краёв мира. */
+  readonly propMargin: number;
   readonly roadStoneStep: number;
   readonly roadStonesPerStep: number;
   readonly roadStoneSize: number;

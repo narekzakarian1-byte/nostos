@@ -9,12 +9,18 @@
   "_arenaNote": "Площадь перед сгоревшим храмом. Босс стоит здесь и никуда не ходит: к гейту приходят, он не приходит сам.",
   "arena": { "x": 0.5, "y": 0.13 },
 
+  "_propsNote": "Набор декора у каждой зоны свой, и это главное отличие продуманного острова от засеянного: на террасах шпалеры, в деревне пепелище, на берегу почти пусто. clusters — сколько групп сеется в зоне; чем их меньше, тем больше чистого поля вокруг врагов. На учебном берегу их намеренно три (islands/01-ismaros.md: «максимум пустого зелёного поля»).",
   "_zonesNote": "Девять зон сеткой 3×3. Бюджет узлов на зону задаёт градиент сложности по главной оси: у высадки только обычные, в деревне их больше, наверху элиты и босс. Мини-боссы стоят по бокам от дороги — это адреса гринда, а не препятствия на пути (GDD §6.5).",
   "zones": [
     {
       "id": "terraces", "name": "Террасы лозы",
       "rect": [0.0, 0.0, 0.3333, 0.3333],
       "nodes": { "normal": 2 },
+      "props": {
+        "clusters": 7,
+        "anchors": ["prop-vine-trellis"],
+        "satellites": ["prop-rock-small", "prop-rubble", "prop-amphora", "prop-rock"]
+      },
       "landmarks": [
         { "prop": "prop-vine-trellis", "at": { "x": 0.1, "y": 0.11 } },
         { "prop": "prop-vine-trellis", "at": { "x": 0.21, "y": 0.11 } },
@@ -27,6 +33,11 @@
       "id": "temple", "name": "Площадь у храма",
       "rect": [0.3333, 0.0, 0.3334, 0.3333],
       "nodes": { "elite": 1 },
+      "props": {
+        "clusters": 6,
+        "anchors": ["prop-column-broken", "prop-ruin-gate", "prop-column", "prop-column-drum"],
+        "satellites": ["prop-rubble", "prop-column-drum", "prop-rock-small", "prop-rubble"]
+      },
       "landmarks": [
         { "prop": "prop-column", "at": { "x": 0.42, "y": 0.18 } },
         { "prop": "prop-column", "at": { "x": 0.58, "y": 0.18 } },
@@ -39,6 +50,11 @@
       "id": "cliff", "name": "Круча",
       "rect": [0.6667, 0.0, 0.3333, 0.3333],
       "nodes": {},
+      "props": {
+        "clusters": 5,
+        "anchors": ["prop-rock", "prop-campfire", "prop-rock"],
+        "satellites": ["prop-rock-small", "prop-rubble", "prop-rock-small", "prop-rock"]
+      },
       "landmarks": [
         { "prop": "prop-campfire", "at": { "x": 0.85, "y": 0.1 } },
         { "prop": "prop-rock", "at": { "x": 0.76, "y": 0.09 } }
@@ -48,6 +64,11 @@
       "id": "press", "name": "Давильня",
       "rect": [0.0, 0.3333, 0.3333, 0.3334],
       "nodes": { "elite": 1 },
+      "props": {
+        "clusters": 6,
+        "anchors": ["prop-wine-press", "prop-amphora", "prop-cart-broken"],
+        "satellites": ["prop-amphora", "prop-rubble", "prop-rock-small", "prop-rubble"]
+      },
       "landmarks": [
         { "prop": "prop-wine-press", "at": { "x": 0.13, "y": 0.42 } },
         { "prop": "prop-amphora", "at": { "x": 0.19, "y": 0.45 } }
@@ -57,6 +78,11 @@
       "id": "village", "name": "Разорённая деревня",
       "rect": [0.3333, 0.3333, 0.3334, 0.3334],
       "nodes": { "normal": 4 },
+      "props": {
+        "clusters": 9,
+        "anchors": ["prop-hut-burnt", "prop-palisade-burnt", "prop-cart-broken", "prop-campfire"],
+        "satellites": ["prop-rubble", "prop-amphora", "prop-rock-small", "prop-rubble", "prop-amphora"]
+      },
       "landmarks": [
         { "prop": "prop-hut-burnt", "at": { "x": 0.37, "y": 0.5 } },
         { "prop": "prop-hut-burnt", "at": { "x": 0.63, "y": 0.47 } },
@@ -69,6 +95,11 @@
       "id": "grove", "name": "Оливковая межа",
       "rect": [0.6667, 0.3333, 0.3333, 0.3334],
       "nodes": { "elite": 1 },
+      "props": {
+        "clusters": 5,
+        "anchors": ["prop-rock", "prop-column-drum", "prop-rock"],
+        "satellites": ["prop-rock-small", "prop-rubble", "prop-rock-small", "prop-rock"]
+      },
       "landmarks": [
         { "prop": "prop-rock", "at": { "x": 0.79, "y": 0.46 } },
         { "prop": "prop-rock", "at": { "x": 0.92, "y": 0.56 } }
@@ -78,6 +109,11 @@
       "id": "sheds", "name": "Лодочные сараи",
       "rect": [0.0, 0.6667, 0.3333, 0.3333],
       "nodes": { "normal": 2 },
+      "props": {
+        "clusters": 6,
+        "anchors": ["prop-hut-burnt", "prop-palisade-burnt", "prop-cart-broken"],
+        "satellites": ["prop-rubble", "prop-rock-small", "prop-amphora", "prop-rubble"]
+      },
       "landmarks": [
         { "prop": "prop-hut-burnt", "at": { "x": 0.14, "y": 0.79 } },
         { "prop": "prop-hut-burnt", "at": { "x": 0.23, "y": 0.9 } }
@@ -86,12 +122,22 @@
     {
       "id": "beach", "name": "Галечный берег",
       "rect": [0.3333, 0.6667, 0.3334, 0.3333],
-      "nodes": { "normal": 2 }
+      "nodes": { "normal": 2 },
+      "props": {
+        "clusters": 3,
+        "anchors": ["prop-rock", "prop-rock-small"],
+        "satellites": ["prop-rock-small", "prop-rubble", "prop-rock-small"]
+      }
     },
     {
       "id": "pier", "name": "Сгоревшая пристань",
       "rect": [0.6667, 0.6667, 0.3333, 0.3333],
       "nodes": { "elite": 1, "normal": 2 },
+      "props": {
+        "clusters": 6,
+        "anchors": ["prop-palisade-burnt", "prop-cart-broken", "prop-hut-burnt"],
+        "satellites": ["prop-rubble", "prop-amphora", "prop-rock-small", "prop-rubble"]
+      },
       "landmarks": [
         { "prop": "prop-palisade-burnt", "at": { "x": 0.79, "y": 0.71 } },
         { "prop": "prop-cart-broken", "at": { "x": 0.9, "y": 0.81 } }

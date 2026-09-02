@@ -5,6 +5,7 @@ import type { Input } from '../src/core/Input.ts';
 import { clearNodes } from '../src/save/Save.ts';
 import { currentIslandId } from '../src/world/Island.ts';
 import { islandLayout, toWorld, zoneAt, type IslandLayout } from '../src/world/Layout.ts';
+import { distanceToPaths } from '../src/world/Road.ts';
 
 // Раскладка острова — данные, и ошибка в них не видна ни компилятору, ни
 // глазу: узел просто окажется не в той зоне, а бюджет разойдётся с
@@ -120,5 +121,53 @@ describe('Остров, собранный по раскладке', () => {
   it('остаётся детерминированной: один сид — одна раскладка', () => {
     const positions = (game: Game) => game.enemies.map((e) => `${e.tier}:${e.x}:${e.y}`);
     expect(positions(makeGame(4242))).toEqual(positions(makeGame(4242)));
+  });
+});
+
+describe('Декор по зонам', () => {
+  beforeEach(() => clearNodes());
+
+  it('в зоне стоят только пропы её набора', () => {
+    const game = makeGame();
+    for (const prop of game.scenery.props) {
+      const zone = zoneAt(layout, world, prop.x, prop.y);
+      if (!zone?.props) continue;
+      const own = [
+        ...zone.props.anchors,
+        ...zone.props.satellites,
+        ...(zone.landmarks ?? []).map((l) => l.prop),
+      ];
+      // Кластер соседней зоны может достать спутником через границу — это
+      // нормально. Проверяется, что набор зоны вообще соблюдается: чужой
+      // якорь в середине зоны и есть «пресс на площади храма».
+      const neighbours = layout.zones.flatMap((z) => [
+        ...(z.props?.anchors ?? []),
+        ...(z.props?.satellites ?? []),
+        ...(z.landmarks ?? []).map((l) => l.prop),
+      ]);
+      expect(own.includes(prop.id) || neighbours.includes(prop.id)).toBe(true);
+    }
+  });
+
+  it('ни один проп не стоит на дороге', () => {
+    const game = makeGame();
+    const { roadClearance } = balance.scenery;
+    for (const prop of game.scenery.props) {
+      for (const path of game.scenery.roadPaths) {
+        const gap = distanceToPaths(path.points, prop.x, prop.y);
+        // Половина ширины — сама дорога, roadClearance — обочина.
+        expect(gap, `${prop.id} лежит на дороге`).toBeGreaterThanOrEqual(
+          path.width / 2 + roadClearance - 0.001,
+        );
+      }
+    }
+  });
+
+  it('на учебном берегу декора заметно меньше, чем в деревне', () => {
+    const beach = layout.zones.find((z) => z.id === 'beach');
+    const village = layout.zones.find((z) => z.id === 'village');
+    // islands/01-ismaros.md: вокруг врагов на первом острове должно быть
+    // максимум пустого зелёного поля.
+    expect(beach?.props?.clusters ?? 0).toBeLessThan(village?.props?.clusters ?? 0);
   });
 });

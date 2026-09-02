@@ -23,6 +23,34 @@ export interface Point {
   readonly y: number;
 }
 
+/** Одна нитка дороги: стержень или ответвление. Ширина у них разная. */
+export interface RoadPath {
+  readonly points: readonly Point[];
+  readonly width: number;
+}
+
+/**
+ * Расстояние от точки до ломаной. Нужно раскладке декора: проп, севший на
+ * дорогу, читается как ошибка, а не как разорённая деревня.
+ */
+export function distanceToPaths(points: readonly Point[], x: number, y: number): number {
+  let best = Number.POSITIVE_INFINITY;
+  for (let i = 0; i < points.length - 1; i++) {
+    best = Math.min(best, distanceToSegment(points[i]!, points[i + 1]!, x, y));
+  }
+  return best;
+}
+
+function distanceToSegment(a: Point, b: Point, x: number, y: number): number {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const lengthSq = dx * dx + dy * dy;
+  // Вырожденный отрезок: обе точки совпали, считаем расстояние до точки.
+  if (lengthSq === 0) return Math.hypot(x - a.x, y - a.y);
+  const t = Math.max(0, Math.min(1, ((x - a.x) * dx + (y - a.y) * dy) / lengthSq));
+  return Math.hypot(x - (a.x + dx * t), y - (a.y + dy * t));
+}
+
 /** Ширина приходит снаружи: у стержня и у ответвления она разная, а кладка
  *  обязана лежать в своих берегах — иначе камни висят на траве. */
 export function roadStones(rng: Rng, points: readonly Point[], width: number): RoadStone[] {
