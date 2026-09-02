@@ -23,14 +23,14 @@ export interface Point {
   readonly y: number;
 }
 
-export function roadStones(rng: Rng, points: readonly Point[]): RoadStone[] {
+/** Ширина приходит снаружи: у стержня и у ответвления она разная, а кладка
+ *  обязана лежать в своих берегах — иначе камни висят на траве. */
+export function roadStones(rng: Rng, points: readonly Point[], width: number): RoadStone[] {
   const { scenery } = getBalance();
   const stones: RoadStone[] = [];
   if (points.length < 2) return stones;
 
-  // Камни кладутся поперёк дороги: половина ширины минус заступ, чтобы
-  // кладка не вылезала за тёмный край и не висела на траве.
-  const halfSpan = scenery.roadWidth / 2 - scenery.roadStoneInset;
+  const halfSpan = width / 2 - scenery.roadStoneInset;
 
   for (let i = 0; i < points.length - 1; i++) {
     const a = points[i]!;

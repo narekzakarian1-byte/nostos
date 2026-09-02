@@ -16,20 +16,24 @@ import { roundRectPath } from './UiKit.ts';
  */
 export function drawRoad(ctx: CanvasRenderingContext2D, game: Game, camera: Camera): void {
   const { scenery, palette } = getBalance();
-  const points = game.scenery.roadPoints;
-  if (points.length < 2) return;
+  const paths = game.scenery.roadPaths.filter((path) => path.points.length >= 2);
+  if (paths.length === 0) return;
 
   const id = islandRoad(currentIslandId());
   const img = sprites.get(id);
   if (img) {
-    tileRoad(ctx, img, id, points, scenery.roadWidth);
+    for (const path of paths) tileRoad(ctx, img, id, path.points, path.width);
     return;
   }
 
   // Край и тело — одной ломаной, разной толщиной: два прохода дешевле, чем
-  // считать контур полосы, и на изломах не расходятся.
-  strokeSpine(ctx, points, scenery.roadWidth + scenery.roadEdgeWidth * 2, palette.roadEdge);
-  strokeSpine(ctx, points, scenery.roadWidth, palette.roadDirt);
+  // считать контур полосы, и на изломах не расходятся. Края всех ниток идут
+  // раньше всех тел: иначе ответвление кладёт свой тёмный кант поверх стержня
+  // и развилка выглядит перечёркнутой.
+  for (const path of paths) {
+    strokeSpine(ctx, path.points, path.width + scenery.roadEdgeWidth * 2, palette.roadEdge);
+  }
+  for (const path of paths) strokeSpine(ctx, path.points, path.width, palette.roadDirt);
   drawStones(ctx, game, camera);
 }
 

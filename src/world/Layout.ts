@@ -1,4 +1,5 @@
 import type { DamageType } from '../core/BalanceTypes.ts';
+import type { DecorId } from './Scenery.ts';
 import raw from '../../islands/01-ismaros.layout.json' with { type: 'json' };
 
 /**
@@ -34,12 +35,23 @@ export interface ZoneBudget {
   readonly elite?: number;
 }
 
+/**
+ * Крупный предмет в точно заданной точке: давильня у давильни, костёр на
+ * круче, колонны вокруг арены. От случайного декора отличается тем, что
+ * ставится первым и безусловно — по ландмаркам зона и узнаётся.
+ */
+export interface LandmarkDef {
+  readonly prop: DecorId;
+  readonly at: LayoutPoint;
+}
+
 export interface ZoneDef {
   readonly id: string;
   readonly name: string;
   /** Прямоугольник зоны в долях мира: [x, y, ширина, высота]. */
   readonly rect: readonly [number, number, number, number];
   readonly nodes: ZoneBudget;
+  readonly landmarks?: readonly LandmarkDef[];
 }
 
 /** Именованный узел, стоящий в конкретной точке: вождь у своего ландмарка. */
@@ -57,6 +69,10 @@ export interface IslandLayout {
   readonly arena: LayoutPoint;
   readonly zones: readonly ZoneDef[];
   readonly minibosses: readonly NamedNode[];
+  /** Стержень: от нижнего края мира к арене. */
+  readonly road: readonly LayoutPoint[];
+  /** Ответвления к боковым зонам. Каждое начинается точкой, лежащей на стержне. */
+  readonly branches: readonly (readonly LayoutPoint[])[];
 }
 
 /** Размер мира в единицах — то, во что переводятся доли. */

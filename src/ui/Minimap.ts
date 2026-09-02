@@ -164,22 +164,25 @@ function drawMapRoad(
   project: Project,
   scale: number,
 ): void {
-  const points = game.scenery.roadPoints;
-  if (points.length < 2) return;
-  const { scenery, palette } = getBalance();
+  const { palette } = getBalance();
 
   ctx.save();
   ctx.strokeStyle = palette.roadDirt;
-  ctx.lineWidth = Math.max(1, scenery.roadWidth * scale);
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
-  ctx.beginPath();
-  const first = project(points[0]!.x, points[0]!.y);
-  ctx.moveTo(first.x, first.y);
-  for (const point of points.slice(1)) {
-    const p = project(point.x, point.y);
-    ctx.lineTo(p.x, p.y);
+  // Каждая нитка своей толщиной: на карте отвороты к вождям должны читаться
+  // как отвороты, а не как второй такой же тракт.
+  for (const path of game.scenery.roadPaths) {
+    if (path.points.length < 2) continue;
+    ctx.lineWidth = Math.max(1, path.width * scale);
+    ctx.beginPath();
+    const first = project(path.points[0]!.x, path.points[0]!.y);
+    ctx.moveTo(first.x, first.y);
+    for (const point of path.points.slice(1)) {
+      const p = project(point.x, point.y);
+      ctx.lineTo(p.x, p.y);
+    }
+    ctx.stroke();
   }
-  ctx.stroke();
   ctx.restore();
 }

@@ -2,6 +2,7 @@ import { getBalance } from '../core/Balance.ts';
 import type { Rng } from '../core/Rng.ts';
 import type { Enemy } from './Enemy.ts';
 import { grassTufts, type GrassTuft } from './Grass.ts';
+import { islandLayout, toWorld, type IslandLayout, type LayoutPoint } from './Layout.ts';
 import { roadStones, type RoadStone } from './Road.ts';
 
 /** Совпадает с PropId в ui/props/Models.ts и PicturePropId в ui/props/Pictures.ts
@@ -83,6 +84,12 @@ export interface DecorPlacement {
   readonly y: number;
 }
 
+/** Одна нитка дороги: стержень или ответвление. Ширина у них разная. */
+export interface RoadPath {
+  readonly points: readonly { x: number; y: number }[];
+  readonly width: number;
+}
+
 export interface SceneryBounds {
   readonly width: number;
   readonly height: number;
@@ -98,7 +105,8 @@ export interface SceneryBounds {
  */
 export class Scenery {
   readonly props: readonly DecorPlacement[];
-  readonly roadPoints: readonly { x: number; y: number }[];
+  /** Все нитки дороги. Первая — стержень, дальше ответвления к боковым зонам. */
+  readonly roadPaths: readonly RoadPath[];
   /** Кладка дороги. Считается после стержня и тем же rng — прогон по сиду
    *  остаётся единой воспроизводимой последовательностью. */
   readonly roadStones: readonly RoadStone[];
@@ -107,9 +115,16 @@ export class Scenery {
   readonly border: { x: number; y: number; width: number; height: number };
 
   constructor(rng: Rng, bounds: SceneryBounds, enemies: readonly Enemy[], islandId = '') {
-    this.props = scatterProps(rng, bounds, enemies, decorSet(islandId));
-    this.roadPoints = roadSpine(rng, bounds);
-    this.roadStones = roadStones(rng, this.roadPoints);
+    const layout = islandLayout(islandId);
+    // Ландмарки первыми и безусловно: по ним зона и узнаётся, а случайный
+    // посев обязан их обтекать, а не наоборот.
+    const landmarks = layout ? placeLandmarks(layout, bounds) : [];
+    this.props = [
+      ...landmarks,
+      ...scatterProps(rng, bounds, enemies, decorSet(islandId), landmarks),
+    ];
+    this.roadPaths = layout ? layoutRoads(layout, bounds) : [randomSpine(rng, bounds)];
+    this.roadStones = this.roadPaths.flatMap((path) => roadStones(rng, path.points, path.width));
     this.grass = grassTufts(rng, bounds);
     const { borderInset } = getBalance().scenery;
     this.border = {
@@ -126,19 +141,23 @@ function scatterProps(
   bounds: SceneryBounds,
   enemies: readonly Enemy[],
   set: DecorSet,
+  landmarks: readonly DecorPlacement[],
 ): DecorPlacement[] {
   const { scenery } = getBalance();
   const placed: DecorPlacement[] = [];
-  const centers: { x: number; y: number }[] = [];
+  // Ландмарки идут в список занятых центров: кластер, севший на давильню,
+  // превратил бы ландмарк в кучу мусора.
+  const centers: { x: number; y: number }[] = landmarks.map((p) => ({ x: p.x, y: p.y }));
+  const budget = Math.max(0, scenery.propCount - landmarks.length);
 
-  for (let cluster = 0; placed.length < scenery.propCount; cluster++) {
+  for (let cluster = 0; placed.length < budget; cluster++) {
     const center = clusterCenter(rng, bounds, enemies, centers);
     centers.push(center);
     placed.push({ id: set.anchors[cluster % set.anchors.length]!, x: center.x, y: center.y });
 
     const around: DecorPlacement[] = [];
     for (let i = 0; i < scenery.clusterSatellites; i++) {
-      if (placed.length + around.length >= scenery.propCount) break;
+      if (placed.length + around.length >= budget) break;
       const id = set.satellites[
         (cluster * scenery.clusterSatellites + i) % set.satellites.length
       ]!;
@@ -208,11 +227,45 @@ function satelliteSpot(
 }
 
 /**
- * Ломаная через весь остров, от нижнего края к верхнему, с боковым дрожанием.
- * Именно от края, а не от точки старта: дорога, обрывающаяся под ногами
- * игрока, читается как недорисованная.
+ * Дорога по авторской схеме: стержень от нижнего края к арене и ответвления
+ * к боковым зонам.
+ *
+ * Ответвления и есть разница между «дорогой» и «полосой на траве»: стержень
+ * говорит, куда идти дальше по острову, а отвороты — куда свернуть за копиями
+ * к конкретному вождю. Одна вертикаль этого сказать не может.
  */
-function roadSpine(rng: Rng, bounds: SceneryBounds): { x: number; y: number }[] {
+function layoutRoads(layout: IslandLayout, bounds: SceneryBounds): RoadPath[] {
+  const { scenery } = getBalance();
+  const toPoints = (points: readonly LayoutPoint[]) =>
+    points.map((point) => toWorld(point, bounds));
+
+  return [
+    { points: toPoints(layout.road), width: scenery.roadWidth },
+    ...layout.branches.map((branch) => ({
+      points: toPoints(branch),
+      width: scenery.roadBranchWidth,
+    })),
+  ];
+}
+
+/** Ландмарки зон в единицах мира, в порядке файла раскладки. */
+function placeLandmarks(layout: IslandLayout, bounds: SceneryBounds): DecorPlacement[] {
+  const placed: DecorPlacement[] = [];
+  for (const zone of layout.zones) {
+    for (const landmark of zone.landmarks ?? []) {
+      const point = toWorld(landmark.at, bounds);
+      placed.push({ id: landmark.prop, x: point.x, y: point.y });
+    }
+  }
+  return placed;
+}
+
+/**
+ * Ломаная через весь остров, от нижнего края к верхнему, с боковым дрожанием.
+ * Запасной путь для островов без раскладки. Именно от края, а не от точки
+ * старта: дорога, обрывающаяся под ногами игрока, читается как недорисованная.
+ */
+function randomSpine(rng: Rng, bounds: SceneryBounds): RoadPath {
   const { scenery } = getBalance();
   const points: { x: number; y: number }[] = [{ x: bounds.startX, y: bounds.height }];
 
@@ -224,7 +277,7 @@ function roadSpine(rng: Rng, bounds: SceneryBounds): { x: number; y: number }[] 
     points.push({ x: clamp(x, 20, bounds.width - 20), y });
   }
 
-  return points;
+  return { points, width: scenery.roadWidth };
 }
 
 function clamp(value: number, min: number, max: number): number {

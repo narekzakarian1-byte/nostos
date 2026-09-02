@@ -408,6 +408,9 @@ export interface SceneryConfig {
   readonly borderInset: number;
   readonly borderThickness: number;
   readonly roadWidth: number;
+  /** Ширина ответвления к боковому ландмарку. Уже стержня: развилка должна
+   *  читаться как «свернуть», а не как «дорога раздвоилась». */
+  readonly roadBranchWidth: number;
   /** Тёмный кант дороги и её кладка отдельными камнями. */
   readonly roadEdgeWidth: number;
   readonly roadStoneStep: number;

@@ -23,7 +23,7 @@ describe('Scenery — детерминированный декор остров
     const a = makeScenery();
     const b = makeScenery();
     expect(a.props).toEqual(b.props);
-    expect(a.roadPoints).toEqual(b.roadPoints);
+    expect(a.roadPaths).toEqual(b.roadPaths);
   });
 
   it('столько пропов, сколько задано в конфиге, и все внутри мира', () => {
@@ -37,12 +37,15 @@ describe('Scenery — детерминированный декор остров
     }
   });
 
-  it('дорога идёт через весь остров, от нижнего края к верхнему', () => {
+  it('без раскладки дорога идёт через весь остров, от нижнего края к верхнему', () => {
     const scenery = makeScenery();
-    expect(scenery.roadPoints[0]).toEqual({ x: bounds.startX, y: bounds.height });
-    expect(scenery.roadPoints).toHaveLength(balance.scenery.roadWaypoints);
-    const last = scenery.roadPoints[scenery.roadPoints.length - 1]!;
-    expect(last.y).toBeCloseTo(bounds.top, 6);
+    // makeScenery не передаёт остров, значит раскладки нет и работает
+    // запасная случайная ветка — одна нитка без ответвлений.
+    expect(scenery.roadPaths).toHaveLength(1);
+    const spine = scenery.roadPaths[0]!.points;
+    expect(spine[0]).toEqual({ x: bounds.startX, y: bounds.height });
+    expect(spine).toHaveLength(balance.scenery.roadWaypoints);
+    expect(spine[spine.length - 1]!.y).toBeCloseTo(bounds.top, 6);
   });
 
   it('граница вписана в мир с отступом borderInset', () => {
