@@ -40,11 +40,19 @@ export interface Bone {
   readonly behind: boolean;
 }
 
+/** Скелет фигуры вместе с сокетом кисти: всё, что нужно, чтобы её собрать. */
+export interface Rig {
+  readonly bones: readonly Bone[];
+  /** Куда садится оружие внутри картинки ведущей руки. */
+  readonly handX: number;
+  readonly handY: number;
+}
+
 /**
  * Порядок в массиве — порядок отрисовки, от дальнего к ближнему. Плащ уходит
  * за спину, задние конечности прячутся за торс, оружие ложится поверх кисти.
  */
-export const ODYSSEUS_RIG: readonly Bone[] = [
+const ODYSSEUS_BONES: readonly Bone[] = [
   {
     id: 'cloak',
     sprite: 'odysseus-cloak',
@@ -113,8 +121,65 @@ export interface WeaponPart {
   readonly height: number;
 }
 
-export const HAND_SOCKET_X = 0.48;
-export const HAND_SOCKET_Y = 0.86;
+export const ODYSSEUS_RIG: Rig = { bones: ODYSSEUS_BONES, handX: 0.48, handY: 0.86 };
+
+/**
+ * Кикон Исмары. Тот же скелет без плаща: враг обязан махать так же, как игрок,
+ * иначе его удар весит меньше твоего просто потому, что он нарисован плоской
+ * картинкой (Body.ts — общая отрисовка заведена ровно поэтому).
+ *
+ * Костюм у всех трёх тиров один (ISLANDS.md §1.5: остров — одна семья), так
+ * что детали общие, а различает тиры размер и кольцо ранга под ногами.
+ */
+const KIKON_BONES: readonly Bone[] = [
+  {
+    id: 'legBack',
+    sprite: 'kikon-leg',
+    pivotX: 0.5, pivotY: 0.05,
+    height: 0.36,
+    socketX: 0.66, socketY: 0.86,
+    parent: 'torso',
+    behind: true,
+  },
+  {
+    id: 'armOff',
+    sprite: 'kikon-arm',
+    pivotX: 0.5, pivotY: 0.07,
+    height: 0.38,
+    socketX: 0.87, socketY: 0.4,
+    parent: 'torso',
+    behind: true,
+  },
+  {
+    id: 'torso',
+    sprite: 'kikon-torso',
+    pivotX: 0.5, pivotY: 0.0,
+    height: 0.7,
+    socketX: 0.5, socketY: 0.04,
+    parent: null,
+    behind: false,
+  },
+  {
+    id: 'legFront',
+    sprite: 'kikon-leg',
+    pivotX: 0.5, pivotY: 0.05,
+    height: 0.36,
+    socketX: 0.34, socketY: 0.86,
+    parent: 'torso',
+    behind: false,
+  },
+  {
+    id: 'armMain',
+    sprite: 'kikon-arm',
+    pivotX: 0.5, pivotY: 0.07,
+    height: 0.38,
+    socketX: 0.13, socketY: 0.43,
+    parent: 'torso',
+    behind: false,
+  },
+];
+
+export const KIKON_RIG: Rig = { bones: KIKON_BONES, handX: 0.48, handY: 0.86 };
 
 export const WEAPON_PARTS = {
   sword: { sprite: 'odysseus-sword', pivotX: 0.5, pivotY: 0.84, height: 0.4 },

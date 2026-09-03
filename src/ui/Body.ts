@@ -123,5 +123,5 @@ function drawSprite(
 
 /** Риг годится, только если загружены все детали: полфигуры хуже прямоугольника. */
 function usableRig(body: BodyDraw): Omit<RigDraw, 'size' | 'tint'> | undefined {
-  return body.rig && rigReady() ? body.rig : undefined;
+  return body.rig && rigReady(body.rig.rig) ? body.rig : undefined;
 }

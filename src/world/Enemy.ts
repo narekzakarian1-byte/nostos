@@ -28,6 +28,9 @@ export class Enemy implements Regenerating {
   progress = 0;
   /** Куда смотрит спрайт: +1 вправо, -1 влево. */
   facing = 1;
+  /** Пройденный по маршруту путь. Из него считается фаза шага фигуры — та же
+   *  величина и по той же формуле, что у игрока (juice/RigPose.walkPhase). */
+  walked = 0;
   /** Вспышка, отдача, распад, появление. Тикается логикой, читается рендером. */
   readonly anim = new BodyAnim();
 
@@ -87,6 +90,7 @@ export class Enemy implements Regenerating {
     this.progress = advance(this.patrol, this.progress, dt);
     const point = patrolPoint(this.patrol, this.progress);
     const dx = point.x - this.x;
+    this.walked += Math.hypot(dx, point.y - this.y);
     // Порог в ноль: на медленном маршруте dx за тик крошечный, но знак у него
     // честный, а сравнение с эпсилоном заморозило бы разворот.
     if (dx !== 0) this.facing = dx > 0 ? 1 : -1;

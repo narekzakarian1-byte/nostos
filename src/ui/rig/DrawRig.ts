@@ -4,12 +4,10 @@ import type { RigPose } from '../../juice/RigPose.ts';
 import { SPRITES } from '../AssetManifest.ts';
 import { sprites } from '../Sprites.ts';
 import {
-  HAND_SOCKET_X,
-  HAND_SOCKET_Y,
-  ODYSSEUS_RIG,
   WEAPON_PARTS,
   type Bone,
   type BoneId,
+  type Rig,
   type WeaponPartId,
 } from './RigParts.ts';
 
@@ -21,6 +19,8 @@ import {
  */
 export interface RigDraw {
   readonly size: number;
+  /** Из чего собрана эта фигура: у Одиссея свой набор костей, у кикона свой. */
+  readonly rig: Rig;
   readonly pose: RigPose;
   readonly weapon: WeaponPartId | null;
   /** Залить силуэт цветом вместо текстуры — этим рисуется вспышка попадания. */
@@ -32,12 +32,13 @@ interface PartRect {
   readonly h: number;
 }
 
-const TORSO = ODYSSEUS_RIG.find((bone) => bone.parent === null) as Bone;
+function rootOf(rig: Rig): Bone {
+  return rig.bones.find((bone) => bone.parent === null) as Bone;
+}
 
 /** Пока хоть одной детали нет, звать риг нельзя — Body.ts рисует цельный спрайт. */
-export function rigReady(): boolean {
-  if (!sprites.get(TORSO.sprite)) return false;
-  return ODYSSEUS_RIG.every((bone) => sprites.get(bone.sprite) !== undefined);
+export function rigReady(rig: Rig): boolean {
+  return rig.bones.every((bone) => sprites.get(bone.sprite) !== undefined);
 }
 
 export function weaponReady(id: WeaponPartId): boolean {
@@ -46,17 +47,18 @@ export function weaponReady(id: WeaponPartId): boolean {
 
 export function drawRig(ctx: CanvasRenderingContext2D, draw: RigDraw): void {
   const { size } = draw;
-  const torsoRect = rectOf(TORSO, size);
+  const torso = rootOf(draw.rig);
+  const torsoRect = rectOf(torso, size);
 
-  for (const bone of ODYSSEUS_RIG) {
+  for (const bone of draw.rig.bones) {
     ctx.save();
     // Кадр торса: его пивот встаёт в точку коробки фигуры.
-    ctx.translate((TORSO.socketX - 0.5) * size, (TORSO.socketY - 0.5) * size);
+    ctx.translate((torso.socketX - 0.5) * size, (torso.socketY - 0.5) * size);
 
     if (bone.parent !== null) {
       ctx.translate(
-        (bone.socketX - TORSO.pivotX) * torsoRect.w,
-        (bone.socketY - TORSO.pivotY) * torsoRect.h,
+        (bone.socketX - torso.pivotX) * torsoRect.w,
+        (bone.socketY - torso.pivotY) * torsoRect.h,
       );
       // Подъём ноги идёт до поворота: иначе шаг превращается в подскок вбок.
       ctx.translate(0, -liftOf(bone.id, draw.pose));
@@ -81,13 +83,13 @@ function drawWeapon(ctx: CanvasRenderingContext2D, armRect: PartRect, draw: RigD
   const img = sprites.get(part.sprite);
   if (!img) return;
 
-  const arm = ODYSSEUS_RIG.find((bone) => bone.id === 'armMain');
+  const arm = draw.rig.bones.find((bone) => bone.id === 'armMain');
   if (!arm) return;
 
   ctx.save();
   ctx.translate(
-    (HAND_SOCKET_X - arm.pivotX) * armRect.w,
-    (HAND_SOCKET_Y - arm.pivotY) * armRect.h,
+    (draw.rig.handX - arm.pivotX) * armRect.w,
+    (draw.rig.handY - arm.pivotY) * armRect.h,
   );
   ctx.rotate(degToRad(draw.pose.weaponDeg));
 

@@ -3,11 +3,11 @@ import type { DamageType } from '../core/BalanceTypes.ts';
 import type { Game } from '../core/Game.ts';
 import { swingPhase, swingPush } from '../juice/BodyAnim.ts';
 import { rigPose, stroke, walkPhase } from '../juice/RigPose.ts';
-import type { WeaponPartId } from './rig/RigParts.ts';
+import { ODYSSEUS_RIG, type WeaponPartId } from './rig/RigParts.ts';
 import { degToRad } from '../juice/Ease.ts';
 import type { Enemy } from '../world/Enemy.ts';
 import { currentIslandId } from '../world/Island.ts';
-import { enemySpriteChain } from './IslandArt.ts';
+import { enemySpriteChain, islandEnemyRig } from './IslandArt.ts';
 import { drawBody } from './Body.ts';
 import { short } from './Format.ts';
 import type { SpriteId } from './AssetManifest.ts';
@@ -20,8 +20,13 @@ import { bar, ui } from './UiKit.ts';
  * одной фигуры, и от EnemyBadge.ts, который рисует плашки над головой.
  */
 export function drawEnemyBody(ctx: CanvasRenderingContext2D, enemy: Enemy, game: Game): void {
-  const { palette } = getBalance();
+  const { anim, palette } = getBalance();
   const push = enemyPush(enemy, game);
+  const rig = islandEnemyRig(currentIslandId());
+  // Маршрут замирает, пока враг сцеплен (Patrol.stepPatrols) — значит и ноги
+  // должны встать: в бою он бьёт, а не топчется.
+  const moving = enemy.alive && !game.isEngaged(enemy) && (enemy.patrol?.speed ?? 0) > 0;
+  const walk = walkPhase(enemy.walked);
 
   drawRankRing(ctx, enemy);
   drawBody(ctx, {
@@ -32,8 +37,38 @@ export function drawEnemyBody(ctx: CanvasRenderingContext2D, enemy: Enemy, game:
     anim: enemy.anim,
     pushX: push.x, pushY: push.y,
     tilt: push.tilt,
-    bob: 0,
+    bob: moving ? Math.sin(walk) * ui().walkBobAmp : 0,
+    ...(rig
+      ? {
+          rig: {
+            rig,
+            // Замах врага идёт по своему, более долгому счётчику
+            // (anim.enemyWindupSec), а углы руки берутся из профиля его типа:
+            // кто уязвим к рубящему, тот рубящим и бьёт (GDD §4.2).
+            pose: rigPose({
+              swing: swingPhase(enemy.attackCooldown, anim.enemyWindupSec),
+              type: enemyStrokeType(enemy),
+              walk,
+              moving,
+              elapsed: game.elapsed,
+            }),
+            // Оружия в руке у врага пока нет: своей картинки под него не
+            // сделано, а чужая читалась бы как трофей игрока.
+            weapon: null,
+          },
+        }
+      : {}),
   });
+}
+
+/**
+ * Чем машет враг. Тип его удара совпадает с его слабостью (GDD §4.2), поэтому
+ * жест кикона с пельтой и жест копейщика различаются — и различаются ровно по
+ * той же оси, по которой игрок выбирает, чем его брать.
+ */
+function enemyStrokeType(enemy: Enemy): DamageType {
+  // 'any' — только финальный босс Итаки: он бьёт всеми сразу, показываем рубящий.
+  return enemy.weakness === 'any' ? 'slash' : enemy.weakness;
 }
 
 export function drawPlayer(ctx: CanvasRenderingContext2D, game: Game): void {
@@ -60,6 +95,7 @@ export function drawPlayer(ctx: CanvasRenderingContext2D, game: Game): void {
     tilt: push.tilt,
     bob,
     rig: {
+      rig: ODYSSEUS_RIG,
       pose: rigPose({
         swing: swingPhase(player.attackCooldown, stroke(type).windupSec),
         type,

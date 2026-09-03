@@ -4,7 +4,7 @@ import { swingPhase } from '../src/juice/BodyAnim.ts';
 import { rigPose, stroke, walkPhase } from '../src/juice/RigPose.ts';
 import { DAMAGE_TYPES } from '../src/core/Combat.ts';
 import type { DamageType } from '../src/core/BalanceTypes.ts';
-import { ODYSSEUS_RIG, WEAPON_PARTS } from '../src/ui/rig/RigParts.ts';
+import { KIKON_RIG, ODYSSEUS_RIG, WEAPON_PARTS } from '../src/ui/rig/RigParts.ts';
 
 const balance = getBalance();
 const rig = balance.anim.rig;
@@ -122,25 +122,45 @@ describe('rigPose — детерминизм', () => {
 
 describe('скелет', () => {
   it('ровно один корень, остальные кости висят на нём', () => {
-    const roots = ODYSSEUS_RIG.filter((bone) => bone.parent === null);
+    const roots = ODYSSEUS_RIG.bones.filter((bone) => bone.parent === null);
     expect(roots).toHaveLength(1);
     expect(roots[0]!.id).toBe('torso');
   });
 
   it('у каждой кости свой id: иначе порядок отрисовки молча перепутается', () => {
-    const ids = ODYSSEUS_RIG.map((bone) => bone.id);
+    const ids = ODYSSEUS_RIG.bones.map((bone) => bone.id);
     expect(new Set(ids).size).toBe(ids.length);
   });
 
   it('пивоты лежат внутри своих картинок', () => {
     const inside = (v: number) => v >= 0 && v <= 1;
-    for (const bone of ODYSSEUS_RIG) {
+    for (const bone of ODYSSEUS_RIG.bones) {
       expect(inside(bone.pivotX) && inside(bone.pivotY)).toBe(true);
       expect(inside(bone.socketX) && inside(bone.socketY)).toBe(true);
       expect(bone.height).toBeGreaterThan(0);
     }
     for (const part of Object.values(WEAPON_PARTS)) {
       expect(inside(part.pivotX) && inside(part.pivotY)).toBe(true);
+    }
+  });
+});
+
+describe('скелет врага', () => {
+  it('у кикона тот же корень и те же кости, что у игрока, кроме плаща', () => {
+    const player = new Set(ODYSSEUS_RIG.bones.map((b) => b.id));
+    const enemy = new Set(KIKON_RIG.bones.map((b) => b.id));
+    // Общий скелет — не экономия: враг обязан махать так же, как игрок, иначе
+    // его удар весит меньше просто потому, что нарисован иначе.
+    for (const id of enemy) expect(player.has(id)).toBe(true);
+    expect(enemy.has('cloak')).toBe(false);
+    expect(KIKON_RIG.bones.filter((b) => b.parent === null)).toHaveLength(1);
+  });
+
+  it('обе задние конечности помечены behind, иначе шаг не читается', () => {
+    for (const rig of [ODYSSEUS_RIG, KIKON_RIG]) {
+      const back = rig.bones.filter((b) => b.behind).map((b) => b.id);
+      expect(back).toContain('legBack');
+      expect(back).toContain('armOff');
     }
   });
 });
