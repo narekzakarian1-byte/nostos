@@ -60,7 +60,10 @@ export function handleTap(
 
   const slot = slotAt(x, y, screenWidth, viewHeight, slotCount);
   if (slot !== null) {
-    game.tryUpgrade(slot);
+    // Слот внизу экрана надевает оружие, а не улучшает его. Улучшение живёт на
+    // экране характеристик: в бою по слоту тапают, чтобы переодеться под три
+    // иконки над врагом, и случайно потратить на этом копии нельзя.
+    game.equipSlot(slot);
     return true;
   }
 

@@ -99,7 +99,7 @@ export class Renderer {
     }
 
     drawHud(ctx, game, rows, screenWidth, view);
-    drawWeaponBar(ctx, rows, screenWidth, view);
+    drawWeaponBar(ctx, rows, screenWidth, view, game.player.equipped);
 
     if (game.mapOpen) {
       drawFullMap(ctx, game, screenWidth, view);

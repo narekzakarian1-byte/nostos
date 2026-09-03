@@ -1,5 +1,5 @@
 import { getBalance } from '../core/Balance.ts';
-import { bestType, weaponAttack } from '../core/Combat.ts';
+import { weaponAttack } from '../core/Combat.ts';
 import type { Game } from '../core/Game.ts';
 import { iconColor } from '../core/IconColor.ts';
 import { swingPhase } from '../juice/BodyAnim.ts';
@@ -9,9 +9,10 @@ import { degToRad } from '../juice/Ease.ts';
 /**
  * След оружия: дуга, прочерченная вокруг игрока в сторону цели.
  *
- * Цвет — иконки того типа, который сейчас пробивает лучше всех. Дуга поэтому
- * не украшение: не отрывая взгляда от боя, видно, чем именно ты его берёшь, —
- * то же, что говорят три иконки над врагом, но в момент удара.
+ * Цвет — иконки НАДЕТОГО типа против этой защиты. Дуга поэтому не украшение:
+ * не отрывая взгляда от боя, видно, годится ли то, чем ты пришёл. Красная
+ * дуга по врагу и есть сигнал «переоденься» — тот же, что три иконки над его
+ * головой, но в момент удара.
  *
  * Своего состояния нет: фаза берётся из счётчика удара, как и выпад фигуры.
  */
@@ -21,7 +22,7 @@ export function drawSlashArc(ctx: CanvasRenderingContext2D, game: Game): void {
   if (!target || !player.alive) return;
 
   const { anim, render } = getBalance();
-  const type = bestType(player.stats, player.weapons, target.def);
+  const type = player.equipped;
   const hand = stroke(type);
   const { strike } = swingPhase(player.attackCooldown, hand.windupSec);
   if (strike >= 1) return;

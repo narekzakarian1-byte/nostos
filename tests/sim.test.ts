@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { getBalance } from '../src/core/Balance.ts';
 import { Game } from '../src/core/Game.ts';
 import type { Input } from '../src/core/Input.ts';
-import { effectiveMaxHp, incomingDps, totalDps } from '../src/core/Combat.ts';
+import { bestType, effectiveMaxHp, incomingDps, totalDps } from '../src/core/Combat.ts';
 import { clearNodes } from '../src/save/Save.ts';
 import { attemptBoss, bossState, SimPlayer } from '../src/sim/model.ts';
 
@@ -54,7 +54,10 @@ function fittedPlayer(islandNumber: number): SimPlayer {
     for (const type of ['pierce', 'slash', 'crush'] as const) {
       player.stats.set(`${type}Atk`, atk);
     }
-    return totalDps(player.stats, player.weapons, boss.def);
+    return totalDps(
+      player.stats, player.weapons, boss.def,
+      bestType(player.stats, player.weapons, boss.def),
+    );
   };
   while (dpsAt(high) < targetDps) high *= 2;
   for (let i = 0; i < 60; i++) {

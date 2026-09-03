@@ -135,12 +135,20 @@ describe('Маршрутизация тапов', () => {
     expect(game.mapOpen).toBe(false);
   });
 
-  it('тап по слоту тратит копии и поднимает уровень', () => {
+  it('тап по слоту надевает оружие и копий не тратит', () => {
     const game = makeGame();
     const weapon = game.player.weapons.pierce;
     game.inventory.add('pierce', game.inventory.costFor(weapon));
+    const copies = game.inventory.get('pierce');
+    expect(game.player.equipped).toBe('slash');
+
     const box = slotBoxes(W, H)[0]!;
     expect(handleTap(game, box.x + box.size / 2, box.y + box.size / 2, W, H, SLOTS)).toBe(true);
-    expect(weapon.level).toBe(2);
+
+    expect(game.player.equipped).toBe('pierce');
+    // Прокачка переехала на экран характеристик: случайно потратить копии,
+    // переодеваясь в бою, нельзя.
+    expect(weapon.level).toBe(1);
+    expect(game.inventory.get('pierce')).toBe(copies);
   });
 });

@@ -1,6 +1,6 @@
 import { getBalance } from '../core/Balance.ts';
 import type { DamageType, EnemyArchetype, EnemyTier, Rarity } from '../core/BalanceTypes.ts';
-import { effectiveMaxHp, incomingDps, totalDps, type ByType } from '../core/Combat.ts';
+import { bestType, effectiveMaxHp, incomingDps, totalDps, type ByType } from '../core/Combat.ts';
 import { bossRegenPerSecond } from '../core/formulas/enemy.ts';
 import { statGain } from '../core/formulas/growth.ts';
 import { applyKill, killValue } from '../player/Growth.ts';
@@ -93,7 +93,11 @@ export function dpsAgainstTier(player: SimPlayer, n: number, tier: FarmTier): nu
   const types: readonly DamageType[] = ['pierce', 'slash', 'crush'];
   let total = 0;
   for (const weakness of types) {
-    total += totalDps(player.stats, player.weapons, defenseProfile(weakness, n, tier));
+    // Модельный игрок играет правильно: надевает то оружие, которым эта
+    // защита пробивается лучше всего. Иначе симулятор мерил бы не потолок
+    // системы, а привычку не переодеваться.
+    const def = defenseProfile(weakness, n, tier);
+    total += totalDps(player.stats, player.weapons, def, bestType(player.stats, player.weapons, def));
   }
   return total / types.length;
 }
@@ -210,7 +214,10 @@ export function bossState(n: number): BossState {
 
 /** Условие победы и процент за попытку — BALANCE.md §5. */
 export function attemptBoss(player: SimPlayer, boss: BossState): Attempt {
-  const playerDps = totalDps(player.stats, player.weapons, boss.def);
+  const playerDps = totalDps(
+    player.stats, player.weapons, boss.def,
+    bestType(player.stats, player.weapons, boss.def),
+  );
   const netDps = playerDps - boss.regen;
   const tDeath = player.hp / incomingDps(boss.dps, boss.attackType, player.stats, player.armor);
   const progressPct = Math.min(100, Math.max(0, (netDps * tDeath) / boss.hp) * 100);

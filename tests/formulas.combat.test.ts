@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   attackRatio, critChanceFrom, critFactor, critMultFrom, damageMultiplier, damagePerHit,
-  dodgeChanceFrom, dps, incomingDamage, sumDamage, type DamageParams,
+  dodgeChanceFrom, dps, incomingDamage, type DamageParams,
 } from '../src/core/formulas/combat.ts';
 
 const P: DamageParams = { exponent: 1.5, floor: 0.05, ceil: 0.95 };
@@ -39,13 +39,12 @@ describe('formulas/combat — размен', () => {
     expect(steep).toBeGreaterThan(flat);
   });
 
-  it('сумма по трём типам и переход в DPS', () => {
-    const atk = { pierce: 100, slash: 100, crush: 100 };
-    const def = { pierce: 50, slash: 100, crush: 200 };
-    const expected =
-      damagePerHit(100, 50, P) + damagePerHit(100, 100, P) + damagePerHit(100, 200, P);
-    expect(sumDamage(atk, def, P)).toBeCloseTo(expected, 10);
-    expect(dps(expected, 1.0, 1.0)).toBeCloseTo(expected, 10);
+  it('переход урона в DPS', () => {
+    // Суммы по трём типам больше нет: бьёт только надетое оружие, и залп —
+    // это ровно один damagePerHit (Combat.hitDamage).
+    const damage = damagePerHit(100, 50, P);
+    expect(dps(damage, 1.0, 1.0)).toBeCloseTo(damage, 10);
+    expect(dps(damage, 2.0, 1.5)).toBeCloseTo(damage * 3, 10);
   });
 
   it('входящий урон срезается защитой, потом уклонением', () => {

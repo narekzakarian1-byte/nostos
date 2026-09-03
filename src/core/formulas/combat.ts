@@ -37,13 +37,6 @@ export function damagePerHit(atk: number, def: number, p: DamageParams): number 
   return atk * damageMultiplier(atk, def, p);
 }
 
-/** Сумма урона по трём типам за один залп. */
-export function sumDamage(atk: ByType, def: ByType, p: DamageParams): number {
-  let total = 0;
-  for (const type of DAMAGE_TYPES) total += damagePerHit(atk[type], def[type], p);
-  return total;
-}
-
 /** Средний вклад крита: 1 + шанс * (множитель - 1). */
 export function critFactor(chance: number, mult: number): number {
   return 1 + chance * (mult - 1);

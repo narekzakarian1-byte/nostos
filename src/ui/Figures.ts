@@ -1,5 +1,4 @@
 import { getBalance } from '../core/Balance.ts';
-import { bestType } from '../core/Combat.ts';
 import type { DamageType } from '../core/BalanceTypes.ts';
 import type { Game } from '../core/Game.ts';
 import { swingPhase, swingPush } from '../juice/BodyAnim.ts';
@@ -192,11 +191,7 @@ function enemySprite(enemy: Enemy): SpriteId | undefined {
   return undefined;
 }
 
-/**
- * Что у Одиссея в руке. Не произвольная картинка, а то оружие, которым он
- * сейчас реально бьёт: тот же bestType, что красит дугу удара и три иконки над
- * врагом. Значит по фигуре видно выбор игры ещё до того, как посчитан урон.
- */
+/** Что у Одиссея в руке — картинка надетого оружия. */
 const WEAPON_ART: Record<DamageType, WeaponPartId> = {
   slash: 'sword',
   pierce: 'spear',
@@ -207,16 +202,10 @@ const WEAPON_ART: Record<DamageType, WeaponPartId> = {
 };
 
 /**
- * Чем игрок бьёт прямо сейчас — тот тип, который пробивает эту защиту лучше
- * всех. Залп идёт всеми тремя оружиями сразу (Combat.hitDamage), поэтому
- * «надетого» оружия в игре нет; показывается решающее. Тот же bestType красит
- * дугу удара и стоит за тремя иконками над врагом, так что жест фигуры,
- * цвет следа и иконки говорят одно и то же.
+ * Чем игрок бьёт прямо сейчас — надетое оружие, и только оно (Combat.hitDamage).
+ * Значит предмет в руке, жест замаха и урон — одно и то же: сменил оружие в
+ * слоте, и на фигуре это видно сразу, ещё до первой цифры.
  */
 export function strikingType(game: Game): DamageType {
-  const target = game.target;
-  // Без цели выбирать не против кого — рука держит рубящее по умолчанию.
-  if (!target) return 'slash';
-  const player = game.player;
-  return bestType(player.stats, player.weapons, target.def);
+  return game.player.equipped;
 }

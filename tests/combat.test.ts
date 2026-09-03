@@ -7,6 +7,7 @@ import {
   critFactor,
   damageMultiplier,
   damagePerHit,
+  DAMAGE_TYPES,
   effectiveMaxHp,
   hitDamage,
   incomingDps,
@@ -88,28 +89,39 @@ describe('Combat — оружие множит стат', () => {
       crush: new Weapon('crush', 'uncommon', n),
     });
 
-    const low = totalDps(stats, level(1), enemyDef);
-    const high = totalDps(stats, level(30), enemyDef);
+    const low = totalDps(stats, level(1), enemyDef, 'slash');
+    const high = totalDps(stats, level(30), enemyDef, 'slash');
     expect(high / low).toBeGreaterThanOrEqual(3);
   });
 });
 
-describe('Combat — суммарный DPS', () => {
-  it('складывает три типа и умножает на скорость атаки и крит', () => {
+describe('Combat — DPS надетым оружием', () => {
+  it('считает только надетый тип и умножает на скорость атаки и крит', () => {
     const stats = new Stats();
     const weapons = startingWeapons();
     const enemyDef = { pierce: 3, slash: 6, crush: 12 };
 
-    const expected =
-      damagePerHit(weaponAttack(stats, 'pierce', weapons.pierce), enemyDef.pierce) +
-      damagePerHit(weaponAttack(stats, 'slash', weapons.slash), enemyDef.slash) +
-      damagePerHit(weaponAttack(stats, 'crush', weapons.crush), enemyDef.crush);
+    for (const type of DAMAGE_TYPES) {
+      const expected = damagePerHit(weaponAttack(stats, type, weapons[type]), enemyDef[type]);
+      expect(hitDamage(stats, weapons, enemyDef, type)).toBeCloseTo(expected, 10);
+      expect(totalDps(stats, weapons, enemyDef, type)).toBeCloseTo(
+        expected * balance.combat.baseAttackSpeed * critFactor(stats),
+        10,
+      );
+    }
+  });
 
-    expect(hitDamage(stats, weapons, enemyDef)).toBeCloseTo(expected, 10);
-    expect(totalDps(stats, weapons, enemyDef)).toBeCloseTo(
-      expected * balance.combat.baseAttackSpeed * critFactor(stats),
-      10,
-    );
+  it('снятое оружие в уроне не участвует', () => {
+    // Ради этого весь переход и делался: прокачка снятого оружия не должна
+    // помогать в бою, иначе смена оружия ничего не решает.
+    const stats = new Stats();
+    const weapons = startingWeapons();
+    const enemyDef = { pierce: 6, slash: 6, crush: 6 };
+    const before = hitDamage(stats, weapons, enemyDef, 'slash');
+
+    const pumped = { ...weapons, crush: new Weapon('crush', 'legendary', 50) };
+    expect(hitDamage(stats, pumped, enemyDef, 'slash')).toBeCloseTo(before, 10);
+    expect(hitDamage(stats, pumped, enemyDef, 'crush')).toBeGreaterThan(before);
   });
 
   it('при нулевом крите множитель крита равен единице', () => {
@@ -122,11 +134,11 @@ describe('Combat — суммарный DPS', () => {
     const stats = new Stats();
     const weapons = startingWeapons();
     const enemyDef = { pierce: 6, slash: 6, crush: 6 };
-    const before = totalDps(stats, weapons, enemyDef);
+    const before = totalDps(stats, weapons, enemyDef, 'slash');
 
     stats.set('crit', 480); // ровно kCrit: половина от critCap
     expect(stats.critChance).toBeCloseTo(balance.statConversion.critCap / 2, 10);
-    expect(totalDps(stats, weapons, enemyDef)).toBeGreaterThan(before);
+    expect(totalDps(stats, weapons, enemyDef, 'slash')).toBeGreaterThan(before);
 
     stats.set('dodge', 110); // ровно kDodge: половина от dodgeCap
     const armor = startingArmor();

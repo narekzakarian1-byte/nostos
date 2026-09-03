@@ -1,13 +1,17 @@
 import { getBalance } from '../core/Balance.ts';
-import type { Rarity } from '../core/BalanceTypes.ts';
+import type { DamageType, Rarity } from '../core/BalanceTypes.ts';
 import { glyph } from './Glyphs.ts';
 import { panel, text, ui } from './UiKit.ts';
 import type { UpgradeRow } from './UpgradeScreen.ts';
 
 /**
  * Нижняя полоса слотов из референса: квадрат с цветом редкости, значок типа в
- * углу, уровень в углу противоположном. Тап по слоту тратит копии и поднимает
- * уровень.
+ * углу, уровень в углу противоположном. Тап по слоту НАДЕВАЕТ оружие —
+ * прокачка живёт на экране характеристик.
+ *
+ * Надетый слот обведён и приподнят. Без этой отметки игрок не знает, чем он
+ * бьёт, а бьёт он ровно одним оружием: полоса перестала быть витриной и стала
+ * органом управления.
  *
  * Слоты, а не строки списка: строка сообщает то же самое, но занимает всю
  * ширину экрана и перехватывает тач по всей нижней полосе — джойстик под ней
@@ -38,26 +42,36 @@ export function drawWeaponBar(
   rows: readonly UpgradeRow[],
   screenWidth: number,
   viewHeight: number,
+  equipped: DamageType,
 ): void {
   const boxes = slotBoxes(screenWidth, viewHeight);
   rows.forEach((row, index) => {
     const box = boxes[index];
-    if (box) drawSlot(ctx, row, box);
+    if (box) drawSlot(ctx, row, box, row.type === equipped);
   });
   const locked = boxes[rows.length];
   if (locked) drawLockedSlot(ctx, locked);
 }
 
-function drawSlot(ctx: CanvasRenderingContext2D, row: UpgradeRow, box: SlotBox): void {
+function drawSlot(
+  ctx: CanvasRenderingContext2D,
+  row: UpgradeRow,
+  box: SlotBox,
+  equipped: boolean,
+): void {
   const u = ui();
+  const { equippedLift, equippedOutline } = getBalance().weapons;
   const color = rarityColor(row.rarity);
-  const { x, y, size } = box;
+  const { x, size } = box;
+  // Надетый слот приподнят: обводки мало — цветов на полосе и так четыре,
+  // а сдвиг читается боковым зрением, не отрывая взгляда от боя.
+  const y = box.y - (equipped ? equippedLift : 0);
 
   panel(ctx, x, y, size, size, {
     fill: color,
     radius: u.radius,
-    stroke: row.ready ? u.colors.ready : u.colors.outline,
-    lineWidth: row.ready ? u.outline * 1.6 : u.outline,
+    stroke: equipped ? u.colors.gold : row.ready ? u.colors.ready : u.colors.outline,
+    lineWidth: equipped ? u.outline * equippedOutline : row.ready ? u.outline * 1.6 : u.outline,
   });
 
   glyph(ctx, row.type, x + size / 2, y + size * 0.46, size * 0.62, u.colors.outline, color);

@@ -145,6 +145,17 @@ export class Game {
     this.inventory.upgrade(this.player.weapons[type]);
   }
 
+  /**
+   * Тап по слоту оружия внизу экрана — надеть его. Прокачка переехала на экран
+   * характеристик: слот в бою нужен для смены оружия, а не для траты копий, и
+   * два действия на одной кнопке означали бы, что игрок случайно надевает
+   * оружие, пытаясь его улучшить.
+   */
+  equipSlot(index: number): void {
+    const type = getBalance().weapons.slots[index];
+    if (type) this.player.equipped = type;
+  }
+
   get muted(): boolean {
     return this.sound.muted;
   }
@@ -185,7 +196,7 @@ export class Game {
   get currentDps(): number {
     const target = this.target;
     if (!target) return 0;
-    return totalDps(this.player.stats, this.player.weapons, target.def);
+    return totalDps(this.player.stats, this.player.weapons, target.def, this.player.equipped);
   }
 
   /**
@@ -261,7 +272,9 @@ export class Game {
     this.player.attackCooldown += 1 / baseAttackSpeed;
 
     const crit = this.rng.chance(this.player.stats.critChance);
-    const base = hitDamage(this.player.stats, this.player.weapons, target.def);
+    const base = hitDamage(
+      this.player.stats, this.player.weapons, target.def, this.player.equipped,
+    );
     const damage = crit ? base * this.player.stats.critMult : base;
 
     target.hp -= damage;

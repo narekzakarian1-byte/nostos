@@ -49,13 +49,26 @@ function attackByType(stats: Stats, weapons: Record<DamageType, GearLike>): f.By
   };
 }
 
-/** Суммарный урон за один залп всеми тремя оружиями, без учёта крита. */
+/**
+ * Урон за один удар НАДЕТЫМ оружием, без учёта крита.
+ *
+ * Бьёт всегда одно оружие, а не все три сразу. Из-за этого три иконки над
+ * врагом перестают быть справкой и становятся прямым указанием: они говорят,
+ * что надеть перед этим боем. Игрок, который их прочёл и переоделся, бьёт
+ * в разы больнее того, кто пришёл с чем было, — а это и есть тот самый
+ * момент открытия, ради которого треугольник типов существует (GDD §6.5).
+ */
 export function hitDamage(
   stats: Stats,
   weapons: Record<DamageType, GearLike>,
   enemyDef: f.ByType,
+  type: DamageType,
 ): number {
-  return f.sumDamage(attackByType(stats, weapons), enemyDef, damageParams());
+  return f.damagePerHit(
+    weaponAttack(stats, type, weapons[type]),
+    enemyDef[type],
+    damageParams(),
+  );
 }
 
 /**
@@ -87,9 +100,10 @@ export function totalDps(
   stats: Stats,
   weapons: Record<DamageType, GearLike>,
   enemyDef: f.ByType,
+  type: DamageType,
 ): number {
   const { baseAttackSpeed } = getBalance().combat;
-  return f.dps(hitDamage(stats, weapons, enemyDef), baseAttackSpeed, critFactor(stats));
+  return f.dps(hitDamage(stats, weapons, enemyDef, type), baseAttackSpeed, critFactor(stats));
 }
 
 /** Броня МНОЖИТ стат защиты — зеркало weaponAttack (BALANCE.md §7.5). */

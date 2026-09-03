@@ -21,6 +21,12 @@ export class Player implements Regenerating {
   /** Вспышка, отдача, распад, появление. Тикается логикой, читается рендером. */
   readonly anim = new BodyAnim();
   weapons: Record<DamageType, Weapon> = startingWeapons();
+  /**
+   * Надетое оружие. Бьёт только оно — поэтому три иконки над врагом стали
+   * прямым указанием, что надеть, а не справкой (GDD §6.5). Рубящее по
+   * умолчанию: с ним игрок выходит с корабля.
+   */
+  equipped: DamageType = 'slash';
   /** Три сета брони — множитель к защите, зеркально оружию (BALANCE.md §7.5). */
   armor: Record<DamageType, Armor> = startingArmor();
 

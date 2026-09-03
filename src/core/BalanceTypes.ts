@@ -81,6 +81,9 @@ export interface VipSlotConfig {
 }
 
 export interface WeaponsConfig {
+  /** На сколько приподнят надетый слот и во сколько раз толще его обводка. */
+  readonly equippedLift: number;
+  readonly equippedOutline: number;
   readonly model: string;
   readonly levelStep: number;
   readonly rarityMult: { readonly [K in Rarity]: number };

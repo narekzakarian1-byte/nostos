@@ -25,6 +25,10 @@ export interface UpgradeRow {
  *
  * Прирост считается абсолютным DPS («552 → 685»), а не процентами: процент
  * ничего не говорит о том, станет ли врага возможно убить.
+ *
+ * DPS в строке — тот, что будет С ЭТИМ оружием надетым. Общий DPS показывать
+ * больше нельзя: бьёт только надетое, и прокачка снятого оружия давала бы
+ * прирост в ноль на всех трёх строках, кроме одной.
  */
 export function upgradeRows(
   stats: Stats,
@@ -32,12 +36,11 @@ export function upgradeRows(
   inventory: Inventory,
   reference: ByType,
 ): UpgradeRow[] {
-  const dpsNow = totalDps(stats, weapons, reference);
-
   return TYPES.map((type) => {
     const weapon = weapons[type];
     const probe = new Weapon(type, weapon.rarity, weapon.level + 1);
-    const dpsNext = totalDps(stats, { ...weapons, [type]: probe }, reference);
+    const dpsNow = totalDps(stats, weapons, reference, type);
+    const dpsNext = totalDps(stats, { ...weapons, [type]: probe }, reference, type);
     return {
       type,
       rarity: weapon.rarity,
