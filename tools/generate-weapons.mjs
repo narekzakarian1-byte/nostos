@@ -20,5 +20,5 @@ if (jobs.length === 0) {
 // Принятая картинка лежит в public/art — перегенерировать её молча значит
 // затереть отобранный вариант.
 await runQueue(jobs, {
-  alsoCheck: (job) => join('public/art/entities/weapons', `${job.name}.png`),
+  alsoCheck: (job) => join('public/art/weapons', `${job.name}.png`),
 });

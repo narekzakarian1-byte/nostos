@@ -91,4 +91,37 @@ async function walk(session, shot) {
   await shot('walk-stop');
 }
 
-export const SCENARIOS = { start, tour, boss, map, walk };
+/**
+ * Приёмка оружия: Одиссей со всеми пятью ступенями редкости, по кадру на
+ * каждую. Оружие множит стат вчетверо с лишним от обычного к золотому, и
+ * увидеть эту разницу в руке — единственный способ проверить, что ступень
+ * читается силуэтом и цветом, а не только цифрой в меню.
+ *
+ * Редкость ставится через select дев-панели: кнопки для неё нет, поэтому
+ * значение выставляется напрямую и подтверждается событием change.
+ */
+async function weapons(session, shot) {
+  await session.dev('dev');
+  for (const rarity of ['common', 'uncommon', 'rare', 'epic', 'legendary']) {
+    const ok = await session.evaluate(`(() => {
+      const selects = [...document.querySelectorAll('select')];
+      // Слоты идут в порядке balance.weapons.slots: pierce, slash, crush.
+      const target = selects[1] ?? selects[0];
+      if (!target) return false;
+      target.value = ${JSON.stringify(rarity)};
+      target.dispatchEvent(new Event('change'));
+      return true;
+    })()`);
+    if (!ok) throw new Error('NOSTOS: в дев-панели нет выбора редкости');
+    await sleep(400);
+    // Панель закрывается на время кадра: открытая она перекрывает полфигуры,
+    // а проверяем мы именно предмет в руке. В открытом состоянии её
+    // переключает кнопка «закрыть», в закрытом — «dev».
+    await session.dev('закрыть');
+    await sleep(400);
+    await shot(`weapon-${rarity}`);
+    await session.dev('dev');
+  }
+}
+
+export const SCENARIOS = { start, tour, boss, map, walk, weapons };
