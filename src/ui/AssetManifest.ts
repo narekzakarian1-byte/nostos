@@ -42,6 +42,25 @@ export const SPRITES = {
   'odysseus-sword': { src: 'art/entities/odysseus/sword.png', width: 123, height: 384 },
   'odysseus-spear': { src: 'art/entities/odysseus/spear.png', width: 45, height: 384 },
   'odysseus-club': { src: 'art/entities/club.png', width: 108, height: 512 },
+  // Оружие по ступеням редкости. Размеры номинальные — пропорция берётся из
+  // самой картинки (ui/rig/DrawRig.ts), потому что обрезка по альфе даёт каждому
+  // предмету свой размер. Пока файла нет, Figures.handWeapon откатывается на
+  // базовую деталь того же типа, и рука не пустует.
+  'weapon-spear-common': { src: 'art/entities/weapons/spear-common.png', width: 512, height: 1024 },
+  'weapon-spear-uncommon': { src: 'art/entities/weapons/spear-uncommon.png', width: 512, height: 1024 },
+  'weapon-spear-rare': { src: 'art/entities/weapons/spear-rare.png', width: 512, height: 1024 },
+  'weapon-spear-epic': { src: 'art/entities/weapons/spear-epic.png', width: 512, height: 1024 },
+  'weapon-spear-legendary': { src: 'art/entities/weapons/spear-legendary.png', width: 512, height: 1024 },
+  'weapon-sword-common': { src: 'art/entities/weapons/sword-common.png', width: 512, height: 1024 },
+  'weapon-sword-uncommon': { src: 'art/entities/weapons/sword-uncommon.png', width: 512, height: 1024 },
+  'weapon-sword-rare': { src: 'art/entities/weapons/sword-rare.png', width: 512, height: 1024 },
+  'weapon-sword-epic': { src: 'art/entities/weapons/sword-epic.png', width: 512, height: 1024 },
+  'weapon-sword-legendary': { src: 'art/entities/weapons/sword-legendary.png', width: 512, height: 1024 },
+  'weapon-club-common': { src: 'art/entities/weapons/club-common.png', width: 512, height: 1024 },
+  'weapon-club-uncommon': { src: 'art/entities/weapons/club-uncommon.png', width: 512, height: 1024 },
+  'weapon-club-rare': { src: 'art/entities/weapons/club-rare.png', width: 512, height: 1024 },
+  'weapon-club-epic': { src: 'art/entities/weapons/club-epic.png', width: 512, height: 1024 },
+  'weapon-club-legendary': { src: 'art/entities/weapons/club-legendary.png', width: 512, height: 1024 },
   // Детали кикона. Костюм на острове один на все три тира (ISLANDS.md §1.5),
   // поэтому набор общий: тиры различает размер фигуры и кольцо ранга.
   'kikon-torso': { src: 'art/entities/kikon-torso.png', width: 345, height: 442 },

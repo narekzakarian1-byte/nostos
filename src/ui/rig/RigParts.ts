@@ -181,10 +181,45 @@ const KIKON_BONES: readonly Bone[] = [
 
 export const KIKON_RIG: Rig = { bones: KIKON_BONES, handX: 0.48, handY: 0.86 };
 
+/**
+ * Хват и длина зависят от вида оружия, а не от его редкости: золотой ксифос
+ * держат за ту же рукоять, что и бронзовый. Поэтому геометрия задана один раз
+ * на вид, а редкость меняет только картинку.
+ */
+const GRIP = {
+  sword: { pivotX: 0.5, pivotY: 0.84, height: 0.4 },
+  spear: { pivotX: 0.5, pivotY: 0.76, height: 0.95 },
+  club: { pivotX: 0.5, pivotY: 0.82, height: 0.46 },
+} as const;
+
 export const WEAPON_PARTS = {
-  sword: { sprite: 'odysseus-sword', pivotX: 0.5, pivotY: 0.84, height: 0.4 },
-  spear: { sprite: 'odysseus-spear', pivotX: 0.5, pivotY: 0.76, height: 0.95 },
-  club: { sprite: 'odysseus-club', pivotX: 0.5, pivotY: 0.82, height: 0.46 },
+  // Базовые детали без редкости — запасной путь, пока картинки ступени нет.
+  sword: { sprite: 'odysseus-sword', ...GRIP.sword },
+  spear: { sprite: 'odysseus-spear', ...GRIP.spear },
+  club: { sprite: 'odysseus-club', ...GRIP.club },
+
+  'sword-common': { sprite: 'weapon-sword-common', ...GRIP.sword },
+  'sword-uncommon': { sprite: 'weapon-sword-uncommon', ...GRIP.sword },
+  'sword-rare': { sprite: 'weapon-sword-rare', ...GRIP.sword },
+  'sword-epic': { sprite: 'weapon-sword-epic', ...GRIP.sword },
+  'sword-legendary': { sprite: 'weapon-sword-legendary', ...GRIP.sword },
+
+  'spear-common': { sprite: 'weapon-spear-common', ...GRIP.spear },
+  'spear-uncommon': { sprite: 'weapon-spear-uncommon', ...GRIP.spear },
+  'spear-rare': { sprite: 'weapon-spear-rare', ...GRIP.spear },
+  'spear-epic': { sprite: 'weapon-spear-epic', ...GRIP.spear },
+  'spear-legendary': { sprite: 'weapon-spear-legendary', ...GRIP.spear },
+
+  'club-common': { sprite: 'weapon-club-common', ...GRIP.club },
+  'club-uncommon': { sprite: 'weapon-club-uncommon', ...GRIP.club },
+  'club-rare': { sprite: 'weapon-club-rare', ...GRIP.club },
+  'club-epic': { sprite: 'weapon-club-epic', ...GRIP.club },
+  'club-legendary': { sprite: 'weapon-club-legendary', ...GRIP.club },
 } as const satisfies Record<string, WeaponPart>;
 
 export type WeaponPartId = keyof typeof WEAPON_PARTS;
+
+/** Вид оружия без ступени — он же имя базовой детали. */
+export type WeaponKind = keyof typeof GRIP;
+
+export const WEAPON_KINDS = Object.keys(GRIP) as readonly WeaponKind[];

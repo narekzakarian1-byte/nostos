@@ -94,8 +94,14 @@ function drawWeapon(ctx: CanvasRenderingContext2D, armRect: PartRect, draw: RigD
   ctx.rotate(degToRad(draw.pose.weaponDeg));
 
   const h = part.height * draw.size;
+  // Пропорция берётся из самой картинки, а не из манифеста: предметов пятнадцать
+  // (три типа × пять редкостей), обрезка по альфе даёт каждому свой размер, и
+  // выписанные руками числа разошлись бы с файлами на первой же перегенерации.
   const def = SPRITES[part.sprite];
-  const w = h * (def.width / def.height);
+  const ratio = img.naturalHeight > 0
+    ? img.naturalWidth / img.naturalHeight
+    : def.width / def.height;
+  const w = h * ratio;
   stamp(ctx, part.sprite, -part.pivotX * w, -part.pivotY * h, w, h, draw.tint);
   ctx.restore();
 }

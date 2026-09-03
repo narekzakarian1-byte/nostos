@@ -4,7 +4,9 @@ import { swingPhase } from '../src/juice/BodyAnim.ts';
 import { rigPose, stroke, walkPhase } from '../src/juice/RigPose.ts';
 import { DAMAGE_TYPES } from '../src/core/Combat.ts';
 import type { DamageType } from '../src/core/BalanceTypes.ts';
-import { KIKON_RIG, ODYSSEUS_RIG, WEAPON_PARTS } from '../src/ui/rig/RigParts.ts';
+import { KIKON_RIG, ODYSSEUS_RIG, WEAPON_KINDS, WEAPON_PARTS } from '../src/ui/rig/RigParts.ts';
+import { SPRITES } from '../src/ui/AssetManifest.ts';
+import { RARITY_ORDER } from '../src/player/Weapon.ts';
 
 const balance = getBalance();
 const rig = balance.anim.rig;
@@ -161,6 +163,41 @@ describe('скелет врага', () => {
       const back = rig.bones.filter((b) => b.behind).map((b) => b.id);
       expect(back).toContain('legBack');
       expect(back).toContain('armOff');
+    }
+  });
+});
+
+describe('оружие по редкостям', () => {
+  it('на каждый вид и каждую ступень есть деталь, и её спрайт объявлен', () => {
+    for (const kind of WEAPON_KINDS) {
+      for (const rarity of RARITY_ORDER) {
+        const part = WEAPON_PARTS[`${kind}-${rarity}` as keyof typeof WEAPON_PARTS];
+        expect(part, `нет детали ${kind}-${rarity}`).toBeDefined();
+        expect(SPRITES[part.sprite], `спрайт ${part.sprite} не объявлен`).toBeDefined();
+      }
+    }
+  });
+
+  it('хват и длина зависят от вида, а не от ступени', () => {
+    // Золотой ксифос держат за ту же рукоять, что и бронзовый. Разъехавшийся
+    // пивот увёл бы оружие из кисти ровно на самой ценной находке игрока.
+    for (const kind of WEAPON_KINDS) {
+      const base = WEAPON_PARTS[kind];
+      for (const rarity of RARITY_ORDER) {
+        const part = WEAPON_PARTS[`${kind}-${rarity}` as keyof typeof WEAPON_PARTS];
+        expect(part.pivotX).toBe(base.pivotX);
+        expect(part.pivotY).toBe(base.pivotY);
+        expect(part.height).toBe(base.height);
+      }
+    }
+  });
+
+  it('у базовой детали каждого вида есть запасной спрайт без ступени', () => {
+    // Пока картинки ступени нет, Figures.handWeapon откатывается сюда:
+    // пустой кулак хуже чужого силуэта.
+    for (const kind of WEAPON_KINDS) {
+      expect(WEAPON_PARTS[kind]).toBeDefined();
+      expect(SPRITES[WEAPON_PARTS[kind].sprite]).toBeDefined();
     }
   });
 });

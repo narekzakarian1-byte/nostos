@@ -1,9 +1,9 @@
 import { getBalance } from '../core/Balance.ts';
-import type { DamageType } from '../core/BalanceTypes.ts';
+import type { DamageType, Rarity } from '../core/BalanceTypes.ts';
 import type { Game } from '../core/Game.ts';
 import { swingPhase, swingPush } from '../juice/BodyAnim.ts';
 import { rigPose, stroke, walkPhase } from '../juice/RigPose.ts';
-import { ODYSSEUS_RIG, type WeaponPartId } from './rig/RigParts.ts';
+import { ODYSSEUS_RIG, type WeaponKind, type WeaponPartId } from './rig/RigParts.ts';
 import { weaponReady } from './rig/DrawRig.ts';
 import { degToRad } from '../juice/Ease.ts';
 import type { Enemy } from '../world/Enemy.ts';
@@ -104,7 +104,7 @@ export function drawPlayer(ctx: CanvasRenderingContext2D, game: Game): void {
         moving,
         elapsed: game.elapsed,
       }),
-      weapon: handWeapon(type),
+      weapon: handWeapon(type, player.weapons[type].rarity),
     },
   });
 }
@@ -228,21 +228,30 @@ function enemySprite(enemy: Enemy): SpriteId | undefined {
   return undefined;
 }
 
-/** Что у Одиссея в руке — картинка надетого оружия. */
-const WEAPON_ART: Record<DamageType, WeaponPartId> = {
+/** Что у Одиссея в руке — вид оружия по типу урона. */
+const WEAPON_ART: Record<DamageType, WeaponKind> = {
   slash: 'sword',
   pierce: 'spear',
   crush: 'club',
 };
 
 /**
- * Картинка оружия в руке. Если детали ещё нет в public/art, берётся меч:
- * узнаваемый силуэт лучше пустого кулака, а жест при этом всё равно свой —
- * замах из-за головы читается как палица и с мечом в руке.
+ * Картинка оружия в руке — своя на каждую ступень редкости.
+ *
+ * Оружие множит стат атаки, и разница между обычным и золотым больше чем
+ * вчетверо. Одна картинка на все пять ступеней означала, что самый крупный
+ * прыжок силы в игре не виден вообще: игрок смотрит на фигуру, а редкость
+ * жила только цифрой в меню.
+ *
+ * Откат двойной — сначала на базовую деталь своего вида, потом на меч. Пустой
+ * кулак хуже чужого силуэта, а жест всё равно остаётся своим: замах из-за
+ * головы читается как палица и с мечом в руке.
  */
-function handWeapon(type: DamageType): WeaponPartId {
-  const part = WEAPON_ART[type];
-  return weaponReady(part) ? part : 'sword';
+function handWeapon(type: DamageType, rarity: Rarity): WeaponPartId {
+  const kind = WEAPON_ART[type];
+  const byRarity = `${kind}-${rarity}` as WeaponPartId;
+  if (weaponReady(byRarity)) return byRarity;
+  return weaponReady(kind) ? kind : 'sword';
 }
 
 /**
