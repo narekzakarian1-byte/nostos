@@ -27,6 +27,18 @@ function makeGame(seed = balance.rng.defaultSeed): Game {
   return new Game(worldWidth, worldHeight, idleInput, () => {}, seed);
 }
 
+/**
+ * Мир на низком окне. Высота мира зависит от окна (viewHeight × worldScreensY),
+ * а верхний срез под HUD — абсолютный. Значит на коротком экране верхняя зона
+ * сжимается сильнее всего, и доля 0.075 уезжает за стену. Проверяется отдельно
+ * именно поэтому: на высоком мире такой ландмарк проходит, а на телефоне с
+ * низким окном повисает над чёрным полем.
+ */
+function makeShortGame(): Game {
+  const shortWorldHeight = 440 * balance.render.worldScreensY;
+  return new Game(worldWidth, shortWorldHeight, idleInput, () => {}, balance.rng.defaultSeed);
+}
+
 const layout = islandLayout(currentIslandId()) as IslandLayout;
 
 describe('Раскладка Исмары', () => {
@@ -254,6 +266,31 @@ describe('Препятствия', () => {
   it('у мелочи следа нет: щебень и черепки игрока не цепляют', () => {
     for (const id of ['prop-rubble', 'prop-rock-small', 'prop-amphora', 'prop-campfire'] as const) {
       expect(footprintOf(id), id).toBeNull();
+    }
+  });
+});
+
+describe('Раскладка на низком окне', () => {
+  beforeEach(() => clearNodes());
+
+  it('ландмарки не уезжают за стену острова', () => {
+    const game = makeShortGame();
+    const land = game.scenery.border;
+    for (const prop of game.scenery.props) {
+      expect(prop.x, `${prop.id} за левым краем`).toBeGreaterThanOrEqual(land.x - 0.001);
+      expect(prop.x, `${prop.id} за правым краем`)
+        .toBeLessThanOrEqual(land.x + land.width + 0.001);
+      expect(prop.y, `${prop.id} выше стены`).toBeGreaterThanOrEqual(land.y - 0.001);
+      expect(prop.y, `${prop.id} ниже стены`)
+        .toBeLessThanOrEqual(land.y + land.height + 0.001);
+    }
+  });
+
+  it('босс и вожди остаются внутри земли', () => {
+    const game = makeShortGame();
+    const land = game.scenery.border;
+    for (const enemy of game.enemies) {
+      expect(enemy.y, `${enemy.tier} выше стены`).toBeGreaterThanOrEqual(land.y - 0.001);
     }
   });
 });

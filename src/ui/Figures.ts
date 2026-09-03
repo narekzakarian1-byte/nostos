@@ -23,7 +23,7 @@ import { bar, ui } from './UiKit.ts';
 export function drawEnemyBody(ctx: CanvasRenderingContext2D, enemy: Enemy, game: Game): void {
   const { anim, palette } = getBalance();
   const push = enemyPush(enemy, game);
-  const rig = islandEnemyRig(currentIslandId());
+  const rig = islandEnemyRig(currentIslandId(), enemy.tier);
   // Маршрут замирает, пока враг сцеплен (Patrol.stepPatrols) — значит и ноги
   // должны встать: в бою он бьёт, а не топчется.
   const moving = enemy.alive && !game.isEngaged(enemy) && (enemy.patrol?.speed ?? 0) > 0;

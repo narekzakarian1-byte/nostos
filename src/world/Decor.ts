@@ -23,7 +23,9 @@ export type DecorId =
   | 'prop-wine-press'
   | 'prop-cart-broken'
   | 'prop-palisade-burnt'
-  | 'prop-hut-burnt';
+  | 'prop-hut-burnt'
+  | 'prop-ship'
+  | 'prop-temple';
 
 export interface DecorPlacement {
   readonly id: DecorId;
@@ -69,10 +71,20 @@ const COMMON: DecorSet = {
  */
 export function placeLandmarks(layout: IslandLayout, bounds: DecorBounds): DecorPlacement[] {
   const placed: DecorPlacement[] = [];
+  // Доля мира по вертикали переводится в единицы не сама по себе: сверху
+  // мир срезан на HUD и отбивку (bounds.top), а высота мира зависит от окна.
+  // На низком окне верхняя зона сжимается, и ландмарк с долей 0.075 уезжает
+  // за стену — храм повисал над чёрным полем. Клампим в ту же землю, по
+  // которой ходит игрок.
+  const land = clampRect({ x: 0, y: 0, width: bounds.width, height: bounds.height }, bounds);
   for (const zone of layout.zones) {
     for (const landmark of zone.landmarks ?? []) {
       const point = toWorld(landmark.at, bounds);
-      placed.push({ id: landmark.prop, x: point.x, y: point.y });
+      placed.push({
+        id: landmark.prop,
+        x: Math.min(Math.max(point.x, land.x), land.x + land.width),
+        y: Math.min(Math.max(point.y, land.y), land.y + land.height),
+      });
     }
   }
   return placed;

@@ -17,12 +17,16 @@ import { sprites } from '../Sprites.ts';
 export type PicturePropId = Extract<
   SpriteId,
   'prop-vine-trellis' | 'prop-wine-press' | 'prop-cart-broken'
-  | 'prop-palisade-burnt' | 'prop-hut-burnt'
+  | 'prop-palisade-burnt' | 'prop-hut-burnt' | 'prop-ship' | 'prop-temple'
+  | 'prop-column' | 'prop-column-broken' | 'prop-ruin-gate'
+  | 'prop-rock' | 'prop-rubble'
 >;
 
 const PICTURE_PROPS: readonly PicturePropId[] = [
   'prop-vine-trellis', 'prop-wine-press', 'prop-cart-broken',
-  'prop-palisade-burnt', 'prop-hut-burnt',
+  'prop-palisade-burnt', 'prop-hut-burnt', 'prop-ship', 'prop-temple',
+  'prop-column', 'prop-column-broken', 'prop-ruin-gate',
+  'prop-rock', 'prop-rubble',
 ];
 
 export function isPictureProp(id: string): id is PicturePropId {

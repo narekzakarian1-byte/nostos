@@ -17,11 +17,15 @@ export interface IslandArt {
   /** Фигуры врагов по тиру. Тир без записи падает на общий запасной силуэт. */
   readonly enemies?: Partial<Record<EnemyTier, SpriteId>>;
   /**
-   * Из чего собран враг острова, если его порезали на части. Нет записи —
-   * рисуется цельная картинка, как раньше: недостающие детали не должны
-   * ронять остров, они добавляются по одной.
+   * Из чего собран враг острова, ПО ТИРАМ. Тир без записи рисуется цельной
+   * картинкой, как раньше.
+   *
+   * Именно по тирам, а не один риг на остров: элита, вождь и босс отличаются
+   * бронёй, плащом и гребнем (ISLANDS.md §1.5), и общий набор деталей стёр бы
+   * всю эскалацию — на арене вместо бронзового вождя с бычьим черепом стоял
+   * бы увеличенный рядовой кикон.
    */
-  readonly enemyRig?: Rig;
+  readonly enemyRig?: Partial<Record<EnemyTier, Rig>>;
   readonly road?: SpriteId;
   readonly border?: SpriteId;
 }
@@ -34,7 +38,7 @@ export const ISLAND_ART: Readonly<Record<string, IslandArt>> = {
       miniboss: 'ismaros-miniboss',
       boss: 'ismaros-boss',
     },
-    enemyRig: KIKON_RIG,
+    enemyRig: { normal: KIKON_RIG },
     road: 'ismaros-road',
     border: 'ismaros-border',
   },
@@ -52,9 +56,9 @@ export function enemySpriteChain(island: string, tier: EnemyTier): readonly Spri
   return own ? [own, ...fallback] : fallback;
 }
 
-/** Скелет врага острова. null — фигура рисуется цельной картинкой. */
-export function islandEnemyRig(island: string): Rig | null {
-  return ISLAND_ART[island]?.enemyRig ?? null;
+/** Скелет врага этого тира. null — фигура рисуется цельной картинкой. */
+export function islandEnemyRig(island: string, tier: EnemyTier): Rig | null {
+  return ISLAND_ART[island]?.enemyRig?.[tier] ?? null;
 }
 
 /** Дорога острова, иначе общий сегмент. */

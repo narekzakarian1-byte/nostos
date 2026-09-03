@@ -39,11 +39,11 @@
         "satellites": ["prop-rubble", "prop-column-drum", "prop-rock-small", "prop-rubble"]
       },
       "landmarks": [
-        { "prop": "prop-column", "at": { "x": 0.42, "y": 0.18 } },
-        { "prop": "prop-column", "at": { "x": 0.58, "y": 0.18 } },
-        { "prop": "prop-column-broken", "at": { "x": 0.4, "y": 0.1 } },
-        { "prop": "prop-column", "at": { "x": 0.6, "y": 0.09 } },
-        { "prop": "prop-campfire", "at": { "x": 0.5, "y": 0.065 } }
+        { "prop": "prop-temple", "at": { "x": 0.5, "y": 0.075 } },
+        { "prop": "prop-column", "at": { "x": 0.4, "y": 0.155 } },
+        { "prop": "prop-column", "at": { "x": 0.6, "y": 0.155 } },
+        { "prop": "prop-column-broken", "at": { "x": 0.36, "y": 0.09 } },
+        { "prop": "prop-campfire", "at": { "x": 0.35, "y": 0.13 } }
       ]
     },
     {
@@ -123,6 +123,9 @@
       "id": "beach", "name": "Галечный берег",
       "rect": [0.3333, 0.6667, 0.3334, 0.3333],
       "nodes": { "normal": 2 },
+      "landmarks": [
+        { "prop": "prop-ship", "at": { "x": 0.36, "y": 0.94 } }
+      ],
       "props": {
         "clusters": 3,
         "anchors": ["prop-rock", "prop-rock-small"],

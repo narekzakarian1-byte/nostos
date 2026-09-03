@@ -41,12 +41,12 @@ export const SPRITES = {
   'odysseus-cloak': { src: 'art/entities/odysseus/cloak.png', width: 366, height: 384 },
   'odysseus-sword': { src: 'art/entities/odysseus/sword.png', width: 123, height: 384 },
   'odysseus-spear': { src: 'art/entities/odysseus/spear.png', width: 45, height: 384 },
-  'odysseus-club': { src: 'art/entities/odysseus/club.png', width: 96, height: 384 },
+  'odysseus-club': { src: 'art/entities/club.png', width: 108, height: 512 },
   // Детали кикона. Костюм на острове один на все три тира (ISLANDS.md §1.5),
   // поэтому набор общий: тиры различает размер фигуры и кольцо ранга.
-  'kikon-torso': { src: 'art/entities/kikon/torso.png', width: 256, height: 384 },
-  'kikon-arm': { src: 'art/entities/kikon/arm.png', width: 96, height: 384 },
-  'kikon-leg': { src: 'art/entities/kikon/leg.png', width: 104, height: 384 },
+  'kikon-torso': { src: 'art/entities/kikon-torso.png', width: 345, height: 442 },
+  'kikon-arm': { src: 'art/entities/kikon-arm.png', width: 149, height: 429 },
+  'kikon-leg': { src: 'art/entities/kikon-leg.png', width: 113, height: 466 },
   'road-segment': { src: 'art/road/segment.png', width: 128, height: 128 },
   'border-wall': { src: 'art/borders/wall.png', width: 512, height: 256 },
 
@@ -64,6 +64,17 @@ export const SPRITES = {
   'prop-cart-broken': { src: 'art/props/cart-broken.png', width: 512, height: 312 },
   'prop-palisade-burnt': { src: 'art/props/palisade-burnt.png', width: 512, height: 421 },
   'prop-hut-burnt': { src: 'art/props/hut-burnt.png', width: 512, height: 341 },
+  // Ландмарки: корабль на берегу и сгоревший храм за спиной босса. Без них
+  // берег оставался пустым полем, а арена — четырьмя серыми колоннами.
+  'prop-ship': { src: 'art/props/ship-beached.png', width: 512, height: 487 },
+  'prop-temple': { src: 'art/props/temple-burnt.png', width: 512, height: 498 },
+  // Колонны, ворота, валун и щебень были геометрией (ui/props/Models.ts) и на
+  // фоне нарисованных хижины и шпалеры читались как серо-голубые плиты.
+  'prop-column': { src: 'art/props/column.png', width: 245, height: 512 },
+  'prop-column-broken': { src: 'art/props/column-broken.png', width: 393, height: 512 },
+  'prop-ruin-gate': { src: 'art/props/ruin-gate.png', width: 512, height: 440 },
+  'prop-rock': { src: 'art/props/rock.png', width: 491, height: 478 },
+  'prop-rubble': { src: 'art/props/rubble.png', width: 435, height: 362 },
 } as const satisfies Record<string, SpriteDef>;
 
 export type SpriteId = keyof typeof SPRITES;

@@ -39,7 +39,13 @@ def cutout(src: str, dst: str, max_side: int | None) -> None:
     # красного и синего, иначе по контуру идёт салатовая кайма.
     out = Image.merge('RGBA', (r, ImageChops.darker(g, max_rb), b, alpha))
 
-    box = alpha.getbbox()
+    # Рамка считается по НЕПРОЗРАЧНОМУ, а не по всему, где альфа больше нуля.
+    # Мягкая тень генератора оставляет по краю кадра единичные пиксели с
+    # альфой в пару единиц, и getbbox по ним возвращает весь квадрат: объект
+    # уезжает в середину огромного пустого поля, а движок ставит на землю
+    # низ КАРТИНКИ — корабль повисает в воздухе и оказывается втрое меньше.
+    solid = alpha.point(lambda v: 255 if v > 32 else 0)
+    box = solid.getbbox()
     if box:
         out = out.crop(box)
     if max_side and max(out.size) > max_side:

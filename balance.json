@@ -699,7 +699,9 @@
    "prop-ruin-gate": { "rx": 34, "ry": 11 },
    "prop-column": { "rx": 11, "ry": 6 },
    "prop-column-broken": { "rx": 10, "ry": 5 },
-   "prop-rock": { "rx": 14, "ry": 7 }
+   "prop-rock": { "rx": 14, "ry": 7 },
+   "prop-ship": { "rx": 84, "ry": 24 },
+   "prop-temple": { "rx": 92, "ry": 30 }
   },
   "_sizesNote": "Размер в единицах мира; fit говорит, по какой стороне тела он задан. Игрок — 44, поэтому ворота вдвое выше него, а плитка втрое ниже.",
     "sizes": {
@@ -716,7 +718,10 @@
       "prop-wine-press": { "fit": "width", "value": 60 },
       "prop-cart-broken": { "fit": "width", "value": 55 },
       "prop-palisade-burnt": { "fit": "height", "value": 60 },
-      "prop-hut-burnt": { "fit": "height", "value": 85 }
+      "prop-hut-burnt": { "fit": "height", "value": 85 },
+      "_landmarkSizeNote": "Ландмарки крупнее прочего декора намеренно: корабль вдвое шире игрока, храм — больше половины экрана. Их видно с другого конца зоны, и по ним место узнаётся раньше, чем прочитано название на карте.",
+      "prop-ship": { "fit": "width", "value": 180 },
+      "prop-temple": { "fit": "width", "value": 200 }
     }
   },
   "fog": {
