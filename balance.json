@@ -11,8 +11,16 @@
     "disengageRange": 72
   },
   "icons": {
-    "greenAt": 1.5,
-    "redAt": 0.7
+    "_note": "Ступени цвета иконки по отношению атака/защита, сверху вниз. Берётся первая, чей at не выше отношения; последняя ступень обязана иметь at = 0, иначе цвет не найдётся.",
+    "_scaleNote": "Шаг намеренно неравномерный: возле паритета он вчетверо мельче, чем на краях. Разрешение шкалы тратится там, где принимается решение, — между «вязну» и «уверенно» лежит вся игра, а разница между «безнадёжно» и «очень безнадёжно» игроку не нужна (BUTCHER.md §4).",
+    "scale": [
+      { "at": 2.0, "color": "iconGreenBright", "name": "рву" },
+      { "at": 1.25, "color": "iconGreen", "name": "уверенно" },
+      { "at": 0.95, "color": "iconGrey", "name": "поровну" },
+      { "at": 0.8, "color": "iconAmber", "name": "вязну" },
+      { "at": 0.5, "color": "iconRed", "name": "тяжело" },
+      { "at": 0, "color": "iconRedDark", "name": "безнадёжно" }
+    ]
   },
   "statConversion": {
     "critCap": 0.75,
@@ -858,9 +866,12 @@
     "accentWarm": "#D9762B",
     "accentLight": "#E8DCC8",
     "danger": "#C4342B",
+    "iconGreenBright": "#7FD65C",
     "iconGreen": "#5FA84E",
     "iconGrey": "#7A8494",
+    "iconAmber": "#C98A3A",
     "iconRed": "#C4342B",
+    "iconRedDark": "#6E1F1A",
     "roadDirt": "#8C6636",
     "roadEdge": "#8A6238",
     "roadStoneLight": "#C99A62",

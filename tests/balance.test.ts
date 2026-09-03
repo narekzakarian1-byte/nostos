@@ -14,7 +14,8 @@ const DAMAGE_TYPES = ['pierce', 'slash', 'crush'] as const;
 const ARCHETYPES = ['fast', 'armored', 'heavy', 'striker'] as const;
 const PALETTE_KEYS = [
   'bgFar', 'bgMid', 'silhouette', 'accentWarm', 'accentLight',
-  'danger', 'iconGreen', 'iconGrey', 'iconRed', 'roadDirt', 'borderStone',
+  'danger', 'iconGreenBright', 'iconGreen', 'iconGrey', 'iconAmber', 'iconRed',
+  'iconRedDark', 'roadDirt', 'borderStone',
   'roadEdge', 'roadStoneLight', 'roadStoneDark', 'grassTuft',
 ] as const;
 
@@ -25,7 +26,29 @@ describe('balance.json — форма конфига', () => {
       expect(Number.isFinite(value)).toBe(true);
     }
     expect(damageFloor).toBeLessThan(damageCeil);
-    expect(balance.icons.redAt).toBeLessThan(balance.icons.greenAt);
+  });
+
+  it('шкала иконок: убывает, замыкается нулём и красится существующими цветами', () => {
+    const { scale } = balance.icons;
+    expect(scale.length).toBeGreaterThanOrEqual(3);
+    for (let i = 1; i < scale.length; i++) {
+      expect(scale[i]!.at).toBeLessThan(scale[i - 1]!.at);
+    }
+    // Без замыкающего нуля отношение ниже последней ступени осталось бы без
+    // цвета, а иконка — единственный механизм принятия решений в игре.
+    expect(scale[scale.length - 1]!.at).toBe(0);
+    for (const step of scale) {
+      expect(balance.palette[step.color]).toMatch(/^#[0-9A-Fa-f]{6}$/);
+      expect(step.name.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('разрешение шкалы сгущается у паритета', () => {
+    // Смысл шкалы: возле отношения 1.0 шаг мельче, чем на краях. Если правка
+    // конфига это нарушит, зона решения снова схлопнется в один цвет.
+    const { scale } = balance.icons;
+    const near = scale.filter((s) => s.at > 0.6 && s.at < 1.6);
+    expect(near.length).toBeGreaterThanOrEqual(3);
   });
 
   it('в rarityMult ровно пять редкостей и множители растут', () => {

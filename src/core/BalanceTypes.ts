@@ -28,8 +28,20 @@ export interface CombatConfig {
   readonly disengageRange: number;
 }
 
+/** Одна ступень шкалы опасности: с какого отношения атака/защита она начинается. */
+export interface IconStep {
+  readonly at: number;
+  /** Ключ палитры, а не сам цвет: цвета живут в одном месте. */
+  readonly color: keyof Palette;
+  /** Человеческое имя ступени — для симулятора и дев-панели. */
+  readonly name: string;
+}
+
 export interface IconsConfig {
-  readonly greenAt: number; readonly redAt: number;
+  /** Сверху вниз по убыванию `at`. Последняя ступень обязана иметь `at = 0`. */
+  readonly scale: readonly IconStep[];
+  readonly _note?: string;
+  readonly _scaleNote?: string;
 }
 
 export interface StatConversionConfig {
@@ -384,7 +396,9 @@ export interface OfflineConfig {
 export interface Palette {
   readonly bgFar: string; readonly bgMid: string; readonly silhouette: string;
   readonly accentWarm: string; readonly accentLight: string; readonly danger: string;
-  readonly iconGreen: string; readonly iconGrey: string; readonly iconRed: string;
+  readonly iconGreenBright: string; readonly iconGreen: string;
+  readonly iconGrey: string; readonly iconAmber: string;
+  readonly iconRed: string; readonly iconRedDark: string;
   readonly roadDirt: string;
   readonly roadEdge: string;
   readonly roadStoneLight: string;

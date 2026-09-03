@@ -1,6 +1,7 @@
 import { getBalance } from '../core/Balance.ts';
 import { attackRatio, DAMAGE_TYPES, type ByType } from '../core/Combat.ts';
 import { copiesForNextLevel, type CopyCurve } from '../core/formulas/weapon.ts';
+import { iconStep } from '../core/IconColor.ts';
 import type { CheckResult } from './checks.ts';
 import type { IslandReport } from './run.ts';
 
@@ -52,14 +53,13 @@ export function printIsland(r: IslandReport): void {
 
 /** Подробный разбор одного острова: --island=N. */
 export function printIslandDetail(r: IslandReport, curve: CopyCurve, atk: ByType): void {
-  const { icons } = getBalance();
   printIsland(r);
 
   console.log('\n  Защиты босса, атака игрока и цвет иконки по каждому типу:');
   for (const type of DAMAGE_TYPES) {
     const def = r.bossState.def[type];
     const ratio = attackRatio(atk[type], def);
-    const color = ratio >= icons.greenAt ? 'зелёная' : ratio <= icons.redAt ? 'КРАСНАЯ' : 'серая';
+    const color = iconStep(atk[type], def).name;
     console.log(
       `    ${TYPE_RU[type]!.padEnd(10)} защита ${num(def).padStart(10)}` +
         `   атака ${num(atk[type]).padStart(10)}   ratio ${ratio.toFixed(2).padStart(7)}   ${color}`,
