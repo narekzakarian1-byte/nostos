@@ -4,6 +4,7 @@ import type { Game } from '../core/Game.ts';
 import { swingPhase, swingPush } from '../juice/BodyAnim.ts';
 import { rigPose, stroke, walkPhase } from '../juice/RigPose.ts';
 import { ODYSSEUS_RIG, type WeaponPartId } from './rig/RigParts.ts';
+import { weaponReady } from './rig/DrawRig.ts';
 import { degToRad } from '../juice/Ease.ts';
 import type { Enemy } from '../world/Enemy.ts';
 import { currentIslandId } from '../world/Island.ts';
@@ -103,7 +104,7 @@ export function drawPlayer(ctx: CanvasRenderingContext2D, game: Game): void {
         moving,
         elapsed: game.elapsed,
       }),
-      weapon: WEAPON_ART[type],
+      weapon: handWeapon(type),
     },
   });
 }
@@ -231,11 +232,18 @@ function enemySprite(enemy: Enemy): SpriteId | undefined {
 const WEAPON_ART: Record<DamageType, WeaponPartId> = {
   slash: 'sword',
   pierce: 'spear',
-  // Своей булавы пока нет, дробящий берёт меч: узнаваемый силуэт в руке лучше
-  // пустого кулака. Появится арт — правится здесь одной строкой. Жест при
-  // этом уже свой: замах из-за головы читается как палица и с мечом в руке.
-  crush: 'sword',
+  crush: 'club',
 };
+
+/**
+ * Картинка оружия в руке. Если детали ещё нет в public/art, берётся меч:
+ * узнаваемый силуэт лучше пустого кулака, а жест при этом всё равно свой —
+ * замах из-за головы читается как палица и с мечом в руке.
+ */
+function handWeapon(type: DamageType): WeaponPartId {
+  const part = WEAPON_ART[type];
+  return weaponReady(part) ? part : 'sword';
+}
 
 /**
  * Чем игрок бьёт прямо сейчас — надетое оружие, и только оно (Combat.hitDamage).

@@ -184,6 +184,7 @@ export const KIKON_RIG: Rig = { bones: KIKON_BONES, handX: 0.48, handY: 0.86 };
 export const WEAPON_PARTS = {
   sword: { sprite: 'odysseus-sword', pivotX: 0.5, pivotY: 0.84, height: 0.4 },
   spear: { sprite: 'odysseus-spear', pivotX: 0.5, pivotY: 0.76, height: 0.95 },
+  club: { sprite: 'odysseus-club', pivotX: 0.5, pivotY: 0.82, height: 0.46 },
 } as const satisfies Record<string, WeaponPart>;
 
 export type WeaponPartId = keyof typeof WEAPON_PARTS;
