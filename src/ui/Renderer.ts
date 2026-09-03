@@ -17,6 +17,7 @@ import { drawTerrain } from './Terrain.ts';
 import { text, ui } from './UiKit.ts';
 import { drawWeaponBar } from './WeaponBar.ts';
 import { drawWorldLayer } from './WorldLayer.ts';
+import { rgba } from './props/Optics.ts';
 
 /** Сколько отрезков в нарисованном маршруте. Техническая константа рендера. */
 const PATROL_STEPS = 48;
@@ -74,7 +75,36 @@ export class Renderer {
 
     ctx.restore();
 
+    this.drawHaze(view);
     this.drawInterface(game, view);
+  }
+
+  /**
+   * Дымка глубины: холодный градиент от верхнего края кадра вниз.
+   *
+   * Камера смотрит на мир сверху под наклоном, то есть верх экрана — это даль.
+   * Без дымки даль освещена ровно так же, как земля под ногами, и сцена
+   * читается плоской наклейкой независимо от того, насколько хорош сам арт.
+   * GDD §3 берёт этот приём у постера прямым текстом.
+   *
+   * Ложится поверх мира, но под интерфейсом: затемнять собственные панели
+   * незачем, а плашки над врагами она чуть притапливает вместе с фигурами —
+   * это правильно, они принадлежат миру.
+   */
+  private drawHaze(view: number): void {
+    const { render, palette } = getBalance();
+    const { haze } = render;
+    if (haze.topAlpha <= 0) return;
+
+    const ctx = this.ctx;
+    const height = view * haze.heightFraction;
+    const gradient = ctx.createLinearGradient(0, 0, 0, height);
+    gradient.addColorStop(0, rgba(palette[haze.color], haze.topAlpha));
+    gradient.addColorStop(1, rgba(palette[haze.color], 0));
+    ctx.save();
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, this.camera.viewWidth, height);
+    ctx.restore();
   }
 
   /** Интерфейс живёт в координатах ОДНОГО экрана, камера его не двигает. */

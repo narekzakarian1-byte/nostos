@@ -327,6 +327,8 @@ export interface RenderConfig {
   readonly worldScreensX: number;
   readonly worldScreensY: number;
   readonly enemySizeByTier: { readonly [K in EnemyTier]: number };
+  /** Дымка глубины поверх мира, под интерфейсом. */
+  readonly haze: HazeConfig;
   readonly upgradePanelHeight: number;
   readonly toastSeconds: number;
   readonly bossArena: BossArenaConfig;
@@ -335,6 +337,16 @@ export interface RenderConfig {
   readonly _worldNote?: string;
   readonly _bossArenaNote?: string;
   readonly _respawnDialNote?: string;
+  readonly _hazeNote?: string;
+}
+
+/** Холодный градиент от верхнего края кадра: дальний план должен быть дальше. */
+export interface HazeConfig {
+  /** Ключ палитры, а не сам цвет: цвета живут в одном месте. */
+  readonly color: keyof Palette;
+  readonly topAlpha: number;
+  /** Доля высоты экрана, на которой дымка сходит на нет. */
+  readonly heightFraction: number;
 }
 
 /** Место островного босса: круг в верхней части острова, который видно издалека. */
