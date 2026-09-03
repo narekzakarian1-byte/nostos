@@ -152,13 +152,18 @@ function makeSession(send, screen) {
    * Держать джойстик в направлении (dx, dy) заданное время. Ручка тянется
    * от неподвижного кольца, поэтому нажатие идёт в его центр, а увод —
    * за радиус: Input сам обрежет длину до максимума.
+   *
+   * `during` вызывается, пока палец ещё прижат. Без него походку не снять:
+   * ноги шевелятся только на ходу, а кадр после release застаёт фигуру уже
+   * стоящей.
    */
-  async function hold(dx, dy, ms) {
+  async function hold(dx, dy, ms, during) {
     const g = await geometry();
     const reach = screen.joystickMaxDrag * g.scale * 1.5;
     await pointer('mousePressed', g.anchorX, g.anchorY);
     await pointer('mouseMoved', g.anchorX + dx * reach, g.anchorY + dy * reach);
-    await sleep(ms);
+    if (during) await during();
+    else await sleep(ms);
     await pointer('mouseReleased', g.anchorX + dx * reach, g.anchorY + dy * reach);
     await sleep(120);
   }

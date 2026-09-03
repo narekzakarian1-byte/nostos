@@ -37,18 +37,30 @@ export interface RigPose {
   readonly legBackDeg: number;
   readonly cloakDeg: number;
   readonly weaponDeg: number;
-  /** Подъём ноги над землёй в единицах мира. */
+  /** Подъём ноги над землёй в долях роста фигуры: в единицах мира один и тот
+   *  же подъём был бы невидим у игрока и заметен у обычного врага. Умножает на
+   *  рост тот, кто его знает, — ui/rig/DrawRig.ts. */
   readonly liftFront: number;
   readonly liftBack: number;
 }
 
 /**
- * Фаза шага. Та же формула, что у покачивания корпуса в Figures.ts, и это не
- * дублирование, а единственный источник: если ноги пойдут по своей частоте,
- * шаг разойдётся с покачиванием и фигура начнёт «плыть».
+ * Фаза шага: половина периода (π) на один шаг, а длина шага — доля роста
+ * фигуры. Отсюда темп берётся сам собой и получается человеческим: у Одиссея
+ * в 92 единицы шаг выходит ≈ 50 единиц, и на скорости 140 он делает 2.8 шага
+ * в секунду, а кикон в 36 единиц на своих 24 — чуть больше одного.
+ *
+ * Считать темп частотой нельзя: частота не знает ни роста фигуры, ни скорости.
+ * Так и вышел прежний шаг длиной 5.7 единицы при росте 92 — ноги мелькали
+ * двенадцать циклов в секунду, потому что число было подобрано без связи с
+ * размером того, кто шагает.
+ *
+ * Та же фаза идёт в покачивание корпуса (Figures.ts), и это не дублирование, а
+ * единственный источник: разойдись они, фигура начнёт «плыть».
  */
-export function walkPhase(walked: number): number {
-  return walked * getBalance().ui.walkBobHz * 0.1;
+export function walkPhase(walked: number, figureHeight: number): number {
+  const step = figureHeight * getBalance().anim.rig.stepFraction;
+  return step > 0 ? (walked * Math.PI) / step : 0;
 }
 
 export function rigPose(input: RigPoseInput): RigPose {
@@ -71,8 +83,8 @@ export function rigPose(input: RigPoseInput): RigPose {
     // даже когда игрок стоит.
     cloakDeg: -step * rig.cloakWalkDeg + wind * rig.cloakWindDeg,
     weaponDeg: hand.weaponGripDeg,
-    liftFront: rig.walkLiftUnits * Math.max(0, step),
-    liftBack: rig.walkLiftUnits * Math.max(0, -step),
+    liftFront: rig.walkLiftFraction * Math.max(0, step),
+    liftBack: rig.walkLiftFraction * Math.max(0, -step),
   };
 }
 

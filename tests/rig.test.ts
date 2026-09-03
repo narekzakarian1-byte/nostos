@@ -100,8 +100,28 @@ describe('rigPose — шаг', () => {
   });
 
   it('фаза шага берётся из пути, а не из времени: стоя она не растёт', () => {
-    expect(walkPhase(0)).toBe(0);
-    expect(walkPhase(10)).toBeCloseTo(10 * balance.ui.walkBobHz * 0.1, 6);
+    const height = balance.render.playerSize;
+    expect(walkPhase(0, height)).toBe(0);
+    // Половина периода на шаг: пройдя ровно шаг, фигура меняет ногу.
+    expect(walkPhase(height * rig.stepFraction, height)).toBeCloseTo(Math.PI, 6);
+  });
+
+  it('темп ходьбы человеческий, а не мелькающий', () => {
+    // Шагов в секунду = скорость / длину шага. Прежняя формула давала здесь 24
+    // при росте фигуры в 92 единицы — ноги мелькали вдесятеро быстрее живых.
+    const height = balance.render.playerSize;
+    const perSecond = walkPhase(balance.player.baseStats.moveSpeed, height) / Math.PI;
+    expect(perSecond).toBeGreaterThan(2);
+    expect(perSecond).toBeLessThan(3.5);
+  });
+
+  it('фигура пониже шагает чаще, а не так же: шаг мерится её ростом', () => {
+    // Иначе кикон в 36 единиц перебирал бы ногами в темпе Одиссея в 92 и
+    // читался бы не маленьким, а замедленным.
+    const walked = 30;
+    const small = walkPhase(walked, balance.render.enemySizeByTier.normal);
+    const big = walkPhase(walked, balance.render.playerSize);
+    expect(small).toBeGreaterThan(big);
   });
 });
 

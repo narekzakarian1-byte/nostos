@@ -27,7 +27,7 @@ export function drawEnemyBody(ctx: CanvasRenderingContext2D, enemy: Enemy, game:
   // Маршрут замирает, пока враг сцеплен (Patrol.stepPatrols) — значит и ноги
   // должны встать: в бою он бьёт, а не топчется.
   const moving = enemy.alive && !game.isEngaged(enemy) && (enemy.patrol?.speed ?? 0) > 0;
-  const walk = walkPhase(enemy.walked);
+  const walk = walkPhase(enemy.walked, enemy.size);
 
   drawRankRing(ctx, enemy);
   drawBody(ctx, {
@@ -82,7 +82,7 @@ export function drawPlayer(ctx: CanvasRenderingContext2D, game: Game): void {
   // игрок стоит ровно, а на любой скорости шаг остаётся шагом. Ноги куклы идут
   // от этой же фазы — иначе шаг разойдётся с покачиванием и фигура «поплывёт».
   const moving = game.input.isHeld;
-  const walk = walkPhase(player.walked);
+  const walk = walkPhase(player.walked, render.playerSize);
   const bob = moving ? Math.sin(walk) * u.walkBobAmp : 0;
   const type = strikingType(game);
 

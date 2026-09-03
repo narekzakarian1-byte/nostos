@@ -76,4 +76,19 @@ function minimapCenter() {
   };
 }
 
-export const SCENARIOS = { start, tour, boss, map };
+/**
+ * Походка. Серия кадров, снятых, пока джойстик прижат: только так видно, с
+ * какой частотой переставляются ноги. Шаг у Одиссея ≈ 2.8 в секунду, кадры
+ * идут чаще — в разные кадры попадают разные фазы одного шага.
+ */
+async function walk(session, shot) {
+  await session.hold(0, -1, 0, async () => {
+    for (let frame = 1; frame <= 10; frame++) {
+      await shot(`walk-${frame}`);
+      await sleep(110);
+    }
+  });
+  await shot('walk-stop');
+}
+
+export const SCENARIOS = { start, tour, boss, map, walk };

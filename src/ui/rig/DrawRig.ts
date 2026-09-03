@@ -61,7 +61,7 @@ export function drawRig(ctx: CanvasRenderingContext2D, draw: RigDraw): void {
         (bone.socketY - torso.pivotY) * torsoRect.h,
       );
       // Подъём ноги идёт до поворота: иначе шаг превращается в подскок вбок.
-      ctx.translate(0, -liftOf(bone.id, draw.pose));
+      ctx.translate(0, -liftOf(bone.id, draw.pose) * size);
       ctx.rotate(degToRad(angleOf(bone.id, draw.pose)));
     }
 
@@ -167,6 +167,7 @@ function angleOf(id: BoneId, pose: RigPose): number {
   }
 }
 
+/** Доля роста фигуры; в единицы мира её переводит вызывающий — рост знает он. */
 function liftOf(id: BoneId, pose: RigPose): number {
   if (id === 'legFront') return pose.liftFront;
   if (id === 'legBack') return pose.liftBack;

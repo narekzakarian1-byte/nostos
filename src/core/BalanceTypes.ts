@@ -282,9 +282,15 @@ export interface RigConfig {
   readonly windupArmDeg: number;
   readonly strikeArmDeg: number;
   readonly offArmDeg: number;
+  /** Длина одного шага в долях роста фигуры. Задаёт темп ходьбы: фаза идёт от
+   *  пройденного пути, значит темп = скорость / длину шага. */
+  readonly stepFraction: number;
+  readonly _strideNote?: string;
   readonly walkLegDeg: number;
   readonly walkArmDeg: number;
-  readonly walkLiftUnits: number;
+  readonly _liftNote?: string;
+  /** Подъём стопы в долях роста фигуры. */
+  readonly walkLiftFraction: number;
   readonly cloakWalkDeg: number;
   readonly cloakWindDeg: number;
   readonly cloakWindHz: number;
@@ -566,7 +572,7 @@ export interface UiConfig {
   /** Снос тени фигуры по свету, долей от её высоты. */
   readonly shadowLean: number;
   readonly _shadowLeanNote?: string;
-  readonly walkBobAmp: number; readonly walkBobHz: number;
+  readonly walkBobAmp: number;
   readonly joystickArrow: number; readonly joystickAlpha: number;
   readonly sheetPad: number; readonly statTileHeight: number; readonly cardHeight: number;
   /** Экран прогресса по боссу (GDD §6.3). */
