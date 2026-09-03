@@ -28,6 +28,10 @@ async function tour(session, shot) {
 /** Полная карта поверх игры: открывается тапом по миникарте (ui/Taps.ts). */
 async function fullMap(session, shot) {
   const minimap = minimapCenter();
+  // Сначала тап по пустому полю: экран прогресса по боссу съедает первый тап
+  // целиком (ui/Taps.ts), и карта после смерти от босса молча не открывалась —
+  // в кадр попадала игра. По полю тап безвреден: джойстик без увода даёт ноль.
+  await session.tap(balance.render.virtualWidth / 2, EMPTY_FIELD_Y);
   await session.tap(minimap.x, minimap.y);
   await shot('map');
   // Карту гасит любой тап — снимаем её и возвращаемся в игру.
@@ -58,6 +62,9 @@ async function boss(session, shot) {
 async function map(session, shot) {
   await fullMap(session, shot);
 }
+
+/** Точка пустого поля: ниже миникарты и HUD, выше кольца джойстика. */
+const EMPTY_FIELD_Y = 200;
 
 /** Центр миникарты в виртуальных единицах экрана. Формула повторяет
  *  ui/Minimap.ts center(): числа берутся из конфига, а не вбиваются сюда. */
