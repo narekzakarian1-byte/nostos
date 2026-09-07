@@ -91,7 +91,11 @@ export const SPRITES = {
   // фоне нарисованных хижины и шпалеры читались как серо-голубые плиты.
   'prop-column': { src: 'art/props/column.png', width: 245, height: 512 },
   'prop-column-broken': { src: 'art/props/column-broken.png', width: 393, height: 512 },
-  'prop-ruin-gate': { src: 'art/props/ruin-gate.png', width: 512, height: 440 },
+  // Первый ассет из Blender (ART_PIPELINE.md §12). Двумя файлами: тело и
+  // отброшенная тень. Якорь и габарит лежат в balance.json props.rendered:
+  // соглашение «подошва на нижней кромке» с настоящей тенью не работает.
+  'prop-ruin-gate': { src: 'art/props/prop-ruin-gate.png', width: 1377, height: 983 },
+  'prop-ruin-gate-shadow': { src: 'art/props/prop-ruin-gate-shadow.png', width: 1377, height: 983 },
   'prop-rock': { src: 'art/props/rock.png', width: 491, height: 478 },
   'prop-rubble': { src: 'art/props/rubble.png', width: 435, height: 362 },
 } as const satisfies Record<string, SpriteDef>;

@@ -24,6 +24,15 @@ export type PicturePropId = Extract<
   | 'prop-rock' | 'prop-rubble'
 >;
 
+/**
+ * Метрики пропа, отрендеренного в Blender. Их нет — проп рисуется прежним
+ * путём, низом картинки в точку касания. Так рендеры и генерации живут рядом,
+ * и переводить остров на новый арт можно по одному объекту.
+ */
+function rendered(id: PicturePropId) {
+  return getBalance().props.rendered?.[id];
+}
+
 const PICTURE_PROPS: readonly PicturePropId[] = [
   'prop-vine-trellis', 'prop-wine-press', 'prop-cart-broken',
   'prop-palisade-burnt', 'prop-hut-burnt', 'prop-ship', 'prop-temple',
@@ -48,6 +57,11 @@ export interface PictureBox {
  */
 export function pictureBox(id: PicturePropId): PictureBox {
   const size = getBalance().props.sizes[id];
+  // У рендера габарит картинки известен точно и включает тень: он посчитан из
+  // модели, а не выведен из пропорции файла.
+  const meta = rendered(id);
+  if (meta) return { width: size.value * meta.boxW, height: size.value * meta.boxH };
+
   const def = SPRITES[id];
   const aspect = def.width / def.height;
   return size.fit === 'width'
@@ -62,9 +76,23 @@ export function drawPicture(
   x: number,
   y: number,
 ): void {
+  const box = pictureBox(id);
+  const meta = rendered(id);
+  if (meta) {
+    // Отрендеренный проп: сначала настоящая отброшенная тень, потом тело, оба
+    // по одному якорю. Контактное пятно ему не рисуется — своя тень у него уже
+    // есть, и второе затемнение поверх неё читается грязью.
+    const left = x - meta.anchorX * box.width;
+    const top = y - meta.anchorY * box.height;
+    const shadow = sprites.get(`${id}-shadow` as SpriteId);
+    if (shadow) ctx.drawImage(shadow, left, top, box.width, box.height);
+    const body = sprites.get(id);
+    if (body) ctx.drawImage(body, left, top, box.width, box.height);
+    return;
+  }
+
   const img = sprites.get(id);
   if (!img) return;
-  const box = pictureBox(id);
   drawContact(ctx, x, y, box.width);
   ctx.drawImage(img, x - box.width / 2, y - box.height, box.width, box.height);
 }

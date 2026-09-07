@@ -517,6 +517,30 @@ export interface PropsConfig {
   /** След пропа на земле. Пропа нет в таблице — сквозь него ходят. */
   readonly footprints: Readonly<Record<string, { readonly rx: number; readonly ry: number }>>;
   readonly _sizesNote?: string;
+  readonly _renderedNote?: string;
+  /**
+   * Метрики пропов, отрендеренных в Blender (ART_PIPELINE.md). Пропа нет в
+   * таблице — он рисуется прежним путём: низом картинки в точку касания.
+   */
+  readonly rendered?: Readonly<Record<string, RenderedProp>>;
+}
+
+/**
+ * Что движку нужно знать о рендереном пропе сверх его размера.
+ *
+ * anchor — точка касания земли ВНУТРИ картинки, в долях её сторон. У
+ * нарисованных пропов её роль играло соглашение «подошва на нижней кромке»; с
+ * настоящей отброшенной тенью оно не работает: тень уходит влево-вниз и
+ * выносит габарит за подошву.
+ *
+ * box — габарит всей картинки вместе с тенью, в долях от размера в
+ * props.sizes. Считается фабрикой из модели и переписывается вместе с ассетом.
+ */
+export interface RenderedProp {
+  readonly anchorX: number;
+  readonly anchorY: number;
+  readonly boxW: number;
+  readonly boxH: number;
 }
 
 export interface SceneryConfig {
