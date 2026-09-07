@@ -200,7 +200,7 @@ _Заметки:_
 
 ![](../public/art/props/oar-forest.png)
 
-<sub>перед промптом — ПРЕАМБУЛА PROP из §5</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
 ```
 A cluster of seven or eight long ship's oars driven upright into cracked stone,
@@ -215,7 +215,7 @@ _Заметки:_
 
 ![](../public/art/props/wreck-ribs.png)
 
-<sub>перед промптом — ПРЕАМБУЛА PROP из §5</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
 ```
 The rib frames of a wrecked galley rising out of stone: a row of curved timber
@@ -231,7 +231,7 @@ _Заметки:_
 
 ![](../public/art/props/marble-steps.png)
 
-<sub>перед промптом — ПРЕАМБУЛА PROP из §5</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
 ```
 A short flight of marble steps that begins on the ground and ends in mid air,
@@ -246,7 +246,7 @@ _Заметки:_
 
 ![](../public/art/props/siren-nest.png)
 
-<sub>перед промптом — ПРЕАМБУЛА PROP из §5</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
 ```
 A huge nest built on a low rock: woven from human bones, long dark hair, torn
@@ -262,7 +262,7 @@ _Заметки:_
 
 ![](../public/art/props/salt-pool.png)
 
-<sub>перед промптом — ПРЕАМБУЛА PROP из §5</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
 ```
 A shallow salt pool in limestone seen from directly above, lying FLAT on the
@@ -277,7 +277,7 @@ _Заметки:_
 
 ![](../public/art/props/bone-field.png)
 
-<sub>перед промптом — ПРЕАМБУЛА PROP из §5</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
 ```
 A scatter of human bones lying flat on stone, seen from above: ribs, long bones
@@ -294,7 +294,7 @@ _Заметки:_
 
 ![](../public/art/entities/sirens-normal.png)
 
-<sub>перед промптом — ПРЕАМБУЛА CHAR из §5</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
 ```
 An enchanted sailor: an emaciated figure with ribs showing, eyes closed, walking
@@ -311,7 +311,7 @@ _Заметки:_
 
 ![](../public/art/entities/sirens-elite.png)
 
-<sub>перед промптом — ПРЕАМБУЛА CHAR из §5</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
 ```
 Same enchanted-sailor family, one rank up: the ropes now twisted into thick
@@ -326,7 +326,7 @@ _Заметки:_
 
 ![](../public/art/entities/sirens-miniboss.png)
 
-<sub>перед промптом — ПРЕАМБУЛА CHAR из §5</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
 ```
 Same family, half merged with the nest: feathers pushing through the skin of the
@@ -342,7 +342,7 @@ _Заметки:_
 
 ![](../public/art/entities/boss-sirens.png)
 
-<sub>перед промптом — ПРЕАМБУЛА CHAR из §5</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
 ```
 Boss character: the Sirens — THREE figures standing in a triangle, drawn in one
@@ -351,7 +351,7 @@ like a cloak, and a woman's face. The left one holds a lyre, the right one a
 double flute, the centre one simply sings with her mouth open unnaturally wide.
 Motionless, facing the viewer, feet gripping stone.
 PALETTE: near-black plumage #080D14, pale faces and arms #F0EAD9, honey feather
-accent #E2A93B, bone #C2B9A2, bronze lyre #B87333. Max 6 colors.
+accent #E2A93B, bone #C2B9A2, bronze lyre #B87333.
 ```
 
 _Заметки:_
@@ -379,10 +379,13 @@ _Заметки:_
 
 ---
 
-## 5. ПРЕАМБУЛЫ
+## 5. ПРЕАМБУЛА ТАЙЛА
 
-Копия из [ISLANDS.md §1.4](../ISLANDS.md#14-три-преамбулы-промптов) — источник
-истины там, здесь для того, чтобы собирать промпт не выходя из файла.
+Копия из [ISLANDS.md §1.4](../ISLANDS.md#14-преамбула-промпта-для-тайла-земли) —
+источник истины там, здесь для того, чтобы собирать промпт не выходя из файла.
+
+Только земля. Объекты, фигуры и оружие собираются в Blender: порядок работы —
+[ART_RUNBOOK.md](../ART_RUNBOOK.md).
 
 ```
 === ПРЕАМБУЛА TILE (земля, 512×512, бесшовный) ===
@@ -398,54 +401,6 @@ NEGATIVE: noise, grain, speckle, dense texture, busy pattern, high contrast,
 dark outlines, photorealistic, 3d render, gradient mesh, vignette, drop shadow,
 large rocks, trees, path, road, tiled seams, borders, frame, text, watermark.
 ЗАДАНИЕ: <строка объекта>
-```
-
-```
-=== ПРЕАМБУЛА PROP (объект мира, 1024×1024) ===
-Top-down mobile game prop, single isolated object.
-CAMERA: fixed 55-degree top-down three-quarter view, as in a mobile action RPG.
-The viewer looks DOWN at the object from above and slightly in front; top faces
-are clearly visible. Orthographic projection, no lens perspective, no vanishing
-point, no wide-angle distortion, no eye-level view.
-LIGHT: exactly one hard light source from the RIGHT and slightly toward the
-viewer. Lit faces point right and down-screen, shaded faces point left and
-up-screen. Consistent across every surface.
-NO SHADOW: do not draw any shadow on the ground. No drop shadow, no contact
-shadow, no cast shadow, no dark ellipse, no blur under the object. Nothing
-beneath it at all. Shading ON the object itself is fine.
-BACKGROUND: completely flat uniform pure chroma green #00FF00, edge to edge. No
-gradient, no texture, no ground, no grass, no horizon, no scenery. Absolutely no
-green of any kind anywhere on the object itself.
-OUTLINE: a clean, closed, continuous near-black outline #080D14, 6-8 px thick,
-tracing the entire outer silhouette where it meets the background, including
-inner openings. No fuzzy edges, no glow, no feathering.
-STYLE: flat stylized vector illustration, bold clean shapes, hard-edged flat
-color fills, 3-4 tones per material (light / mid / dark). No gradients, no
-airbrush, no photorealism, no 3D render, no ambient occlusion, no specular
-highlights, no noise texture.
-FRAMING: object centered horizontally, filling ~90% of the frame. Its base sits
-exactly on the bottom edge of the image, no empty margin below the base.
-Square image 1024x1024. No text, no watermark, no logo, no UI, no border frame.
-ЗАДАНИЕ: <строка объекта> · PALETTE: <палитра острова>
-```
-
-```
-=== ПРЕАМБУЛА CHAR (фигура, 512×512) ===
-Top-down mobile game character sprite, single figure, centered.
-CAMERA / LIGHT / NO SHADOW / BACKGROUND / OUTLINE / STYLE: identical to the PROP
-preamble above (55-degree top-down three-quarter, one hard light from the right
-and slightly toward the viewer, no shadow drawn, flat #00FF00 background, closed
-#080D14 outline, flat vector fills).
-POSE: standing, weight forward, aggressive readable stance, seen from above and
-slightly in front — head, shoulders and both feet clearly visible.
-FRAMING: the figure fills ~85% of a SQUARE frame, feet touching the bottom edge,
-centered horizontally.
-HANDS EMPTY: no weapon in the hands — the weapon is a separate overlay drawn by
-the engine. Sheathed weapons, quivers and shields on the back are fine.
-COLOR LIMIT: no more than 6 colors total. The silhouette must stay recognizable
-when filled with solid black.
-512x512.
-ЗАДАНИЕ: <строка объекта> · PALETTE: <палитра острова>
 ```
 
 ---

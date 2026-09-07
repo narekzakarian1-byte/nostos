@@ -4,7 +4,7 @@
 костюмы, боссы, трофеи — и готовые промпты на генерацию каждого файла.
 
 Читается вместе с `GDD.md` (§3 стиль, §7 маршрут, §8 корабль), `balance.json`
-(`islands.list`, `render`, `props`, `palette`) и `ART_PROMPTS.txt` (контракт
+(`islands.list`, `render`, `props`, `palette`) и `ART_RUNBOOK.md` (порядок
 спрайта и уже сгенерированные ассеты).
 
 Этот файл — источник истины по тому, **как выглядит мир**. Числа боя остаются в
@@ -102,42 +102,44 @@
 
 ### 1.3 Один свет на всю игру
 
-**В `balance.json` свет `props.lightX/Y/Z = 0.42 / 0.15 / 0.8`: источник справа
-и чуть в сторону зрителя, тень уходит влево-вверх.** Все геометрические пропы
-уже считаются от него.
+**В `balance.json` свет `props.lightX/Y/Z = 0.42 / 0.15 / 0.8`.** Источник
+справа, высоко (60.9° над горизонтом) и чуть ЗА объектом. Снос тени на единицу
+высоты выходит `x = −0.525`, `y = −0.187`: **тень уходит влево и ВНИЗ по
+экрану, к зрителю.**
 
-**Это правка к `ART_PROMPTS.txt`:** там в промпте `ruin-gate` написано «light
-from the upper-left». Так сгенерированный объект будет освещён навстречу всей
-остальной сцене. Во всех промптах ниже свет **справа**, и старый промпт воротам
-использовать больше нельзя.
+Раньше здесь было написано «влево-вверх». Это была ошибка: положительный
+`lightY` уводит солнце от зрителя, а тень — наоборот, на зрителя. Считать
+направление на глаз не надо, оно выводится арифметически — `Optics.shadowX/Y`
+в движке и `optics.project_shadow` в фабрике берут его из этих же трёх чисел.
 
-Формулировка, обязательная в каждом промпте на объект:
+Отсюда же следует, что все обращённые к камере грани физически в тени. Движок
+поднимает их смещением полу-ламберта (`props.shadeBias`), фабрика — зеркальным
+по Y заполняющим светом. Ни там, ни там это не «на глаз».
 
-> one hard light source from the RIGHT and slightly toward the viewer; lit faces
-> point right and down-screen, shaded faces point left and up-screen
+**Свет — общий для движка и фабрики ассетов.** Правка любого из трёх чисел
+обесценивает все отрендеренные ассеты: импортёр отвергнет их по несовпадению
+отпечатка и потребует перерендерить.
 
-**Тени в картинке нет никогда.** Контактную и отбрасываемую тень рисует движок
-(`props/Bake.ts`, `UiKit.groundShadow`) по общему свету. Тень внутри PNG
-неотделима от объекта и ложится вторым слоем поверх движковой — именно из-за
-этого пришлось выкинуть первые версии `olive.png` и `rock.png`.
+**Тени внутри PNG нет никогда.** У рендера она идёт отдельным файлом
+(`<id>-shadow.png`), у старых картинок её рисует движок контактным пятном.
+Тень, запечённая в сам PNG, неотделима от объекта и ложится вторым слоем
+поверх движковой — из-за этого пришлось выкинуть первые версии `olive.png` и
+`rock.png`.
 
-### 1.4 Три преамбулы промптов
+### 1.4 Преамбула промпта для тайла земли
 
-> **Статус на сейчас.** `GDD.md` §3 переписан: основа визуала — stylized 3D,
-> объекты и фигуры собираются скриптом в Blender и рендерятся под единственную
-> камеру игры (`ART_PIPELINE.md`). Преамбулы ниже заказывают плоскую векторную
-> иллюстрацию с обводкой и лимитом в шесть цветов — то есть **отменённый
-> стиль**, и для объектов, пропов и фигур больше не применяются.
->
-> За диффузией остаётся то, где ракурс и свет не важны и ошибиться в них нельзя:
-> **бесшовные текстуры поверхностей** (преамбула TILE — годится как есть) и
-> **концепт-наброски формы**, по которым потом пишется скрипт.
->
-> Преамбулы PROP и CHAR переписываются под это назначение, когда заработает
-> benchmark-ассет и станет видно, что от диффузии реально осталось нужно. До тех
-> пор они сохранены как есть — как рабочая запись того, чем сделан текущий арт.
+Объекты, фигуры и оружие здесь больше не описываются: они собираются скриптом в
+Blender и рендерятся под единственную камеру игры. Порядок работы —
+`ART_RUNBOOK.md`, обоснование — `ART_PIPELINE.md`.
 
-Копировать целиком перед строкой объекта.
+Преамбулы PROP и CHAR удалены намеренно. Они требовали от диффузионной модели
+держать камеру 55° и один источник света — то, чего у неё нет и что она соблюсти
+не может; разъезд объектов по ракурсу в игре был виден глазом. Заодно они
+описывали плоский стиль с обводкой и лимитом в шесть цветов, отменённый в
+`GDD.md` §3.
+
+За диффузией остаётся ровно то, где ракурс и свет не важны и ошибиться в них
+нельзя: бесшовная текстура поверхности.
 
 ```
 === ПРЕАМБУЛА TILE (земля, 512×512, бесшовный) ===
@@ -153,54 +155,6 @@ NEGATIVE: noise, grain, speckle, dense texture, busy pattern, high contrast,
 dark outlines, photorealistic, 3d render, gradient mesh, vignette, drop shadow,
 large rocks, trees, path, road, tiled seams, borders, frame, text, watermark.
 ЗАДАНИЕ: <строка объекта>
-```
-
-```
-=== ПРЕАМБУЛА PROP (объект мира, 1024×1024) ===
-Top-down mobile game prop, single isolated object.
-CAMERA: fixed 55-degree top-down three-quarter view, as in a mobile action RPG.
-The viewer looks DOWN at the object from above and slightly in front; top faces
-are clearly visible. Orthographic projection, no lens perspective, no vanishing
-point, no wide-angle distortion, no eye-level view.
-LIGHT: exactly one hard light source from the RIGHT and slightly toward the
-viewer. Lit faces point right and down-screen, shaded faces point left and
-up-screen. Consistent across every surface.
-NO SHADOW: do not draw any shadow on the ground. No drop shadow, no contact
-shadow, no cast shadow, no dark ellipse, no blur under the object. Nothing
-beneath it at all. Shading ON the object itself is fine.
-BACKGROUND: completely flat uniform pure chroma green #00FF00, edge to edge. No
-gradient, no texture, no ground, no grass, no horizon, no scenery. Absolutely no
-green of any kind anywhere on the object itself.
-OUTLINE: a clean, closed, continuous near-black outline #080D14, 6-8 px thick,
-tracing the entire outer silhouette where it meets the background, including
-inner openings. No fuzzy edges, no glow, no feathering.
-STYLE: flat stylized vector illustration, bold clean shapes, hard-edged flat
-color fills, 3-4 tones per material (light / mid / dark). No gradients, no
-airbrush, no photorealism, no 3D render, no ambient occlusion, no specular
-highlights, no noise texture.
-FRAMING: object centered horizontally, filling ~90% of the frame. Its base sits
-exactly on the bottom edge of the image, no empty margin below the base.
-Square image 1024x1024. No text, no watermark, no logo, no UI, no border frame.
-ЗАДАНИЕ: <строка объекта> · PALETTE: <палитра острова>
-```
-
-```
-=== ПРЕАМБУЛА CHAR (фигура, 512×512) ===
-Top-down mobile game character sprite, single figure, centered.
-CAMERA / LIGHT / NO SHADOW / BACKGROUND / OUTLINE / STYLE: identical to the PROP
-preamble above (55-degree top-down three-quarter, one hard light from the right
-and slightly toward the viewer, no shadow drawn, flat #00FF00 background, closed
-#080D14 outline, flat vector fills).
-POSE: standing, weight forward, aggressive readable stance, seen from above and
-slightly in front — head, shoulders and both feet clearly visible.
-FRAMING: the figure fills ~85% of a SQUARE frame, feet touching the bottom edge,
-centered horizontally.
-HANDS EMPTY: no weapon in the hands — the weapon is a separate overlay drawn by
-the engine. Sheathed weapons, quivers and shields on the back are fine.
-COLOR LIMIT: no more than 6 colors total. The silhouette must stay recognizable
-when filled with solid black.
-512x512.
-ЗАДАНИЕ: <строка объекта> · PALETTE: <палитра острова>
 ```
 
 ### 1.5 Костюмный контракт врагов

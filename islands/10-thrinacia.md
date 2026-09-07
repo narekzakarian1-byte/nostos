@@ -191,7 +191,7 @@ _Заметки:_
 
 ![](../public/art/props/horned-altar.png)
 
-<sub>перед промптом — ПРЕАМБУЛА PROP из §5</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
 ```
 A stone sacrificial altar faced with real bull horns pressed into the masonry, a
@@ -207,7 +207,7 @@ _Заметки:_
 
 ![](../public/art/props/spit-roast.png)
 
-<sub>перед промптом — ПРЕАМБУЛА PROP из §5</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
 ```
 A roasting spit: two forked wooden uprights holding a long bronze skewer with a
@@ -223,7 +223,7 @@ _Заметки:_
 
 ![](../public/art/props/herd-hut.png)
 
-<sub>перед промптом — ПРЕАМБУЛА PROP из §5</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
 ```
 A herdsman's hut: a simple lean-to of poles roofed with stretched cow hides, a
@@ -238,7 +238,7 @@ _Заметки:_
 
 ![](../public/art/props/bull-skull-pole.png)
 
-<sub>перед промптом — ПРЕАМБУЛА PROP из §5</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
 ```
 A tall weathered pole planted in dry earth with a large horned bull skull mounted
@@ -253,7 +253,7 @@ _Заметки:_
 
 ![](../public/art/props/dead-olive.png)
 
-<sub>перед промптом — ПРЕАМБУЛА PROP из §5</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
 ```
 A dead olive tree: a thick hollow split trunk with no leaves, twisted bare
@@ -269,7 +269,7 @@ _Заметки:_
 
 ![](../public/art/props/cracked-ground.png)
 
-<sub>перед промптом — ПРЕАМБУЛА PROP из §5</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
 ```
 A patch of sun-baked cracked earth seen from directly above, lying completely FLAT
@@ -286,14 +286,14 @@ _Заметки:_
 
 ![](../public/art/entities/thrinacia-normal.png)
 
-<sub>перед промптом — ПРЕАМБУЛА CHAR из §5</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
 ```
 A herdsman of Helios: a figure in a knee-length white tunic, face completely
 hidden behind a round featureless golden sun-disc mask, a long staff in hand, bare
 feet, no skin visible anywhere. Bright figure — it must rely on a strong closed
 black outline to stay readable against pale ground.
-PALETTE: white tunic #F2EEE4, gold mask #E8B23C, near-black outline and shadow
+PALETTE: white tunic #F2EEE4, gold mask #E8B23C
 #080D14, straw ochre trim #A2833A.
 ```
 
@@ -303,7 +303,7 @@ _Заметки:_
 
 ![](../public/art/entities/thrinacia-elite.png)
 
-<sub>перед промптом — ПРЕАМБУЛА CHAR из §5</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
 ```
 Same Helios herdsman family, one rank up: the sun-disc mask now has radiating
@@ -318,7 +318,7 @@ _Заметки:_
 
 ![](../public/art/entities/thrinacia-miniboss.png)
 
-<sub>перед промптом — ПРЕАМБУЛА CHAR из §5</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
 ```
 Same family, a nymph herdswoman: a tall figure in a long white robe with a golden
@@ -333,7 +333,7 @@ _Заметки:_
 
 ![](../public/art/entities/boss-thrinacia.png)
 
-<sub>перед промптом — ПРЕАМБУЛА CHAR из §5</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
 ```
 Boss character: the Bull of Helios. A snow-white bull the size of a house, head
@@ -342,7 +342,7 @@ horns with a small sun disc mounted between them, bronze hooves, eyes like burni
 coals, a sun symbol branded into the shoulder. Massive neck and shoulders, steam
 from the nostrils.
 PALETTE: white hide #F2EEE4, gold horn and disc #E8B23C, bronze hoof #B87333,
-ember eyes #C4342B, near-black outline #080D14. Max 6 colors.
+ember eyes #C4342B.
 ```
 
 _Заметки:_
@@ -370,10 +370,13 @@ _Заметки:_
 
 ---
 
-## 5. ПРЕАМБУЛЫ
+## 5. ПРЕАМБУЛА ТАЙЛА
 
-Копия из [ISLANDS.md §1.4](../ISLANDS.md#14-три-преамбулы-промптов) — источник
-истины там, здесь для того, чтобы собирать промпт не выходя из файла.
+Копия из [ISLANDS.md §1.4](../ISLANDS.md#14-преамбула-промпта-для-тайла-земли) —
+источник истины там, здесь для того, чтобы собирать промпт не выходя из файла.
+
+Только земля. Объекты, фигуры и оружие собираются в Blender: порядок работы —
+[ART_RUNBOOK.md](../ART_RUNBOOK.md).
 
 ```
 === ПРЕАМБУЛА TILE (земля, 512×512, бесшовный) ===
@@ -389,54 +392,6 @@ NEGATIVE: noise, grain, speckle, dense texture, busy pattern, high contrast,
 dark outlines, photorealistic, 3d render, gradient mesh, vignette, drop shadow,
 large rocks, trees, path, road, tiled seams, borders, frame, text, watermark.
 ЗАДАНИЕ: <строка объекта>
-```
-
-```
-=== ПРЕАМБУЛА PROP (объект мира, 1024×1024) ===
-Top-down mobile game prop, single isolated object.
-CAMERA: fixed 55-degree top-down three-quarter view, as in a mobile action RPG.
-The viewer looks DOWN at the object from above and slightly in front; top faces
-are clearly visible. Orthographic projection, no lens perspective, no vanishing
-point, no wide-angle distortion, no eye-level view.
-LIGHT: exactly one hard light source from the RIGHT and slightly toward the
-viewer. Lit faces point right and down-screen, shaded faces point left and
-up-screen. Consistent across every surface.
-NO SHADOW: do not draw any shadow on the ground. No drop shadow, no contact
-shadow, no cast shadow, no dark ellipse, no blur under the object. Nothing
-beneath it at all. Shading ON the object itself is fine.
-BACKGROUND: completely flat uniform pure chroma green #00FF00, edge to edge. No
-gradient, no texture, no ground, no grass, no horizon, no scenery. Absolutely no
-green of any kind anywhere on the object itself.
-OUTLINE: a clean, closed, continuous near-black outline #080D14, 6-8 px thick,
-tracing the entire outer silhouette where it meets the background, including
-inner openings. No fuzzy edges, no glow, no feathering.
-STYLE: flat stylized vector illustration, bold clean shapes, hard-edged flat
-color fills, 3-4 tones per material (light / mid / dark). No gradients, no
-airbrush, no photorealism, no 3D render, no ambient occlusion, no specular
-highlights, no noise texture.
-FRAMING: object centered horizontally, filling ~90% of the frame. Its base sits
-exactly on the bottom edge of the image, no empty margin below the base.
-Square image 1024x1024. No text, no watermark, no logo, no UI, no border frame.
-ЗАДАНИЕ: <строка объекта> · PALETTE: <палитра острова>
-```
-
-```
-=== ПРЕАМБУЛА CHAR (фигура, 512×512) ===
-Top-down mobile game character sprite, single figure, centered.
-CAMERA / LIGHT / NO SHADOW / BACKGROUND / OUTLINE / STYLE: identical to the PROP
-preamble above (55-degree top-down three-quarter, one hard light from the right
-and slightly toward the viewer, no shadow drawn, flat #00FF00 background, closed
-#080D14 outline, flat vector fills).
-POSE: standing, weight forward, aggressive readable stance, seen from above and
-slightly in front — head, shoulders and both feet clearly visible.
-FRAMING: the figure fills ~85% of a SQUARE frame, feet touching the bottom edge,
-centered horizontally.
-HANDS EMPTY: no weapon in the hands — the weapon is a separate overlay drawn by
-the engine. Sheathed weapons, quivers and shields on the back are fine.
-COLOR LIMIT: no more than 6 colors total. The silhouette must stay recognizable
-when filled with solid black.
-512x512.
-ЗАДАНИЕ: <строка объекта> · PALETTE: <палитра острова>
 ```
 
 ---

@@ -140,13 +140,7 @@ python3 tools/import-island-art.py ismaros
 
 Исходники в `uploads/` не удаляются — пересобрать можно без похода в ChatGPT заново.
 
-**Генерация теперь скриптуется.** `node tools/generate.mjs <набор>` гоняет
-локальный Draw Things по списку из `tools/art-jobs.mjs` и складывает результат
-прямо в `islands/uploads/ismaros/`. Преамбулы там те же, что в §5, плюс
-отдельный абзац запрета подложки: первый корабль сгенерировался стоящим на
-песчаном пятне, и это пятно уехало бы вместе с ним на траву — ровно та же беда,
-что уже была со шпалерой. Очередь строго последовательная, одна картинка идёт
-3–5 минут, поэтому скрипт запускают фоном.
+**Объекты этого острова сгенерированы диффузией и будут пересобраны в Blender.** Гонщик `tools/generate.mjs` и его список заданий удалены: они умели только отменённый плоский стиль. Готовые PNG остаются в игре и работают, пока до них не дойдёт очередь — остров переводится на рендер по одному объекту (`ART_RUNBOOK.md`).
 
 Под каждым слотом ниже: превью (подтянется само, как только файл окажется в
 `public/art/`), готовый промпт и строка для заметок. Перед промптом вставить
@@ -160,7 +154,7 @@ python3 tools/import-island-art.py ismaros
 
 ![](../public/art/ground/base.png)
 
-Промпт — в `ART_PROMPTS.txt`, раздел «ЗЕМЛЯ / МИР». Если переименуем в
+Промпт тайла — в §5 этого файла. Если переименуем в
 `ground/ismaros.png` — поправить `SPRITES` в `src/ui/AssetManifest.ts`.
 
 _Заметки:_
@@ -206,7 +200,7 @@ height at both edges, orthographic elevation, no vanishing point». Итог 512
 
 ![](../public/art/props/vine-trellis.png)
 
-<sub>перед промптом — ПРЕАМБУЛА PROP из §5</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
 ```
 A grapevine trellis section: two weathered wooden stakes with a crossbar,
@@ -224,7 +218,7 @@ _Заметки:_ Фон чёрный, не хромакей — вырез че
 
 ![](../public/art/props/wine-press.png)
 
-<sub>перед промптом — ПРЕАМБУЛА PROP из §5</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
 ```
 A stone wine press: a square carved limestone basin with a spout, a wooden beam
@@ -239,7 +233,7 @@ _Заметки:_
 
 ![](../public/art/props/cart-broken.png)
 
-<sub>перед промптом — ПРЕАМБУЛА PROP из §5</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
 ```
 An overturned ancient Greek two-wheeled ox cart: body tipped on its side, one
@@ -255,7 +249,7 @@ _Заметки:_
 
 ![](../public/art/props/palisade-burnt.png)
 
-<sub>перед промптом — ПРЕАМБУЛА PROP из §5</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
 ```
 A short section of a burnt wooden palisade: four or five charred sharpened
@@ -270,7 +264,7 @@ _Заметки:_
 
 ![](../public/art/props/hut-burnt.png)
 
-<sub>перед промптом — ПРЕАМБУЛА PROP из §5</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
 ```
 A small burnt Greek village hut: stone base walls still standing, the thatched
@@ -286,9 +280,9 @@ _Заметки:_
 
 ![](../public/art/props/ship-beached.png)
 
-<sub>перед промптом — ПРЕАМБУЛА PROP из §5 плюс абзац запрета подложки</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
-Промпт — в `tools/art-jobs.mjs`, задание `ship-beached`.
+Ландмарк. Пересобирается в Blender — `ART_RUNBOOK.md`.
 
 _Заметки:_ Первый заход встал на песчаном пятне вопреки «no ground beneath».
 Лечится отдельным абзацем NO GROUND UNDER IT и дублем в NEGATIVE.
@@ -297,9 +291,9 @@ _Заметки:_ Первый заход встал на песчаном пя�
 
 ![](../public/art/props/temple-burnt.png)
 
-<sub>перед промптом — ПРЕАМБУЛА PROP из §5</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
-Промпт — в `tools/art-jobs.mjs`, задание `temple-burnt`. Ставится ВЫШЕ точки
+Ландмарк, пересобирается в Blender. Ставится ВЫШЕ точки
 арены, за спиной босса: арена радиусом 96, и храм в её центре закрыл бы цель.
 
 _Заметки:_
@@ -308,7 +302,7 @@ _Заметки:_
 
 Колонны, ворота, валуны и щебень до сих пор рисуются геометрией
 (`src/ui/props/Models.ts`) и на фоне нарисованных хижины и шпалеры читаются как
-серо-голубые бетонные плиты. Задания — в `tools/art-jobs.mjs`, набор `props`.
+серо-голубые бетонные плиты. Пересобираются в Blender — `ART_RUNBOOK.md`.
 
 Порядок подключения из [ISLANDS.md §5.3](../ISLANDS.md#53-пропы-картинка-или-геометрия)
 соблюдён: сначала один проп рядом с геометрическим, посмотреть вместе на одном
@@ -329,7 +323,7 @@ _Заметки:_
 
 ![](../public/art/entities/ismaros-normal.png)
 
-<sub>перед промптом — ПРЕАМБУЛА CHAR из §5</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
 ```
 A Thracian Cicone raider on foot, barefoot, wearing a short patterned woolen
@@ -345,7 +339,7 @@ _Заметки:_
 
 ![](../public/art/entities/ismaros-elite.png)
 
-<sub>перед промптом — ПРЕАМБУЛА CHAR из §5</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
 ```
 Same Cicone raider family, one rank up: bronze disc breastplate and forearm
@@ -360,7 +354,7 @@ _Заметки:_
 
 ![](../public/art/entities/ismaros-miniboss.png)
 
-<sub>перед промптом — ПРЕАМБУЛА CHAR из §5</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
 ```
 Same Cicone family, war-band leader: bronze helmet with a low crest, a long
@@ -376,7 +370,7 @@ _Заметки:_
 
 ![](../public/art/entities/boss-ismaros.png)
 
-<sub>перед промптом — ПРЕАМБУЛА CHAR из §5</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
 ```
 Boss character: the Cicone chieftain. A huge Thracian warrior in bronze over a
@@ -385,7 +379,7 @@ crimson cloak, an oval wicker shield with a real bull skull nailed to it on one
 arm, a heavy double-headed axe raised in the other. Feet planted wide, shoulders
 squared to the viewer, mid-swing. Monumental and readable in solid black.
 PALETTE: near-black #080D14, crimson cloak #C4342B, bronze #D9762B, bone skull
-#E8DCC8, wicker #C9C3AE. Max 6 colors.
+#E8DCC8, wicker #C9C3AE.
 ```
 
 _Заметки:_ Со второго раза. На первом Flux оторвал лезвие секиры от рукояти и повесил в
@@ -406,7 +400,7 @@ weapon touching his hand».
 Костюм на острове один на все три тира ([ISLANDS.md §1.5](../ISLANDS.md#15-костюмный-контракт-врагов)),
 значит детали общие: тиры различает размер фигуры и кольцо ранга под ногами.
 
-Задания — в `tools/art-jobs.mjs`, набор `kikon`. Руки и ноги генерируются
+Детали кикона пересобираются в Blender — `ART_RUNBOOK.md`. Руки и ноги генерируются
 ОТДЕЛЬНО от тела и без оружия: оружие кладётся в сокет кисти движком.
 
 _Заметки:_
@@ -436,10 +430,13 @@ _Заметки:_
 
 ---
 
-## 5. ПРЕАМБУЛЫ
+## 5. ПРЕАМБУЛА ТАЙЛА
 
-Копия из [ISLANDS.md §1.4](../ISLANDS.md#14-три-преамбулы-промптов) — источник
-истины там, здесь для того, чтобы собирать промпт не выходя из файла.
+Копия из [ISLANDS.md §1.4](../ISLANDS.md#14-преамбула-промпта-для-тайла-земли) —
+источник истины там, здесь для того, чтобы собирать промпт не выходя из файла.
+
+Только земля. Объекты, фигуры и оружие собираются в Blender: порядок работы —
+[ART_RUNBOOK.md](../ART_RUNBOOK.md).
 
 ```
 === ПРЕАМБУЛА TILE (земля, 512×512, бесшовный) ===
@@ -455,54 +452,6 @@ NEGATIVE: noise, grain, speckle, dense texture, busy pattern, high contrast,
 dark outlines, photorealistic, 3d render, gradient mesh, vignette, drop shadow,
 large rocks, trees, path, road, tiled seams, borders, frame, text, watermark.
 ЗАДАНИЕ: <строка объекта>
-```
-
-```
-=== ПРЕАМБУЛА PROP (объект мира, 1024×1024) ===
-Top-down mobile game prop, single isolated object.
-CAMERA: fixed 55-degree top-down three-quarter view, as in a mobile action RPG.
-The viewer looks DOWN at the object from above and slightly in front; top faces
-are clearly visible. Orthographic projection, no lens perspective, no vanishing
-point, no wide-angle distortion, no eye-level view.
-LIGHT: exactly one hard light source from the RIGHT and slightly toward the
-viewer. Lit faces point right and down-screen, shaded faces point left and
-up-screen. Consistent across every surface.
-NO SHADOW: do not draw any shadow on the ground. No drop shadow, no contact
-shadow, no cast shadow, no dark ellipse, no blur under the object. Nothing
-beneath it at all. Shading ON the object itself is fine.
-BACKGROUND: completely flat uniform pure chroma green #00FF00, edge to edge. No
-gradient, no texture, no ground, no grass, no horizon, no scenery. Absolutely no
-green of any kind anywhere on the object itself.
-OUTLINE: a clean, closed, continuous near-black outline #080D14, 6-8 px thick,
-tracing the entire outer silhouette where it meets the background, including
-inner openings. No fuzzy edges, no glow, no feathering.
-STYLE: flat stylized vector illustration, bold clean shapes, hard-edged flat
-color fills, 3-4 tones per material (light / mid / dark). No gradients, no
-airbrush, no photorealism, no 3D render, no ambient occlusion, no specular
-highlights, no noise texture.
-FRAMING: object centered horizontally, filling ~90% of the frame. Its base sits
-exactly on the bottom edge of the image, no empty margin below the base.
-Square image 1024x1024. No text, no watermark, no logo, no UI, no border frame.
-ЗАДАНИЕ: <строка объекта> · PALETTE: <палитра острова>
-```
-
-```
-=== ПРЕАМБУЛА CHAR (фигура, 512×512) ===
-Top-down mobile game character sprite, single figure, centered.
-CAMERA / LIGHT / NO SHADOW / BACKGROUND / OUTLINE / STYLE: identical to the PROP
-preamble above (55-degree top-down three-quarter, one hard light from the right
-and slightly toward the viewer, no shadow drawn, flat #00FF00 background, closed
-#080D14 outline, flat vector fills).
-POSE: standing, weight forward, aggressive readable stance, seen from above and
-slightly in front — head, shoulders and both feet clearly visible.
-FRAMING: the figure fills ~85% of a SQUARE frame, feet touching the bottom edge,
-centered horizontally.
-HANDS EMPTY: no weapon in the hands — the weapon is a separate overlay drawn by
-the engine. Sheathed weapons, quivers and shields on the back are fine.
-COLOR LIMIT: no more than 6 colors total. The silhouette must stay recognizable
-when filled with solid black.
-512x512.
-ЗАДАНИЕ: <строка объекта> · PALETTE: <палитра острова>
 ```
 
 ---

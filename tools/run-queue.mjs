@@ -30,7 +30,18 @@ export async function runQueue(jobs, { alsoCheck = () => null } = {}) {
     }
     mkdirSync(job.dir, { recursive: true });
 
-    const prompt = `${PREAMBLES[job.preamble]}\nTASK: ${job.prompt}`;
+    // Без преамбулы задание не гоняем. Раньше отсутствующая подставлялась в
+    // промпт как undefined, и Draw Things молча выдавал картинку не в том
+    // стиле — самая дорогая из возможных ошибок здесь.
+    const preamble = PREAMBLES[job.preamble];
+    if (!preamble) {
+      throw new Error(
+        `нет преамбулы «${job.preamble}» (задание ${job.name}). `
+        + 'Объекты, фигуры и оружие собираются в Blender — см. ART_RUNBOOK.md',
+      );
+    }
+
+    const prompt = `${preamble}\nTASK: ${job.prompt}`;
     const started = Date.now();
     console.log(`[${done + failed + 1}/${jobs.length - skipped}] ${file} (${job.width}×${job.height})…`);
 

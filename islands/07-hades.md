@@ -196,7 +196,7 @@ _Заметки:_
 
 ![](../public/art/props/dead-poplar.png)
 
-<sub>перед промптом — ПРЕАМБУЛА PROP из §5</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
 ```
 A dead black poplar: a tall pale bark-stripped trunk with bare forked branches
@@ -212,7 +212,7 @@ _Заметки:_
 
 ![](../public/art/props/stele.png)
 
-<sub>перед промптом — ПРЕАМБУЛА PROP из §5</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
 ```
 An ancient Greek grave stele: an upright rectangular stone slab with a carved
@@ -227,7 +227,7 @@ _Заметки:_
 
 ![](../public/art/props/blood-pit.png)
 
-<sub>перед промптом — ПРЕАМБУЛА PROP из §5</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
 ```
 A sacrificial pit dug into ash, seen from directly above, lying FLAT on the
@@ -244,7 +244,7 @@ _Заметки:_
 
 ![](../public/art/props/charon-boat.png)
 
-<sub>перед промптом — ПРЕАМБУЛА PROP из §5</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
 ```
 A long narrow black ferry boat drawn up on an ash shore, empty, a single long
@@ -260,7 +260,7 @@ _Заметки:_
 
 ![](../public/art/props/asphodel-clump.png)
 
-<sub>перед промптом — ПРЕАМБУЛА PROP из §5</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
 ```
 A clump of pale asphodel: thin colourless stalks with small six-petalled flowers,
@@ -274,7 +274,7 @@ _Заметки:_
 
 ![](../public/art/props/gate-black.png)
 
-<sub>перед промптом — ПРЕАМБУЛА PROP из §5</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
 ```
 A ruined Greek temple gate: two weathered columns supporting a cracked lintel,
@@ -293,7 +293,7 @@ _Заметки:_
 
 ![](../public/art/entities/hades-normal.png)
 
-<sub>перед промптом — ПРЕАМБУЛА CHAR из §5</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
 ```
 The shade of a fallen warrior: a hoplite in tarnished dark bronze armour with an
@@ -310,7 +310,7 @@ _Заметки:_
 
 ![](../public/art/entities/hades-elite.png)
 
-<sub>перед промптом — ПРЕАМБУЛА CHAR из §5</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
 ```
 Same shade family, one rank up: a large round shield and a long spear on the
@@ -325,7 +325,7 @@ _Заметки:_
 
 ![](../public/art/entities/hades-miniboss.png)
 
-<sub>перед промптом — ПРЕАМБУЛА CHAR из §5</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
 ```
 Same family, a named shade: a fully armoured hero, nearly opaque, monumental
@@ -340,7 +340,7 @@ _Заметки:_
 
 ![](../public/art/entities/boss-hades.png)
 
-<sub>перед промптом — ПРЕАМБУЛА CHAR из §5</sub>
+<sub>объект собирается в Blender — `ART_RUNBOOK.md`</sub>
 
 ```
 Boss character: the Shade of Achilles. Full Iliadic panoply — a great round
@@ -350,7 +350,7 @@ helmet and the breastplate there is a visible gap of nothing, and the landscape
 shows through it. Nearly opaque bronze with a cream rim light along the whole
 silhouette. Standing, spear grounded, utterly still.
 PALETTE: near-black #080D14, tarnished bronze #6E6A63 and #4F4C48, cream rim
-#E8DCC8, crest crimson #C4342B, ash #C9C3AE. Max 6 colors.
+#E8DCC8, crest crimson #C4342B, ash #C9C3AE.
 ```
 
 _Заметки:_
@@ -378,10 +378,13 @@ _Заметки:_
 
 ---
 
-## 5. ПРЕАМБУЛЫ
+## 5. ПРЕАМБУЛА ТАЙЛА
 
-Копия из [ISLANDS.md §1.4](../ISLANDS.md#14-три-преамбулы-промптов) — источник
-истины там, здесь для того, чтобы собирать промпт не выходя из файла.
+Копия из [ISLANDS.md §1.4](../ISLANDS.md#14-преамбула-промпта-для-тайла-земли) —
+источник истины там, здесь для того, чтобы собирать промпт не выходя из файла.
+
+Только земля. Объекты, фигуры и оружие собираются в Blender: порядок работы —
+[ART_RUNBOOK.md](../ART_RUNBOOK.md).
 
 ```
 === ПРЕАМБУЛА TILE (земля, 512×512, бесшовный) ===
@@ -397,54 +400,6 @@ NEGATIVE: noise, grain, speckle, dense texture, busy pattern, high contrast,
 dark outlines, photorealistic, 3d render, gradient mesh, vignette, drop shadow,
 large rocks, trees, path, road, tiled seams, borders, frame, text, watermark.
 ЗАДАНИЕ: <строка объекта>
-```
-
-```
-=== ПРЕАМБУЛА PROP (объект мира, 1024×1024) ===
-Top-down mobile game prop, single isolated object.
-CAMERA: fixed 55-degree top-down three-quarter view, as in a mobile action RPG.
-The viewer looks DOWN at the object from above and slightly in front; top faces
-are clearly visible. Orthographic projection, no lens perspective, no vanishing
-point, no wide-angle distortion, no eye-level view.
-LIGHT: exactly one hard light source from the RIGHT and slightly toward the
-viewer. Lit faces point right and down-screen, shaded faces point left and
-up-screen. Consistent across every surface.
-NO SHADOW: do not draw any shadow on the ground. No drop shadow, no contact
-shadow, no cast shadow, no dark ellipse, no blur under the object. Nothing
-beneath it at all. Shading ON the object itself is fine.
-BACKGROUND: completely flat uniform pure chroma green #00FF00, edge to edge. No
-gradient, no texture, no ground, no grass, no horizon, no scenery. Absolutely no
-green of any kind anywhere on the object itself.
-OUTLINE: a clean, closed, continuous near-black outline #080D14, 6-8 px thick,
-tracing the entire outer silhouette where it meets the background, including
-inner openings. No fuzzy edges, no glow, no feathering.
-STYLE: flat stylized vector illustration, bold clean shapes, hard-edged flat
-color fills, 3-4 tones per material (light / mid / dark). No gradients, no
-airbrush, no photorealism, no 3D render, no ambient occlusion, no specular
-highlights, no noise texture.
-FRAMING: object centered horizontally, filling ~90% of the frame. Its base sits
-exactly on the bottom edge of the image, no empty margin below the base.
-Square image 1024x1024. No text, no watermark, no logo, no UI, no border frame.
-ЗАДАНИЕ: <строка объекта> · PALETTE: <палитра острова>
-```
-
-```
-=== ПРЕАМБУЛА CHAR (фигура, 512×512) ===
-Top-down mobile game character sprite, single figure, centered.
-CAMERA / LIGHT / NO SHADOW / BACKGROUND / OUTLINE / STYLE: identical to the PROP
-preamble above (55-degree top-down three-quarter, one hard light from the right
-and slightly toward the viewer, no shadow drawn, flat #00FF00 background, closed
-#080D14 outline, flat vector fills).
-POSE: standing, weight forward, aggressive readable stance, seen from above and
-slightly in front — head, shoulders and both feet clearly visible.
-FRAMING: the figure fills ~85% of a SQUARE frame, feet touching the bottom edge,
-centered horizontally.
-HANDS EMPTY: no weapon in the hands — the weapon is a separate overlay drawn by
-the engine. Sheathed weapons, quivers and shields on the back are fine.
-COLOR LIMIT: no more than 6 colors total. The silhouette must stay recognizable
-when filled with solid black.
-512x512.
-ЗАДАНИЕ: <строка объекта> · PALETTE: <палитра острова>
 ```
 
 ---
