@@ -166,7 +166,9 @@ describe('Декор по зонам', () => {
     const game = makeGame();
     const { roadClearance } = balance.scenery;
     for (const prop of game.scenery.props) {
-      const reach = footprintOf(prop.id)?.rx ?? 0;
+      // След берётся выросшим: у каждого экземпляра свой размер, и зазор
+      // считается по нему же (world/Scatter.onRoad).
+      const reach = (footprintOf(prop.id)?.rx ?? 0) * prop.scale;
       for (const path of game.scenery.roadPaths) {
         const gap = distanceToPaths(path.points, prop.x, prop.y);
         // Половина ширины — сама дорога, roadClearance — обочина, reach —
@@ -178,12 +180,69 @@ describe('Декор по зонам', () => {
     }
   });
 
+  it('сеяные пропы отличаются размером и стороной, ландмарки — нет', () => {
+    const game = makeGame();
+    const landmarkIds = new Set(
+      layout.zones.flatMap((z) => (z.landmarks ?? []).map((l) => l.prop)),
+    );
+    // Один и тот же камень, отпечатанный два десятка раз без отличий, глаз
+    // ловит быстрее, чем успевает прочитать сцену.
+    const scales = new Set(game.scenery.props.map((p) => p.scale.toFixed(3)));
+    expect(scales.size).toBeGreaterThan(10);
+    expect(game.scenery.props.some((p) => p.flip)).toBe(true);
+
+    // Ландмарк ставит рука: храм в зеркале читается ошибкой.
+    for (const prop of game.scenery.props.slice(0, landmarkIds.size)) {
+      if (!landmarkIds.has(prop.id)) continue;
+      expect(prop.flip).toBe(false);
+      expect(prop.scale).toBe(1);
+    }
+  });
+
   it('на учебном берегу декора заметно меньше, чем в деревне', () => {
     const beach = layout.zones.find((z) => z.id === 'beach');
     const village = layout.zones.find((z) => z.id === 'village');
     // islands/01-ismaros.md: вокруг врагов на первом острове должно быть
     // максимум пустого зелёного поля.
     expect(beach?.props?.clusters ?? 0).toBeLessThan(village?.props?.clusters ?? 0);
+  });
+});
+
+describe('Трава', () => {
+  beforeEach(() => clearNodes());
+
+  it('не растёт по кладке дороги', () => {
+    const game = makeGame();
+    const { roadClearance } = balance.scenery;
+    for (const tuft of game.scenery.grass) {
+      for (const path of game.scenery.roadPaths) {
+        expect(
+          distanceToPaths(path.points, tuft.x, tuft.y),
+          'пучок травы вырос на дороге',
+        ).toBeGreaterThanOrEqual(path.width / 2 + roadClearance - 0.001);
+      }
+    }
+  });
+
+  it('на плите площади и на гальке реже, чем на лугу', () => {
+    // Пучки сидели одинаково густо и на мощёной площади, и на берегу — земля
+    // под ними переставала что-либо значить.
+    const game = makeGame();
+    const perZone = new Map<string, number>();
+    for (const tuft of game.scenery.grass) {
+      const zone = zoneAt(layout, world, tuft.x, tuft.y);
+      if (!zone) continue;
+      perZone.set(zone.id, (perZone.get(zone.id) ?? 0) + 1);
+    }
+    expect(perZone.get('beach') ?? 0).toBeLessThan(perZone.get('grove') ?? 0);
+    expect(perZone.get('temple') ?? 0).toBeLessThan(perZone.get('grove') ?? 0);
+  });
+
+  it('её заметно меньше, чем было: сотня галочек на экран читалась конфетти', () => {
+    const game = makeGame();
+    const screen = balance.render.virtualWidth * (balance.render.virtualWidth * 2);
+    const perScreen = (game.scenery.grass.length * screen) / (worldWidth * worldHeight);
+    expect(perScreen).toBeLessThan(30);
   });
 });
 

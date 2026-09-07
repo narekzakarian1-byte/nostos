@@ -1,6 +1,8 @@
 import { getBalance } from '../core/Balance.ts';
 import type { Game } from '../core/Game.ts';
 import { drawNodeMark, drawPlayerMark } from './MapMarks.ts';
+import { bakeMargin } from './GroundPaint.ts';
+import { drawMapFog, drawMapLand } from './MapFog.ts';
 import { drawZones } from './MapZones.ts';
 import { glyph } from './Glyphs.ts';
 import { panel, text, ui } from './UiKit.ts';
@@ -78,19 +80,25 @@ export function drawFullMap(
   ctx.fillRect(0, 0, screenWidth, viewHeight);
   ctx.restore();
 
+  // В кадр берётся мир ВМЕСТЕ с полем берега: остров уходит за края мира на
+  // bakeMargin, и без запаса карта обрезала бы его по линейке — ровно то, из-за
+  // чего она и читалась прямоугольником, а не островом.
+  const margin = bakeMargin();
+  const fullWidth = game.worldWidth + margin * 2;
+  const fullHeight = game.worldHeight + margin * 2;
   const pad = u.margin * 2;
   const scale = Math.min(
-    (screenWidth - pad * 2) / game.worldWidth,
-    (viewHeight - pad * 2) / game.worldHeight,
+    (screenWidth - pad * 2) / fullWidth,
+    (viewHeight - pad * 2) / fullHeight,
   );
-  const originX = (screenWidth - game.worldWidth * scale) / 2;
-  const originY = (viewHeight - game.worldHeight * scale) / 2;
-  const w = game.worldWidth * scale;
-  const h = game.worldHeight * scale;
+  const originX = (screenWidth - fullWidth * scale) / 2 + margin * scale;
+  const originY = (viewHeight - fullHeight * scale) / 2 + margin * scale;
+  const w = fullWidth * scale;
+  const h = fullHeight * scale;
 
   ctx.save();
   ctx.beginPath();
-  ctx.rect(originX, originY, w, h);
+  ctx.rect(originX - margin * scale, originY - margin * scale, w, h);
   ctx.clip();
   const project = (x: number, y: number) => ({ x: originX + x * scale, y: originY + y * scale });
   // Зоны кладутся между дорогой и значками узлов: подпись места должна лежать
@@ -98,7 +106,7 @@ export function drawFullMap(
   drawWorldContents(ctx, game, project, scale, () => drawZones(ctx, game, project));
   ctx.restore();
 
-  panel(ctx, originX, originY, w, h, { radius: u.radius });
+  panel(ctx, originX - margin * scale, originY - margin * scale, w, h, { radius: u.radius });
   text(ctx, getBalance().islands.list[0]?.name ?? '', screenWidth / 2, originY - u.fontTitle, {
     size: u.fontTitle,
     fill: u.colors.textDim,
@@ -116,27 +124,9 @@ function drawWorldContents(
   const { minimap } = getBalance();
   const u = ui();
   const { fog } = game;
-  const cell = fog.cellSize * scale + 1;
 
-  ctx.fillStyle = u.colors.ground;
-  const origin = project(0, 0);
-  ctx.fillRect(origin.x, origin.y, fog.cols * fog.cellSize * scale, fog.rows * fog.cellSize * scale);
-
-  // Туман одним путём и одной заливкой: клетки кладутся внахлёст на пиксель,
-  // и раздельные fillRect копили альфу на стыках — карта выглядела
-  // миллиметровкой, а не туманом.
-  ctx.fillStyle = u.colors.veil;
-  ctx.globalAlpha = minimap.fogAlpha;
-  ctx.beginPath();
-  for (let row = 0; row < fog.rows; row++) {
-    for (let col = 0; col < fog.cols; col++) {
-      if (fog.isVisitedCell(col, row)) continue;
-      const p = project(col * fog.cellSize, row * fog.cellSize);
-      ctx.rect(p.x, p.y, cell, cell);
-    }
-  }
-  ctx.fill();
-  ctx.globalAlpha = 1;
+  drawMapLand(ctx, game, project, scale);
+  drawMapFog(ctx, game, project, scale);
 
   drawMapRoad(ctx, game, project, scale);
   betweenRoadAndMarks?.();

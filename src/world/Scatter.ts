@@ -37,6 +37,7 @@ export function clusterCenter(
   centers: readonly Point[],
   roads: readonly RoadPath[],
   prop: DecorId,
+  scale: number,
 ): Point {
   const { scenery } = getBalance();
   let spot = { x: area.x + area.width / 2, y: area.y + area.height / 2 };
@@ -51,8 +52,8 @@ export function clusterCenter(
       x: rng.range(area.x, area.x + area.width),
       y: rng.range(area.y, area.y + area.height),
     };
-    if (onRoad(roads, spot, prop)) continue;
-    if (!clearOfEnemies(enemies, spot, prop)) continue;
+    if (onRoad(roads, spot, prop, scale)) continue;
+    if (!clearOfEnemies(enemies, spot, prop, scale)) continue;
     fallback ??= spot;
     const nearCluster = centers.some(
       (c) => Math.hypot(c.x - spot.x, c.y - spot.y) < scenery.clusterSpacing,
@@ -68,9 +69,14 @@ export function clusterCenter(
  * пропа: хижина в сорока единицах от центра фигуры накрывает своим следом её
  * подошву, и подойти к врагу становится нельзя.
  */
-function clearOfEnemies(enemies: readonly Enemy[], spot: Point, prop: DecorId): boolean {
+function clearOfEnemies(
+  enemies: readonly Enemy[],
+  spot: Point,
+  prop: DecorId,
+  scale: number,
+): boolean {
   const { minSpacingFromEnemies } = getBalance().scenery;
-  const reach = footprintOf(prop)?.rx ?? 0;
+  const reach = (footprintOf(prop)?.rx ?? 0) * scale;
   const gap = minSpacingFromEnemies + reach;
   return !enemies.some(
     (e) => Math.hypot(e.x - spot.x, e.y + e.size / 2 - spot.y) < gap,
@@ -86,6 +92,7 @@ export function satelliteSpot(
   roads: readonly RoadPath[],
   prop: DecorId,
   enemies: readonly Enemy[],
+  scale: number,
 ): Point {
   const { scenery } = getBalance();
   let spot = center;
@@ -98,8 +105,8 @@ export function satelliteSpot(
       x: clamp(center.x + Math.cos(angle) * dist, area.x, area.x + area.width),
       y: clamp(center.y + Math.sin(angle) * dist, area.y, area.y + area.height),
     };
-    if (onRoad(roads, spot, prop)) continue;
-    if (!clearOfEnemies(enemies, spot, prop)) continue;
+    if (onRoad(roads, spot, prop, scale)) continue;
+    if (!clearOfEnemies(enemies, spot, prop, scale)) continue;
     fallback ??= spot;
     const crowded = around.some(
       (p) => Math.hypot(p.x - spot.x, p.y - spot.y) < scenery.minSpacingInCluster,
@@ -119,9 +126,17 @@ export function satelliteSpot(
  * пропа: у ворот в 120 единиц центр может стоять в стороне, а половина
  * створа всё равно висеть над кладкой.
  */
-function onRoad(roads: readonly RoadPath[], spot: Point, prop: DecorId): boolean {
+function onRoad(
+  roads: readonly RoadPath[],
+  spot: Point,
+  prop: DecorId,
+  scale: number,
+): boolean {
   const { roadClearance } = getBalance().scenery;
-  const reach = footprintOf(prop)?.rx ?? 0;
+  // След берётся уже выросшим: разброс размера бросается до выбора места
+  // (Decor.varyProp) ровно затем, чтобы зазор считался по тому пропу, который
+  // в итоге встанет, а не по среднему.
+  const reach = (footprintOf(prop)?.rx ?? 0) * scale;
   for (const path of roads) {
     if (distanceToPaths(path.points, spot.x, spot.y) < path.width / 2 + roadClearance + reach) {
       return true;

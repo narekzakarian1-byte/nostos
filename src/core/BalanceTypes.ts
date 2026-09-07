@@ -411,6 +411,68 @@ export interface OfflineConfig {
   readonly enabled: boolean; readonly capHours: number; readonly efficiency: number;
 }
 
+/** Материал земли. Ключи balance.terrain.materials и поле ground у зоны острова. */
+export type TerrainId = 'grass' | 'shingle' | 'terrace' | 'flagstone' | 'ash' | 'rock' | 'olive';
+
+export interface CoastConfig {
+  readonly outsetUnits: number;
+  readonly steps: number;
+  readonly waviness: number;
+  /** Сколько волн укладывается в один обход берега. Три числа — три синуса. */
+  readonly lobes: readonly number[];
+  readonly shoreWidth: number;
+  readonly surfWidth: number;
+  readonly foamWidth: number;
+  readonly _note?: string;
+}
+
+export interface TerrainPatchConfig {
+  readonly cellUnits: number;
+  readonly jitter: number;
+  readonly radiusScale: number;
+  /** Доля радиуса в полную силу; дальше клякса гаснет. Без неё границы зон
+   *  стыкуются дугами эллипсов и выдают сетку, по которой сеялись. */
+  readonly plateau: number;
+  readonly _plateauNote?: string;
+  readonly bleedUnits: number;
+  readonly speckPerCell: number;
+  readonly speckSize: number;
+  readonly speckAlpha: number;
+  readonly _note?: string;
+}
+
+export interface TerrainShadeConfig {
+  readonly count: number;
+  readonly radiusUnits: number;
+  readonly radiusJitter: number;
+  readonly squash: number;
+  readonly darkAlpha: number;
+  readonly lightAlpha: number;
+  readonly darkColor: string;
+  readonly lightColor: string;
+  readonly _note?: string;
+}
+
+export interface TerrainConfig {
+  readonly bakePxPerUnit: number;
+  readonly bakeMaxPixels: number;
+  readonly coast: CoastConfig;
+  readonly patch: TerrainPatchConfig;
+  readonly shade: TerrainShadeConfig;
+  /** Три тона на материал: основа, тёмная крапина, светлая крапина. */
+  readonly materials: Readonly<Record<TerrainId, readonly [string, string, string]>>;
+  /** Доля пучков травы, выживающих на материале: на плите площади и на гальке
+   *  трава не растёт так же густо, как на лугу. */
+  readonly tuftChance: Readonly<Record<TerrainId, number>>;
+  readonly _tuftNote?: string;
+  readonly _contrastNote?: string;
+  readonly _note?: string;
+  readonly _whyNote?: string;
+  readonly _bakeNote?: string;
+  readonly _materialsNote?: string;
+  readonly _seaNote?: string;
+}
+
 export interface Palette {
   readonly bgFar: string; readonly bgMid: string; readonly silhouette: string;
   readonly accentWarm: string; readonly accentLight: string; readonly danger: string;
@@ -421,7 +483,10 @@ export interface Palette {
   readonly roadEdge: string;
   readonly roadStoneLight: string;
   readonly roadStoneDark: string;
-  readonly grassTuft: string; readonly borderStone: string;
+  readonly grassTuft: string; readonly grassTuftDry: string;
+  readonly borderStone: string;
+  readonly seaDeep: string; readonly sea: string; readonly seaShallow: string;
+  readonly foam: string; readonly shore: string;
 }
 
 export interface PropSize {
@@ -464,7 +529,11 @@ export interface SceneryConfig {
   readonly minSpacingFromEnemies: number;
   readonly borderInset: number;
   readonly borderThickness: number;
+  readonly _roadWidthNote?: string;
   readonly roadWidth: number;
+  readonly _roadSmoothNote?: string;
+  /** Проходов сглаживания ломаной дороги (world/Road.smoothPath). */
+  readonly roadSmoothPasses: number;
   /** Ширина ответвления к боковому ландмарку. Уже стержня: развилка должна
    *  читаться как «свернуть», а не как «дорога раздвоилась». */
   readonly roadBranchWidth: number;
@@ -486,6 +555,12 @@ export interface SceneryConfig {
   readonly grassSizeJitter: number;
   readonly grassLean: number;
   readonly grassWidth: number;
+  readonly _grassRoadNote?: string;
+  readonly _propVaryNote?: string;
+  /** Разброс размера сеяного пропа, долей от базового. */
+  readonly propScaleJitter: number;
+  /** Доля пропов, отражённых по горизонтали. */
+  readonly propFlipChance: number;
   readonly _grassNote?: string;
   readonly _roadStoneNote?: string;
   readonly roadWaypoints: number;
@@ -507,12 +582,14 @@ export interface MinimapConfig {
   readonly enemyDotRadius: number;
   readonly playerDotRadius: number;
   readonly fogAlpha: number;
-  /** Полная карта: рамки и подписи зон, метка точки высадки. */
+  /** Полная карта: подписи зон и метка точки высадки. Рамок зон нет — границы
+   *  рисует материал земли (world/Ground.ts), тот же, что под ногами. */
   readonly map: {
-    readonly zoneEdgeWidth: number;
-    readonly zoneEdgeAlpha: number;
-    readonly zoneEdgeDash: readonly number[];
+    readonly _zoneLabelNote?: string;
     readonly zoneLabelInset: number;
+    /** Сдвиг подписи через столбец, долей высоты строки: три названия в ряд
+     *  иначе наезжают друг на друга. */
+    readonly zoneLabelStagger: number;
     /** Насколько гасится неоткрытая зона. */
     readonly unknownFade: number;
     readonly landingRadius: number;
@@ -619,6 +696,7 @@ export interface Balance {
   readonly ui: UiConfig;
   readonly save: SaveConfig;
   readonly audio: AudioConfig;
+  readonly terrain: TerrainConfig;
   readonly props: PropsConfig;
   readonly palette: Palette;
   readonly _comment?: string;

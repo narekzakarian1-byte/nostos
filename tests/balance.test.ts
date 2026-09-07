@@ -17,6 +17,7 @@ const PALETTE_KEYS = [
   'danger', 'iconGreenBright', 'iconGreen', 'iconGrey', 'iconAmber', 'iconRed',
   'iconRedDark', 'roadDirt', 'borderStone',
   'roadEdge', 'roadStoneLight', 'roadStoneDark', 'grassTuft',
+  'seaDeep', 'sea', 'seaShallow', 'foam', 'shore', 'grassTuftDry',
 ] as const;
 
 describe('balance.json — форма конфига', () => {

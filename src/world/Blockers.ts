@@ -39,7 +39,14 @@ export function blockersOf(props: readonly DecorPlacement[]): Blocker[] {
   const blockers: Blocker[] = [];
   for (const prop of props) {
     const foot = footprintOf(prop.id);
-    if (foot) blockers.push({ x: prop.x, y: prop.y, rx: foot.rx, ry: foot.ry });
+    // След растёт вместе с пропом: иначе выросший камень пускал бы игрока
+    // сквозь себя, а усохший цеплял бы за пустое место рядом.
+    if (foot) {
+      blockers.push({
+        x: prop.x, y: prop.y,
+        rx: foot.rx * prop.scale, ry: foot.ry * prop.scale,
+      });
+    }
   }
   return blockers;
 }

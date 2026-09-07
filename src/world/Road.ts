@@ -51,6 +51,61 @@ function distanceToSegment(a: Point, b: Point, x: number, y: number): number {
   return Math.hypot(x - (a.x + dx * t), y - (a.y + dy * t));
 }
 
+/**
+ * Сглаживание ломаной срезанием углов (Чайкин).
+ *
+ * Дорога задана десятком точек, и по ним она шла ломаной с изломами на каждой:
+ * на карте это читалось не дорогой, а схемой — прямой ствол с отростками под
+ * прямым углом, рыбья кость. Кривая говорит, что дорогу протоптали по земле, а
+ * не провели по линейке.
+ *
+ * Концы держатся на месте намеренно: стержень обязан упираться в нижний край
+ * мира и в арену, а ответвление — в свой ландмарк. Сдвинь их сглаживание, и
+ * дорога начнётся в поле, не дойдя до берега.
+ */
+export function smoothPath(points: readonly Point[], passes: number): Point[] {
+  let current = [...points];
+  for (let pass = 0; pass < passes && current.length >= 3; pass++) {
+    const next: Point[] = [current[0]!];
+    for (let i = 0; i < current.length - 1; i++) {
+      const a = current[i]!;
+      const b = current[i + 1]!;
+      next.push({ x: a.x * 0.75 + b.x * 0.25, y: a.y * 0.75 + b.y * 0.25 });
+      next.push({ x: a.x * 0.25 + b.x * 0.75, y: a.y * 0.25 + b.y * 0.75 });
+    }
+    next.push(current[current.length - 1]!);
+    current = next;
+  }
+  return current;
+}
+
+/**
+ * Ближайшая точка ломаной. Нужна развилке: ответвление начинается в вершине
+ * стержня, а сглаживание вершину сдвигает — без пересадки на сглаженный
+ * стержень отворот повисал бы в стороне от дороги, из которой выходит.
+ */
+export function nearestOnPath(points: readonly Point[], x: number, y: number): Point {
+  let best = points[0] ?? { x, y };
+  let bestDist = Number.POSITIVE_INFINITY;
+  for (let i = 0; i < points.length - 1; i++) {
+    const a = points[i]!;
+    const b = points[i + 1]!;
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const lengthSq = dx * dx + dy * dy;
+    const t = lengthSq === 0
+      ? 0
+      : Math.max(0, Math.min(1, ((x - a.x) * dx + (y - a.y) * dy) / lengthSq));
+    const point = { x: a.x + dx * t, y: a.y + dy * t };
+    const dist = Math.hypot(point.x - x, point.y - y);
+    if (dist < bestDist) {
+      bestDist = dist;
+      best = point;
+    }
+  }
+  return best;
+}
+
 /** Ширина приходит снаружи: у стержня и у ответвления она разная, а кладка
  *  обязана лежать в своих берегах — иначе камни висят на траве. */
 export function roadStones(rng: Rng, points: readonly Point[], width: number): RoadStone[] {

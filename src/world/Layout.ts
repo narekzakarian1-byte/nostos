@@ -1,4 +1,4 @@
-import type { DamageType } from '../core/BalanceTypes.ts';
+import type { DamageType, TerrainId } from '../core/BalanceTypes.ts';
 import type { DecorId } from './Decor.ts';
 import raw from '../../islands/01-ismaros.layout.json' with { type: 'json' };
 
@@ -63,6 +63,15 @@ export interface ZoneDef {
   /** Прямоугольник зоны в долях мира: [x, y, ширина, высота]. */
   readonly rect: readonly [number, number, number, number];
   readonly nodes: ZoneBudget;
+  /**
+   * Материал земли под зоной (balance.terrain.materials). Галька на берегу,
+   * сухая охра на террасах, палевая пыль на площади храма.
+   *
+   * Это и есть разница между островом и зелёным полем с предметами: место
+   * узнаётся по земле раньше, чем по декору на ней. Зона без материала
+   * остаётся на общей траве острова.
+   */
+  readonly ground?: TerrainId;
   readonly landmarks?: readonly LandmarkDef[];
   readonly props?: ZoneProps;
 }

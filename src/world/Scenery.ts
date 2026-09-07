@@ -4,8 +4,11 @@ import { placeLandmarks, scatterByZones, scatterProps } from './Decor.ts';
 import type { DecorPlacement } from './Decor.ts';
 import type { Enemy } from './Enemy.ts';
 import { grassTufts, type GrassTuft } from './Grass.ts';
+import { Ground } from './Ground.ts';
 import { islandLayout, toWorld, type IslandLayout, type LayoutPoint } from './Layout.ts';
-import { roadStones, type RoadPath, type RoadStone } from './Road.ts';
+import {
+  nearestOnPath, roadStones, smoothPath, type RoadPath, type RoadStone,
+} from './Road.ts';
 
 // Раскладка декора живёт в Decor.ts, дорога — в Road.ts. Здесь сборка: что
 // в каком порядке считается и на чём стоит. Типы декора переэкспортируются,
@@ -57,6 +60,8 @@ export class Scenery {
   /** Пучки травы. Сеются последними — тем же rng, одной цепочкой по сиду. */
   readonly grass: readonly GrassTuft[];
   readonly border: { x: number; y: number; width: number; height: number };
+  /** Земля: берег, материалы зон, пятна света. Печёт её ui/GroundPaint.ts. */
+  readonly ground: Ground;
 
   constructor(rng: Rng, bounds: SceneryBounds, enemies: readonly Enemy[], islandId = '') {
     const layout = islandLayout(islandId);
@@ -74,8 +79,13 @@ export class Scenery {
       this.props = scatterProps(rng, bounds, enemies, this.roadPaths);
     }
 
-    this.grass = grassTufts(rng, bounds);
+    // Трава сеется после дороги и знает раскладку: пучок, севший на кладку
+    // или на галечный берег, — тот же признак засеянного мира, что и телега
+    // поперёк тракта.
+    this.grass = grassTufts(rng, bounds, this.roadPaths, layout);
     this.border = borderRect(bounds);
+    // Земля считается последней: берег обходит уже посчитанную стену.
+    this.ground = new Ground(rng, bounds, this.border, layout);
   }
 }
 
@@ -92,12 +102,24 @@ function layoutRoads(layout: IslandLayout, bounds: SceneryBounds): RoadPath[] {
   const toPoints = (points: readonly LayoutPoint[]) =>
     points.map((point) => toWorld(point, bounds));
 
+  // Ломаная по точкам файла шла с изломом на каждой вершине, и на карте это
+  // читалось схемой, а не дорогой. Сглаживание — здесь, а не в файле: иначе
+  // раскладку пришлось бы вести сотней точек вместо десятка.
+  const spine = smoothPath(toPoints(layout.road), scenery.roadSmoothPasses);
+
   return [
-    { points: toPoints(layout.road), width: scenery.roadWidth },
-    ...layout.branches.map((branch) => ({
-      points: toPoints(branch),
-      width: scenery.roadBranchWidth,
-    })),
+    { points: spine, width: scenery.roadWidth },
+    ...layout.branches.map((branch) => {
+      const points = toPoints(branch);
+      // Первая точка отворота садится на СГЛАЖЕННЫЙ стержень: сглаживание
+      // сдвигает вершины, и без пересадки развилка отрывается от дороги.
+      const head = points[0];
+      if (head) points[0] = nearestOnPath(spine, head.x, head.y);
+      return {
+        points: smoothPath(points, scenery.roadSmoothPasses),
+        width: scenery.roadBranchWidth,
+      };
+    }),
   ];
 }
 

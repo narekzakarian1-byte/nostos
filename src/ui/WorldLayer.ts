@@ -72,7 +72,7 @@ export function depthOrder(
 function visibleProps(game: Game, camera: Camera): DecorPlacement[] {
   const visible: DecorPlacement[] = [];
   for (const prop of game.scenery.props) {
-    const box = propBox(prop.id);
+    const box = propBox(prop);
     // Запас берётся полный: проп стоит подошвой в prop.y и растёт вверх, а
     // тень уходит вбок — габарит в метриках уже посчитан вместе с ней.
     if (camera.isVisible(prop.x, prop.y, box.width, box.height)) visible.push(prop);

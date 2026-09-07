@@ -4,6 +4,7 @@ import type { DecorPlacement } from '../world/Scenery.ts';
 import { currentIslandId } from '../world/Island.ts';
 import { SPRITES } from './AssetManifest.ts';
 import type { Camera } from './Camera.ts';
+import { groundImage } from './GroundPaint.ts';
 import { islandBorder } from './IslandArt.ts';
 import { paintProp } from './props/Prop.ts';
 import { drawRoad } from './Road.ts';
@@ -20,80 +21,78 @@ import { ui } from './UiKit.ts';
  * глубине.
  */
 export function drawTerrain(ctx: CanvasRenderingContext2D, game: Game, camera: Camera): void {
-  drawGround(ctx, camera);
+  drawGround(ctx, game, camera);
   drawGrass(ctx, game, camera);
-  drawOutside(ctx, game, camera);
   drawBorder(ctx, game);
   drawRoad(ctx, game, camera);
 }
 
-/** Земля мостится паттерном из спрайта; нет файла — плоская заливка. */
-function drawGround(ctx: CanvasRenderingContext2D, camera: Camera): void {
-  const { juice } = getBalance();
+/**
+ * Земля целиком: море, берег, материалы зон и пятна света — одной запечённой
+ * картинкой (GroundPaint.ts).
+ *
+ * Раньше здесь мостился один тайл травы на весь мир, а всё за стеной
+ * закрашивалось тёмно-синим bgFar. От этого «Галечный берег» и «Площадь у
+ * храма» выглядели одинаково, а край острова читался дырой в мире.
+ *
+ * Море под картинкой заливается отдельно и по всему виду: камера намеренно не
+ * ограничена краями мира (Camera.follow), поэтому за печатью остаётся видимая
+ * полоса, и она обязана быть водой, а не пустотой.
+ */
+function drawGround(ctx: CanvasRenderingContext2D, game: Game, camera: Camera): void {
+  const { juice, palette } = getBalance();
   // Запас на тряску камеры, чтобы её амплитуда не обнажала край заливки.
   const pad = juice.screenshakeCrit;
+  ctx.fillStyle = palette.seaDeep;
+  ctx.fillRect(
+    camera.x - pad, camera.y - pad,
+    camera.viewWidth + pad * 2, camera.viewHeight + pad * 2,
+  );
+
+  const baked = groundImage({
+    width: game.worldWidth,
+    height: game.worldHeight,
+    ground: game.scenery.ground,
+    islandId: currentIslandId(),
+  });
+  if (baked) {
+    ctx.drawImage(baked.canvas, baked.x, baked.y, baked.width, baked.height);
+    return;
+  }
+
+  // Печать ещё не готова (текстура травы не загрузилась) — прежняя заливка,
+  // чтобы первый кадр не вышел синим.
   const pattern = sprites.pattern(ctx, 'ground-base');
   ctx.fillStyle = pattern ?? ui().colors.ground;
-  ctx.fillRect(
-    camera.x - pad,
-    camera.y - pad,
-    camera.viewWidth + pad * 2,
-    camera.viewHeight + pad * 2,
-  );
+  ctx.fillRect(0, 0, game.worldWidth, game.worldHeight);
 }
 
 /**
- * Пучки травы поверх заливки. Две короткие черты под наклоном: этого хватает,
- * чтобы земля перестала читаться пустой, а стоит это один путь на пучок.
+ * Пучки травы поверх земли. Две короткие черты под наклоном: этого хватает,
+ * чтобы земля не читалась пустой, а стоит это один путь на пучок.
+ *
+ * Два тона, зелёный и сухой, и два прохода на них. Одинаково зелёные пучки
+ * складывались в равномерную россыпь галочек — глаз ловил повтор раньше, чем
+ * успевал увидеть землю под ними.
  */
 function drawGrass(ctx: CanvasRenderingContext2D, game: Game, camera: Camera): void {
   const { scenery, palette } = getBalance();
   ctx.save();
-  ctx.strokeStyle = palette.grassTuft;
   ctx.lineWidth = scenery.grassWidth;
   ctx.lineCap = 'round';
-  ctx.beginPath();
-  for (const tuft of game.scenery.grass) {
-    if (!camera.isVisible(tuft.x, tuft.y, tuft.size, tuft.size)) continue;
-    const h = tuft.size;
-    ctx.moveTo(tuft.x, tuft.y);
-    ctx.lineTo(tuft.x + Math.sin(tuft.lean) * h * 0.5, tuft.y - h);
-    ctx.moveTo(tuft.x, tuft.y);
-    ctx.lineTo(tuft.x + Math.sin(tuft.lean + 1) * h * 0.45, tuft.y - h * 0.7);
-  }
-  ctx.stroke();
-  ctx.restore();
-}
-
-/**
- * Всё, что за рамкой острова, закрывается наглухо. Полупрозрачная вуаль
- * оставляла под собой ту же траву с теми же пучками, и край читался как
- * недорисованный тайл, а не как конец суши. Ходить туда игрок больше не
- * может (Player.move), значит и показывать там нечего.
- */
-function drawOutside(ctx: CanvasRenderingContext2D, game: Game, camera: Camera): void {
-  const { palette } = getBalance();
-  const b = game.scenery.border;
-  const left = camera.x;
-  const top = camera.y;
-  const right = left + camera.viewWidth;
-  const bottom = top + camera.viewHeight;
-
-  ctx.save();
-  ctx.fillStyle = palette.bgFar;
-  if (top < b.y) ctx.fillRect(left, top, right - left, Math.min(b.y, bottom) - top);
-  const bEnd = b.y + b.height;
-  if (bottom > bEnd) {
-    ctx.fillRect(left, Math.max(bEnd, top), right - left, bottom - Math.max(bEnd, top));
-  }
-  const innerTop = Math.max(top, b.y);
-  const innerBottom = Math.min(bottom, bEnd);
-  if (innerBottom > innerTop) {
-    if (left < b.x) ctx.fillRect(left, innerTop, Math.min(b.x, right) - left, innerBottom - innerTop);
-    const bRight = b.x + b.width;
-    if (right > bRight) {
-      ctx.fillRect(Math.max(bRight, left), innerTop, right - Math.max(bRight, left), innerBottom - innerTop);
+  for (const dry of [false, true]) {
+    ctx.strokeStyle = dry ? palette.grassTuftDry : palette.grassTuft;
+    ctx.beginPath();
+    for (const tuft of game.scenery.grass) {
+      if (tuft.dry !== dry) continue;
+      if (!camera.isVisible(tuft.x, tuft.y, tuft.size, tuft.size)) continue;
+      const h = tuft.size;
+      ctx.moveTo(tuft.x, tuft.y);
+      ctx.lineTo(tuft.x + Math.sin(tuft.lean) * h * 0.5, tuft.y - h);
+      ctx.moveTo(tuft.x, tuft.y);
+      ctx.lineTo(tuft.x + Math.sin(tuft.lean + 1) * h * 0.45, tuft.y - h * 0.7);
     }
+    ctx.stroke();
   }
   ctx.restore();
 }
@@ -133,7 +132,7 @@ function drawBorder(ctx: CanvasRenderingContext2D, game: Game): void {
  * касания это начало координат модели по построению (ui/props/Bake.ts).
  */
 export function drawProp(ctx: CanvasRenderingContext2D, prop: DecorPlacement): void {
-  paintProp(ctx, prop.id, prop.x, prop.y);
+  paintProp(ctx, prop);
 }
 
 /** Повторяет спрайт плашками вдоль прямого отрезка — общий приём для дороги и границы. */
