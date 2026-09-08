@@ -1,15 +1,19 @@
+import { RIGS, WEAPONS, type RigBoneSpec } from './RigTable.ts';
 import type { SpriteId } from '../AssetManifest.ts';
 
 /**
- * Скелет бумажной куклы: из каких деталей собран Одиссей и как они скреплены.
+ * Скелет бумажной куклы: из каких деталей собрана фигура и как они скреплены.
  *
- * Это не балансные числа (CLAUDE.md §1 сюда не относится, как и к
- * AssetManifest.ts) — это метрика конкретных PNG. Пивот привязан к пикселям
- * картинки: перерисовали деталь — правится здесь, а не в balance.json. Углы,
- * которыми кости шевелятся, наоборот, лежат в balance.anim.rig.
+ * Сами ЧИСЛА лежат в RigTable.ts и пишутся генератором, потому что они не
+ * подбираются, а считаются: пивот кости — это спроецированное начало её
+ * координат в модели, сокет — сустав, ростовая доля — отношение экранных
+ * высот (art/blender/lib/rig.py). Раньше здесь стояли выписанные руками доли
+ * под нарисованные PNG, и каждая перерисовка детали означала подгонку
+ * пивота по пикселям.
  *
- * Все координаты — доли, не пиксели. Тогда риг переживает и замену деталей на
- * другое разрешение, и любой размер фигуры на экране.
+ * Здесь остаётся то, что числами не является: какие кости бывают, в каком
+ * порядке они рисуются и как связаны вид оружия с хватом. Углы, которыми
+ * кости шевелятся, лежат в balance.anim.rig и balance.anim.strokes.
  */
 export type BoneId =
   | 'cloak'
@@ -30,7 +34,7 @@ export interface Bone {
   readonly height: number;
   /**
    * Куда садится пивот. У торса — доли коробки фигуры, у остальных — доли
-   * картинки родителя. Одна система на оба случая: родитель у торса это сама
+   * картинки торса. Одна система на оба случая: родитель у торса это сама
    * коробка.
    */
   readonly socketX: number;
@@ -48,72 +52,34 @@ export interface Rig {
   readonly handY: number;
 }
 
-/**
- * Порядок в массиве — порядок отрисовки, от дальнего к ближнему. Плащ уходит
- * за спину, задние конечности прячутся за торс, оружие ложится поверх кисти.
- */
-const ODYSSEUS_BONES: readonly Bone[] = [
-  {
-    id: 'cloak',
-    sprite: 'odysseus-cloak',
-    pivotX: 0.5, pivotY: 0.05,
-    height: 0.62,
-    socketX: 0.5, socketY: 0.38,
-    parent: 'torso',
-    behind: false,
-  },
-  {
-    id: 'legBack',
-    sprite: 'odysseus-leg',
-    pivotX: 0.5, pivotY: 0.04,
-    height: 0.38,
-    socketX: 0.68, socketY: 0.88,
-    parent: 'torso',
-    behind: true,
-  },
-  {
-    id: 'armOff',
-    sprite: 'odysseus-arm',
-    pivotX: 0.5, pivotY: 0.06,
-    height: 0.4,
-    socketX: 0.885, socketY: 0.42,
-    parent: 'torso',
-    behind: true,
-  },
-  {
-    id: 'torso',
-    sprite: 'odysseus-torso',
-    pivotX: 0.5, pivotY: 0.0,
-    height: 0.72,
-    socketX: 0.5, socketY: 0.02,
-    parent: null,
-    behind: false,
-  },
-  {
-    id: 'legFront',
-    sprite: 'odysseus-leg',
-    pivotX: 0.5, pivotY: 0.04,
-    height: 0.38,
-    socketX: 0.32, socketY: 0.88,
-    parent: 'torso',
-    behind: false,
-  },
-  {
-    id: 'armMain',
-    sprite: 'odysseus-arm',
-    pivotX: 0.5, pivotY: 0.06,
-    height: 0.4,
-    socketX: 0.115, socketY: 0.45,
-    parent: 'torso',
-    behind: false,
-  },
-];
+export type FigureId = keyof typeof RIGS;
 
 /**
- * Оружие. Отдельно от скелета, потому что меняется в игре: любой предмет,
- * попавший в сокет кисти, начинает махаться сам — ровно ради этого куклу и
- * резали. Пивот — середина рукояти, socket — кулак на картинке руки.
+ * Порядок костей в таблице — порядок отрисовки, от дальнего к ближнему: плащ
+ * уходит за спину, задние конечности прячутся за торс, оружие ложится поверх
+ * кисти ведущей руки. Задаёт его фабрика (art/blender/assets/*.py), потому что
+ * там же решается, какая конечность ближе к камере.
  */
+function rigOf(id: FigureId): Rig {
+  const spec = RIGS[id];
+  return {
+    bones: spec.bones.map((bone: RigBoneSpec) => ({ ...bone, id: bone.id as BoneId })),
+    handX: spec.handX,
+    handY: spec.handY,
+  };
+}
+
+export const ODYSSEUS_RIG: Rig = rigOf('odysseus');
+
+/**
+ * Киконы Исмары тремя тирами. Не один риг на остров: рядовой, элита и вождь
+ * отличаются шлемом, панцирем и плащом (ISLANDS.md §1.5), и общий набор
+ * деталей стёр бы всю эскалацию — на арене стоял бы увеличенный рядовой.
+ */
+export const KIKON_RIG: Rig = rigOf('kikon');
+export const KIKON_ELITE_RIG: Rig = rigOf('kikon-elite');
+export const KIKON_CHIEF_RIG: Rig = rigOf('kikon-chief');
+
 export interface WeaponPart {
   readonly sprite: SpriteId;
   readonly pivotX: number;
@@ -121,105 +87,11 @@ export interface WeaponPart {
   readonly height: number;
 }
 
-export const ODYSSEUS_RIG: Rig = { bones: ODYSSEUS_BONES, handX: 0.48, handY: 0.86 };
-
-/**
- * Кикон Исмары. Тот же скелет без плаща: враг обязан махать так же, как игрок,
- * иначе его удар весит меньше твоего просто потому, что он нарисован плоской
- * картинкой (Body.ts — общая отрисовка заведена ровно поэтому).
- *
- * Костюм у всех трёх тиров один (ISLANDS.md §1.5: остров — одна семья), так
- * что детали общие, а различает тиры размер и кольцо ранга под ногами.
- */
-const KIKON_BONES: readonly Bone[] = [
-  {
-    id: 'legBack',
-    sprite: 'kikon-leg',
-    pivotX: 0.5, pivotY: 0.05,
-    height: 0.36,
-    socketX: 0.6, socketY: 0.87,
-    parent: 'torso',
-    behind: true,
-  },
-  {
-    id: 'armOff',
-    sprite: 'kikon-arm',
-    pivotX: 0.5, pivotY: 0.07,
-    height: 0.38,
-    socketX: 0.83, socketY: 0.42,
-    parent: 'torso',
-    behind: true,
-  },
-  {
-    id: 'torso',
-    sprite: 'kikon-torso',
-    pivotX: 0.5, pivotY: 0.0,
-    height: 0.7,
-    socketX: 0.5, socketY: 0.04,
-    parent: null,
-    behind: false,
-  },
-  {
-    id: 'legFront',
-    sprite: 'kikon-leg',
-    pivotX: 0.5, pivotY: 0.05,
-    height: 0.36,
-    socketX: 0.4, socketY: 0.87,
-    parent: 'torso',
-    behind: false,
-  },
-  {
-    id: 'armMain',
-    sprite: 'kikon-arm',
-    pivotX: 0.5, pivotY: 0.07,
-    height: 0.38,
-    socketX: 0.17, socketY: 0.45,
-    parent: 'torso',
-    behind: false,
-  },
-];
-
-export const KIKON_RIG: Rig = { bones: KIKON_BONES, handX: 0.48, handY: 0.86 };
-
-/**
- * Хват и длина зависят от вида оружия, а не от его редкости: золотой ксифос
- * держат за ту же рукоять, что и бронзовый. Поэтому геометрия задана один раз
- * на вид, а редкость меняет только картинку.
- */
-const GRIP = {
-  sword: { pivotX: 0.5, pivotY: 0.84, height: 0.4 },
-  spear: { pivotX: 0.5, pivotY: 0.76, height: 0.95 },
-  club: { pivotX: 0.5, pivotY: 0.82, height: 0.46 },
-} as const;
-
-export const WEAPON_PARTS = {
-  // Базовые детали без редкости — запасной путь, пока картинки ступени нет.
-  sword: { sprite: 'odysseus-sword', ...GRIP.sword },
-  spear: { sprite: 'odysseus-spear', ...GRIP.spear },
-  club: { sprite: 'odysseus-club', ...GRIP.club },
-
-  'sword-common': { sprite: 'weapon-sword-common', ...GRIP.sword },
-  'sword-uncommon': { sprite: 'weapon-sword-uncommon', ...GRIP.sword },
-  'sword-rare': { sprite: 'weapon-sword-rare', ...GRIP.sword },
-  'sword-epic': { sprite: 'weapon-sword-epic', ...GRIP.sword },
-  'sword-legendary': { sprite: 'weapon-sword-legendary', ...GRIP.sword },
-
-  'spear-common': { sprite: 'weapon-spear-common', ...GRIP.spear },
-  'spear-uncommon': { sprite: 'weapon-spear-uncommon', ...GRIP.spear },
-  'spear-rare': { sprite: 'weapon-spear-rare', ...GRIP.spear },
-  'spear-epic': { sprite: 'weapon-spear-epic', ...GRIP.spear },
-  'spear-legendary': { sprite: 'weapon-spear-legendary', ...GRIP.spear },
-
-  'club-common': { sprite: 'weapon-club-common', ...GRIP.club },
-  'club-uncommon': { sprite: 'weapon-club-uncommon', ...GRIP.club },
-  'club-rare': { sprite: 'weapon-club-rare', ...GRIP.club },
-  'club-epic': { sprite: 'weapon-club-epic', ...GRIP.club },
-  'club-legendary': { sprite: 'weapon-club-legendary', ...GRIP.club },
-} as const satisfies Record<string, WeaponPart>;
-
+export const WEAPON_PARTS = WEAPONS;
 export type WeaponPartId = keyof typeof WEAPON_PARTS;
 
-/** Вид оружия без ступени — он же имя базовой детали. */
-export type WeaponKind = keyof typeof GRIP;
-
-export const WEAPON_KINDS = Object.keys(GRIP) as readonly WeaponKind[];
+/** Вид оружия. Хват и длина зависят от вида, а не от редкости: золотой ксифос
+ *  держат за ту же рукоять, что и бронзовый, — поэтому пивот считает фабрика
+ *  по самой модели, а здесь остаётся только перечень видов. */
+export const WEAPON_KINDS = ['sword', 'spear', 'club'] as const;
+export type WeaponKind = (typeof WEAPON_KINDS)[number];

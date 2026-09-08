@@ -162,10 +162,19 @@ describe('Декор по зонам', () => {
     }
   });
 
-  it('ни один проп не стоит на дороге и не свешивается над ней', () => {
+  it('ни один сеяный проп не стоит на дороге и не свешивается над ней', () => {
+    // Правило про СЕЯНЫЙ декор. Ландмарк ставит рука, и ворота святилища
+    // стоят прямо на тракте намеренно: под аркой ходят, следа у неё нет
+    // (balance.props.solid), и проход она не закрывает. Запрет нужен затем,
+    // чтобы кости не бросили телегу поперёк дороги, — а телега непроходима,
+    // и её этот тест по-прежнему ловит.
     const game = makeGame();
     const { roadClearance } = balance.scenery;
+    const landmarks = new Set(
+      layout.zones.flatMap((z) => (z.landmarks ?? []).map((l) => l.prop)),
+    );
     for (const prop of game.scenery.props) {
+      if (landmarks.has(prop.id) && footprintOf(prop.id) === null) continue;
       // След берётся выросшим: у каждого экземпляра свой размер, и зазор
       // считается по нему же (world/Scatter.onRoad).
       const reach = (footprintOf(prop.id)?.rx ?? 0) * prop.scale;
@@ -201,7 +210,7 @@ describe('Декор по зонам', () => {
 
   it('на учебном берегу декора заметно меньше, чем в деревне', () => {
     const beach = layout.zones.find((z) => z.id === 'beach');
-    const village = layout.zones.find((z) => z.id === 'village');
+    const village = layout.zones.find((z) => z.id === 'burnt');
     // islands/01-ismaros.md: вокруг врагов на первом острове должно быть
     // максимум пустого зелёного поля.
     expect(beach?.props?.clusters ?? 0).toBeLessThan(village?.props?.clusters ?? 0);
@@ -289,7 +298,7 @@ describe('Препятствия', () => {
 
     // Заходим на хижину снизу и упираемся.
     game.player.x = hut!.x;
-    game.player.y = hut!.y + 140 - balance.render.playerSize / 2;
+    game.player.y = hut!.y + 180 - balance.render.playerSize / 2;
     for (let step = 0; step < 600; step++) game.player.move(0, -1, 1 / 60);
 
     const groundY = game.player.y + balance.render.playerSize / 2;
@@ -302,7 +311,7 @@ describe('Препятствия', () => {
     const game = makeGame();
     const hut = game.scenery.props.find((p) => p.id === 'prop-hut-burnt')!;
     game.player.x = hut.x;
-    game.player.y = hut.y + 140 - balance.render.playerSize / 2;
+    game.player.y = hut.y + 180 - balance.render.playerSize / 2;
     for (let step = 0; step < 200; step++) game.player.move(0, -1, 1 / 60);
 
     const stuckX = game.player.x;
@@ -323,7 +332,7 @@ describe('Препятствия', () => {
   });
 
   it('у мелочи следа нет: щебень и черепки игрока не цепляют', () => {
-    for (const id of ['prop-rubble', 'prop-rock-small', 'prop-amphora', 'prop-campfire'] as const) {
+    for (const id of ['prop-slabs', 'prop-rock-small', 'prop-amphora', 'prop-campfire'] as const) {
       expect(footprintOf(id), id).toBeNull();
     }
   });

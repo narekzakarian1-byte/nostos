@@ -1,0 +1,19 @@
+{
+  "id": "weapon-spear-common",
+  "kind": "part",
+  "version": 1,
+  "script": "art/blender/assets/weapon_spear.py",
+  "seed": 0,
+  "blender": "5.2.1 LTS",
+  "balanceHash": "e74168556604",
+  "pixels": {
+    "width": 36,
+    "height": 343
+  },
+  "pivot": {
+    "x": 0.5,
+    "y": 0.7915
+  },
+  "height": 1.0719,
+  "tris": 286
+}

@@ -1,0 +1,566 @@
+[
+  {
+    "id": "ground-grass",
+    "src": "art/ground/ground-grass.png",
+    "width": 512,
+    "height": 512
+  },
+  {
+    "id": "kikon-legBack",
+    "src": "art/figures/kikon-legBack.png",
+    "width": 36,
+    "height": 118
+  },
+  {
+    "id": "kikon-armOff",
+    "src": "art/figures/kikon-armOff.png",
+    "width": 42,
+    "height": 108
+  },
+  {
+    "id": "kikon-torso",
+    "src": "art/figures/kikon-torso.png",
+    "width": 90,
+    "height": 182
+  },
+  {
+    "id": "kikon-legFront",
+    "src": "art/figures/kikon-legFront.png",
+    "width": 36,
+    "height": 118
+  },
+  {
+    "id": "kikon-armMain",
+    "src": "art/figures/kikon-armMain.png",
+    "width": 42,
+    "height": 108
+  },
+  {
+    "id": "kikon-chief-cloak",
+    "src": "art/figures/kikon-chief-cloak.png",
+    "width": 235,
+    "height": 271
+  },
+  {
+    "id": "kikon-chief-legBack",
+    "src": "art/figures/kikon-chief-legBack.png",
+    "width": 73,
+    "height": 204
+  },
+  {
+    "id": "kikon-chief-armOff",
+    "src": "art/figures/kikon-chief-armOff.png",
+    "width": 85,
+    "height": 186
+  },
+  {
+    "id": "kikon-chief-torso",
+    "src": "art/figures/kikon-chief-torso.png",
+    "width": 184,
+    "height": 378
+  },
+  {
+    "id": "kikon-chief-legFront",
+    "src": "art/figures/kikon-chief-legFront.png",
+    "width": 73,
+    "height": 204
+  },
+  {
+    "id": "kikon-chief-armMain",
+    "src": "art/figures/kikon-chief-armMain.png",
+    "width": 85,
+    "height": 186
+  },
+  {
+    "id": "kikon-elite-legBack",
+    "src": "art/figures/kikon-elite-legBack.png",
+    "width": 42,
+    "height": 130
+  },
+  {
+    "id": "kikon-elite-armOff",
+    "src": "art/figures/kikon-elite-armOff.png",
+    "width": 49,
+    "height": 119
+  },
+  {
+    "id": "kikon-elite-torso",
+    "src": "art/figures/kikon-elite-torso.png",
+    "width": 105,
+    "height": 205
+  },
+  {
+    "id": "kikon-elite-legFront",
+    "src": "art/figures/kikon-elite-legFront.png",
+    "width": 42,
+    "height": 130
+  },
+  {
+    "id": "kikon-elite-armMain",
+    "src": "art/figures/kikon-elite-armMain.png",
+    "width": 49,
+    "height": 119
+  },
+  {
+    "id": "odysseus-cloak",
+    "src": "art/figures/odysseus-cloak.png",
+    "width": 161,
+    "height": 186
+  },
+  {
+    "id": "odysseus-legBack",
+    "src": "art/figures/odysseus-legBack.png",
+    "width": 45,
+    "height": 140
+  },
+  {
+    "id": "odysseus-armOff",
+    "src": "art/figures/odysseus-armOff.png",
+    "width": 53,
+    "height": 128
+  },
+  {
+    "id": "odysseus-torso",
+    "src": "art/figures/odysseus-torso.png",
+    "width": 112,
+    "height": 216
+  },
+  {
+    "id": "odysseus-legFront",
+    "src": "art/figures/odysseus-legFront.png",
+    "width": 45,
+    "height": 140
+  },
+  {
+    "id": "odysseus-armMain",
+    "src": "art/figures/odysseus-armMain.png",
+    "width": 53,
+    "height": 128
+  },
+  {
+    "id": "prop-altar",
+    "src": "art/props/prop-altar.png",
+    "width": 374,
+    "height": 287
+  },
+  {
+    "id": "prop-altar-shadow",
+    "src": "art/props/prop-altar-shadow.png",
+    "width": 374,
+    "height": 287
+  },
+  {
+    "id": "prop-amphora",
+    "src": "art/props/prop-amphora.png",
+    "width": 140,
+    "height": 147
+  },
+  {
+    "id": "prop-amphora-shadow",
+    "src": "art/props/prop-amphora-shadow.png",
+    "width": 140,
+    "height": 147
+  },
+  {
+    "id": "prop-campfire",
+    "src": "art/props/prop-campfire.png",
+    "width": 241,
+    "height": 213
+  },
+  {
+    "id": "prop-campfire-shadow",
+    "src": "art/props/prop-campfire-shadow.png",
+    "width": 241,
+    "height": 213
+  },
+  {
+    "id": "prop-cart",
+    "src": "art/props/prop-cart.png",
+    "width": 327,
+    "height": 168
+  },
+  {
+    "id": "prop-cart-shadow",
+    "src": "art/props/prop-cart-shadow.png",
+    "width": 327,
+    "height": 168
+  },
+  {
+    "id": "prop-cave",
+    "src": "art/props/prop-cave.png",
+    "width": 1105,
+    "height": 759
+  },
+  {
+    "id": "prop-cave-shadow",
+    "src": "art/props/prop-cave-shadow.png",
+    "width": 1105,
+    "height": 759
+  },
+  {
+    "id": "prop-column",
+    "src": "art/props/prop-column.png",
+    "width": 723,
+    "height": 906
+  },
+  {
+    "id": "prop-column-shadow",
+    "src": "art/props/prop-column-shadow.png",
+    "width": 723,
+    "height": 906
+  },
+  {
+    "id": "prop-column-broken",
+    "src": "art/props/prop-column-broken.png",
+    "width": 319,
+    "height": 313
+  },
+  {
+    "id": "prop-column-broken-shadow",
+    "src": "art/props/prop-column-broken-shadow.png",
+    "width": 319,
+    "height": 313
+  },
+  {
+    "id": "prop-crag",
+    "src": "art/props/prop-crag.png",
+    "width": 1013,
+    "height": 532
+  },
+  {
+    "id": "prop-crag-shadow",
+    "src": "art/props/prop-crag-shadow.png",
+    "width": 1013,
+    "height": 532
+  },
+  {
+    "id": "prop-crates",
+    "src": "art/props/prop-crates.png",
+    "width": 251,
+    "height": 202
+  },
+  {
+    "id": "prop-crates-shadow",
+    "src": "art/props/prop-crates-shadow.png",
+    "width": 251,
+    "height": 202
+  },
+  {
+    "id": "prop-cypress",
+    "src": "art/props/prop-cypress.png",
+    "width": 834,
+    "height": 976
+  },
+  {
+    "id": "prop-cypress-shadow",
+    "src": "art/props/prop-cypress-shadow.png",
+    "width": 834,
+    "height": 976
+  },
+  {
+    "id": "prop-drum",
+    "src": "art/props/prop-drum.png",
+    "width": 176,
+    "height": 218
+  },
+  {
+    "id": "prop-drum-shadow",
+    "src": "art/props/prop-drum-shadow.png",
+    "width": 176,
+    "height": 218
+  },
+  {
+    "id": "prop-gate",
+    "src": "art/props/prop-gate.png",
+    "width": 978,
+    "height": 706
+  },
+  {
+    "id": "prop-gate-shadow",
+    "src": "art/props/prop-gate-shadow.png",
+    "width": 978,
+    "height": 706
+  },
+  {
+    "id": "prop-hut",
+    "src": "art/props/prop-hut.png",
+    "width": 1148,
+    "height": 809
+  },
+  {
+    "id": "prop-hut-shadow",
+    "src": "art/props/prop-hut-shadow.png",
+    "width": 1148,
+    "height": 809
+  },
+  {
+    "id": "prop-hut-burnt",
+    "src": "art/props/prop-hut-burnt.png",
+    "width": 989,
+    "height": 773
+  },
+  {
+    "id": "prop-hut-burnt-shadow",
+    "src": "art/props/prop-hut-burnt-shadow.png",
+    "width": 989,
+    "height": 773
+  },
+  {
+    "id": "prop-olive",
+    "src": "art/props/prop-olive.png",
+    "width": 784,
+    "height": 792
+  },
+  {
+    "id": "prop-olive-shadow",
+    "src": "art/props/prop-olive-shadow.png",
+    "width": 784,
+    "height": 792
+  },
+  {
+    "id": "prop-palisade",
+    "src": "art/props/prop-palisade.png",
+    "width": 936,
+    "height": 341
+  },
+  {
+    "id": "prop-palisade-shadow",
+    "src": "art/props/prop-palisade-shadow.png",
+    "width": 936,
+    "height": 341
+  },
+  {
+    "id": "prop-pine",
+    "src": "art/props/prop-pine.png",
+    "width": 1280,
+    "height": 1270
+  },
+  {
+    "id": "prop-pine-shadow",
+    "src": "art/props/prop-pine-shadow.png",
+    "width": 1280,
+    "height": 1270
+  },
+  {
+    "id": "prop-press",
+    "src": "art/props/prop-press.png",
+    "width": 378,
+    "height": 239
+  },
+  {
+    "id": "prop-press-shadow",
+    "src": "art/props/prop-press-shadow.png",
+    "width": 378,
+    "height": 239
+  },
+  {
+    "id": "prop-reeds",
+    "src": "art/props/prop-reeds.png",
+    "width": 232,
+    "height": 257
+  },
+  {
+    "id": "prop-reeds-shadow",
+    "src": "art/props/prop-reeds-shadow.png",
+    "width": 232,
+    "height": 257
+  },
+  {
+    "id": "prop-rock",
+    "src": "art/props/prop-rock.png",
+    "width": 242,
+    "height": 227
+  },
+  {
+    "id": "prop-rock-shadow",
+    "src": "art/props/prop-rock-shadow.png",
+    "width": 242,
+    "height": 227
+  },
+  {
+    "id": "prop-rock-small",
+    "src": "art/props/prop-rock-small.png",
+    "width": 117,
+    "height": 96
+  },
+  {
+    "id": "prop-rock-small-shadow",
+    "src": "art/props/prop-rock-small-shadow.png",
+    "width": 117,
+    "height": 96
+  },
+  {
+    "id": "prop-shards",
+    "src": "art/props/prop-shards.png",
+    "width": 144,
+    "height": 105
+  },
+  {
+    "id": "prop-shards-shadow",
+    "src": "art/props/prop-shards-shadow.png",
+    "width": 144,
+    "height": 105
+  },
+  {
+    "id": "prop-ship",
+    "src": "art/props/prop-ship.png",
+    "width": 1338,
+    "height": 666
+  },
+  {
+    "id": "prop-ship-shadow",
+    "src": "art/props/prop-ship-shadow.png",
+    "width": 1338,
+    "height": 666
+  },
+  {
+    "id": "prop-shrub",
+    "src": "art/props/prop-shrub.png",
+    "width": 192,
+    "height": 186
+  },
+  {
+    "id": "prop-shrub-shadow",
+    "src": "art/props/prop-shrub-shadow.png",
+    "width": 192,
+    "height": 186
+  },
+  {
+    "id": "prop-slabs",
+    "src": "art/props/prop-slabs.png",
+    "width": 250,
+    "height": 177
+  },
+  {
+    "id": "prop-slabs-shadow",
+    "src": "art/props/prop-slabs-shadow.png",
+    "width": 250,
+    "height": 177
+  },
+  {
+    "id": "prop-stele",
+    "src": "art/props/prop-stele.png",
+    "width": 547,
+    "height": 612
+  },
+  {
+    "id": "prop-stele-shadow",
+    "src": "art/props/prop-stele-shadow.png",
+    "width": 547,
+    "height": 612
+  },
+  {
+    "id": "prop-temple",
+    "src": "art/props/prop-temple.png",
+    "width": 1279,
+    "height": 710
+  },
+  {
+    "id": "prop-temple-shadow",
+    "src": "art/props/prop-temple-shadow.png",
+    "width": 1279,
+    "height": 710
+  },
+  {
+    "id": "prop-vines",
+    "src": "art/props/prop-vines.png",
+    "width": 737,
+    "height": 346
+  },
+  {
+    "id": "prop-vines-shadow",
+    "src": "art/props/prop-vines-shadow.png",
+    "width": 737,
+    "height": 346
+  },
+  {
+    "id": "weapon-club-common",
+    "src": "art/weapons/weapon-club-common.png",
+    "width": 45,
+    "height": 130
+  },
+  {
+    "id": "weapon-club-epic",
+    "src": "art/weapons/weapon-club-epic.png",
+    "width": 78,
+    "height": 130
+  },
+  {
+    "id": "weapon-club-legendary",
+    "src": "art/weapons/weapon-club-legendary.png",
+    "width": 88,
+    "height": 130
+  },
+  {
+    "id": "weapon-club-rare",
+    "src": "art/weapons/weapon-club-rare.png",
+    "width": 73,
+    "height": 130
+  },
+  {
+    "id": "weapon-club-uncommon",
+    "src": "art/weapons/weapon-club-uncommon.png",
+    "width": 64,
+    "height": 130
+  },
+  {
+    "id": "weapon-spear-common",
+    "src": "art/weapons/weapon-spear-common.png",
+    "width": 36,
+    "height": 343
+  },
+  {
+    "id": "weapon-spear-epic",
+    "src": "art/weapons/weapon-spear-epic.png",
+    "width": 57,
+    "height": 356
+  },
+  {
+    "id": "weapon-spear-legendary",
+    "src": "art/weapons/weapon-spear-legendary.png",
+    "width": 57,
+    "height": 361
+  },
+  {
+    "id": "weapon-spear-rare",
+    "src": "art/weapons/weapon-spear-rare.png",
+    "width": 57,
+    "height": 352
+  },
+  {
+    "id": "weapon-spear-uncommon",
+    "src": "art/weapons/weapon-spear-uncommon.png",
+    "width": 39,
+    "height": 348
+  },
+  {
+    "id": "weapon-sword-common",
+    "src": "art/weapons/weapon-sword-common.png",
+    "width": 38,
+    "height": 151
+  },
+  {
+    "id": "weapon-sword-epic",
+    "src": "art/weapons/weapon-sword-epic.png",
+    "width": 56,
+    "height": 177
+  },
+  {
+    "id": "weapon-sword-legendary",
+    "src": "art/weapons/weapon-sword-legendary.png",
+    "width": 63,
+    "height": 186
+  },
+  {
+    "id": "weapon-sword-rare",
+    "src": "art/weapons/weapon-sword-rare.png",
+    "width": 50,
+    "height": 168
+  },
+  {
+    "id": "weapon-sword-uncommon",
+    "src": "art/weapons/weapon-sword-uncommon.png",
+    "width": 44,
+    "height": 159
+  }
+]

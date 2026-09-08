@@ -40,19 +40,32 @@ def _bounds(pairs) -> tuple[float, float, float, float]:
 
 
 class Frame:
-    """Кадр: прямоугольник в координатах экрана и всё, что из него следует."""
+    """Кадр: прямоугольник в координатах экрана и всё, что из него следует.
 
-    def __init__(self, body_objects, world_size: float, fit: str, px_per_world: float):
+    Плотность задаётся в пикселях на единицу МОДЕЛИ. У пропа она выводится из
+    размера в мире (frame_for_prop ниже), у фигуры и оружия — прямо из роста
+    фигуры в пикселях: у них нет размера в balance.props.sizes и быть не должно,
+    это не пропы.
+    """
+
+    def __init__(
+        self,
+        body_objects,
+        px_per_model: float,
+        model_to_world: float = 1.0,
+        with_shadow: bool = True,
+    ):
         points = shapes.world_points(body_objects)
         body = _bounds([_uv(p) for p in points])
-        shadow = _bounds([_uv_shadow(p) for p in points])
+        # Тень входит в кадр только у того, кто её отбрасывает файлом. Деталь
+        # фигуры и оружие в руке вращаются в игре, и запечённая тень уехала бы
+        # вместе с ними — им кадр строится по одному телу.
+        shadow = _bounds([_uv_shadow(p) for p in points]) if with_shadow else body
 
         self.body_width = body[2] - body[0]
         self.body_height = body[3] - body[1]
-        # Масштаб модели в единицы мира: задаётся ТЕЛОМ, не кадром с тенью.
-        span = self.body_height if fit == "height" else self.body_width
-        self.model_to_world = world_size / span
-        self.px_per_model = px_per_world * self.model_to_world
+        self.model_to_world = model_to_world
+        self.px_per_model = px_per_model
 
         u0 = min(body[0], shadow[0])
         v0 = min(body[1], shadow[1])
@@ -86,6 +99,50 @@ class Frame:
             (self.u1 - self.u0) * self.model_to_world,
             (self.v1 - self.v0) * self.model_to_world,
         )
+
+
+def frame_for_prop(body_objects, world_size: float, fit: str, px_per_world: float) -> "Frame":
+    """Кадр пропа: масштаб задаётся ТЕЛОМ (без тени) и размером в balance.json."""
+    points = shapes.world_points(body_objects)
+    body = _bounds([_uv(p) for p in points])
+    span = (body[3] - body[1]) if fit == "height" else (body[2] - body[0])
+    model_to_world = world_size / span
+    return Frame(body_objects, px_per_world * model_to_world, model_to_world, True)
+
+
+class TileFrame:
+    """Кадр бесшовного тайла земли: ровно проекция заданного куска плоскости.
+
+    Кадрируется не по вершинам, а по числу: тайл обязан замыкаться сам на себя,
+    и лишний пиксель поля сломал бы стык. Плоскость лежит в z = 0, поэтому по
+    вертикали кусок сжимается наклоном камеры — ровно так, как его увидит
+    игрок, и движок мостит картинку в тех же единицах.
+    """
+
+    def __init__(self, size_x: float, size_y: float, px_per_model: float):
+        import math as _math
+
+        self.px_per_model = px_per_model
+        self.model_to_world = 1.0
+        squash = _math.sin(optics.tilt_rad())
+        half_u = size_x / 2.0
+        half_v = size_y * squash / 2.0
+        self.width = max(1, int(round(size_x * px_per_model)))
+        self.height = max(1, int(round(size_y * squash * px_per_model)))
+        self.u0, self.u1 = -half_u, half_u
+        self.v0, self.v1 = -half_v, half_v
+        self.center_u, self.center_v = 0.0, 0.0
+        self.span = (self.u1 - self.u0) if self.width >= self.height else (self.v1 - self.v0)
+        self.body_width = size_x
+        self.body_height = size_y * squash
+
+    @property
+    def anchor(self) -> tuple[float, float]:
+        return (0.5, 0.5)
+
+    @property
+    def box_world(self) -> tuple[float, float]:
+        return (self.u1 - self.u0, self.v1 - self.v0)
 
 
 def ground_plane(helpers, frame: Frame) -> bpy.types.Object:
@@ -136,6 +193,9 @@ def passes(body_objects, catcher, frame: Frame, out_dir: Path, name: str) -> tup
 
     # Проход тени: объекты не видны камере, но тень по-прежнему бросают.
     # Фон непрозрачный: нам нужна ЯРКОСТЬ плоскости, а не её альфа.
+    # Светит только солнце: снос тени в движке считается из его направления, и
+    # второй источник дал бы вторую тень под другим углом (optics.only_sun).
+    optics.only_sun(False)
     catcher.hide_render = False
     scene.render.film_transparent = False
     for obj in body_objects:
@@ -144,6 +204,7 @@ def passes(body_objects, catcher, frame: Frame, out_dir: Path, name: str) -> tup
     for obj in body_objects:
         obj.visible_camera = True
     scene.render.film_transparent = True
+    optics.only_sun(True)
 
     _mask_shadow(shadow_path)
     return body_path, shadow_path
@@ -185,3 +246,30 @@ def _mask_shadow(path: Path) -> None:
     image.file_format = "PNG"
     image.save()
     bpy.data.images.remove(image)
+
+
+def body_only(body_objects, frame, out_dir: Path, name: str) -> Path:
+    """Один проход, без тени. Детали фигуры и оружие в руке.
+
+    Тень им не рисуется намеренно: кость вращается в игре, а запечённая тень
+    вращалась бы вместе с ней и уезжала бы от земли. Под фигуру движок кладёт
+    своё пятно (ui/UiKit.groundShadow) — одно на всю фигуру, а не семь по костям.
+    """
+    out_dir.mkdir(parents=True, exist_ok=True)
+    path = out_dir / f"{name}.png"
+    scene = bpy.context.scene
+    scene.render.film_transparent = True
+    for obj in body_objects:
+        obj.visible_camera = True
+    _render_to(path)
+    return path
+
+
+def opaque(out_dir: Path, name: str) -> Path:
+    """Непрозрачный кадр целиком — тайл земли. Альфы у земли нет и быть не может."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    path = out_dir / f"{name}.png"
+    bpy.context.scene.render.film_transparent = False
+    _render_to(path)
+    bpy.context.scene.render.film_transparent = True
+    return path

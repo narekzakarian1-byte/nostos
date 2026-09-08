@@ -1,0 +1,30 @@
+{
+  "id": "prop-cart",
+  "version": 1,
+  "script": "art/blender/assets/village.py",
+  "seed": 0,
+  "blender": "5.2.1 LTS",
+  "balanceHash": "e74168556604",
+  "pxPerUnit": 3.6,
+  "size": {
+    "fit": "width",
+    "value": 84
+  },
+  "pixels": {
+    "width": 327,
+    "height": 168
+  },
+  "box": {
+    "width": 90.83,
+    "height": 46.67
+  },
+  "anchor": {
+    "x": 0.46073,
+    "y": 0.57824
+  },
+  "footprint": {
+    "rx": 9.6,
+    "ry": 1.1
+  },
+  "tris": 1092
+}

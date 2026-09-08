@@ -1,0 +1,30 @@
+{
+  "id": "prop-slabs",
+  "version": 1,
+  "script": "art/blender/assets/stones.py",
+  "seed": 0,
+  "blender": "5.2.1 LTS",
+  "balanceHash": "e74168556604",
+  "pxPerUnit": 3.6,
+  "size": {
+    "fit": "width",
+    "value": 66
+  },
+  "pixels": {
+    "width": 250,
+    "height": 177
+  },
+  "box": {
+    "width": 69.44,
+    "height": 49.17
+  },
+  "anchor": {
+    "x": 0.29321,
+    "y": 0.45419
+  },
+  "footprint": {
+    "rx": 32.2,
+    "ry": 20.7
+  },
+  "tris": 1024
+}

@@ -1,10 +1,6 @@
 import { getBalance } from '../core/Balance.ts';
 import type { Game } from '../core/Game.ts';
 import type { Camera } from './Camera.ts';
-import { currentIslandId } from '../world/Island.ts';
-import { SPRITES, type SpriteId } from './AssetManifest.ts';
-import { islandRoad } from './IslandArt.ts';
-import { sprites } from './Sprites.ts';
 import { roundRectPath } from './UiKit.ts';
 
 /**
@@ -18,13 +14,6 @@ export function drawRoad(ctx: CanvasRenderingContext2D, game: Game, camera: Came
   const { scenery, palette } = getBalance();
   const paths = game.scenery.roadPaths.filter((path) => path.points.length >= 2);
   if (paths.length === 0) return;
-
-  const id = islandRoad(currentIslandId());
-  const img = sprites.get(id);
-  if (img) {
-    for (const path of paths) tileRoad(ctx, img, id, path.points, path.width);
-    return;
-  }
 
   // Край и тело — одной ломаной, разной толщиной: два прохода дешевле, чем
   // считать контур полосы, и на изломах не расходятся. Края всех ниток идут
@@ -79,29 +68,4 @@ function drawStones(ctx: CanvasRenderingContext2D, game: Game, camera: Camera): 
     ctx.restore();
   }
   ctx.restore();
-}
-
-/** Повторяет спрайт плашками вдоль ломаной — путь, когда текстура появится. */
-function tileRoad(
-  ctx: CanvasRenderingContext2D,
-  img: CanvasImageSource,
-  id: SpriteId,
-  points: readonly { x: number; y: number }[],
-  thickness: number,
-): void {
-  const def = SPRITES[id];
-  const tileWidth = (def.width / def.height) * thickness;
-  for (let i = 0; i < points.length - 1; i++) {
-    const a = points[i]!;
-    const b = points[i + 1]!;
-    const length = Math.hypot(b.x - a.x, b.y - a.y);
-    const angle = Math.atan2(b.y - a.y, b.x - a.x);
-    ctx.save();
-    ctx.translate(a.x, a.y);
-    ctx.rotate(angle);
-    for (let x = 0; x < length; x += tileWidth) {
-      ctx.drawImage(img, x, -thickness / 2, tileWidth, thickness);
-    }
-    ctx.restore();
-  }
 }

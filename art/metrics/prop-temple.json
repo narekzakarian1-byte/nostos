@@ -1,0 +1,30 @@
+{
+  "id": "prop-temple",
+  "version": 1,
+  "script": "art/blender/assets/landmarks.py",
+  "seed": 0,
+  "blender": "5.2.1 LTS",
+  "balanceHash": "e74168556604",
+  "pxPerUnit": 3.6,
+  "size": {
+    "fit": "width",
+    "value": 268
+  },
+  "pixels": {
+    "width": 1279,
+    "height": 710
+  },
+  "box": {
+    "width": 355.28,
+    "height": 197.22
+  },
+  "anchor": {
+    "x": 0.52495,
+    "y": 0.70404
+  },
+  "footprint": {
+    "rx": 134.0,
+    "ry": 42.3
+  },
+  "tris": 12020
+}

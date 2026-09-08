@@ -1,0 +1,30 @@
+{
+  "id": "prop-altar",
+  "version": 1,
+  "script": "art/blender/assets/marble.py",
+  "seed": 0,
+  "blender": "5.2.1 LTS",
+  "balanceHash": "e74168556604",
+  "pxPerUnit": 3.6,
+  "size": {
+    "fit": "width",
+    "value": 78
+  },
+  "pixels": {
+    "width": 374,
+    "height": 287
+  },
+  "box": {
+    "width": 103.89,
+    "height": 79.72
+  },
+  "anchor": {
+    "x": 0.60472,
+    "y": 0.65845
+  },
+  "footprint": {
+    "rx": 39.0,
+    "ry": 22.0
+  },
+  "tris": 812
+}

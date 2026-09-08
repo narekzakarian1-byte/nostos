@@ -1,60 +1,126 @@
-// Раскладка отрендеренного ассета в игру: `node tools/import-blender-art.mjs <id>`.
+// Раскладка отрендеренного арта в игру: `node tools/import-blender-art.mjs [id ...]`.
 //
-// Кладёт тело и тень в public/art/props и печатает строки, которые надо
-// вписать в AssetManifest.ts и balance.json. Вписываются они руками намеренно:
-// оба файла — исходники с комментариями, и автоправка их испортит.
+// Без аргументов переносит ВСЁ, что лежит в art/metrics. Так и задумано: арт
+// острова собирается пачкой в полсотни файлов, и переносить их по одному —
+// это гарантированно забыть половину.
+//
+// Что делает тул, а что человек. Тул пишет только ПРОИЗВОДНЫЕ числа: якорь,
+// габарит и след считаются из модели и подгонке не подлежат (ART_RUNBOOK.md
+// §7). Всё, что является решением, — размер объекта в мире, его набор в зоне,
+// имя в манифесте — остаётся за человеком.
+//
+// Раньше тул только печатал строки, а вписывались они руками. При двух
+// ассетах это работало; при пятидесяти пропах, пятнадцати оружиях и двадцати
+// четырёх костях фигур ручной перенос производных чисел — это способ
+// незаметно разойтись с рендером.
 import { createHash } from 'node:crypto';
-import { copyFileSync, existsSync, mkdirSync, readFileSync, statSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-const id = process.argv[2];
-if (!id) {
-  console.error('нужен id ассета: node tools/import-blender-art.mjs prop-ruin-gate');
-  process.exit(1);
-}
-
-const meta = JSON.parse(readFileSync(join('art/metrics', `${id}.json`), 'utf-8'));
+const only = process.argv.slice(2);
+const metricsDir = 'art/metrics';
 const balance = JSON.parse(readFileSync('balance.json', 'utf-8'));
-
-// Оптика при рендере и оптика в игре обязаны совпадать. Иначе ассет тихо
-// разъедется со всеми остальными — ровно та болезнь, от которой мы лечимся.
 const hash = opticsHash(balance.props);
-if (hash !== meta.balanceHash) {
-  console.error(`оптика разошлась: в ассете ${meta.balanceHash}, в balance.json ${hash}`);
+
+const metrics = readdirSync(metricsDir)
+  .filter((f) => f.endsWith('.json'))
+  .map((f) => JSON.parse(readFileSync(join(metricsDir, f), 'utf-8')))
+  .filter((m) => only.length === 0 || only.includes(m.id))
+  .sort((a, b) => a.id.localeCompare(b.id));
+
+const stale = metrics.filter((m) => m.balanceHash !== hash);
+if (stale.length) {
+  console.error(`оптика разошлась у ${stale.length} ассетов, например ${stale[0].id}:`);
+  console.error(`  в ассете ${stale[0].balanceHash}, в balance.json ${hash}`);
   console.error('перерендерить: node tools/blender.mjs <asset>');
   process.exit(1);
 }
 
-mkdirSync('public/art/props', { recursive: true });
-const files = [];
-for (const suffix of ['', '-shadow']) {
-  const from = join('art/out', `${id}${suffix}.png`);
-  if (!existsSync(from)) continue;
-  const to = join('public/art/props', `${id}${suffix}.png`);
-  copyFileSync(from, to);
-  files.push([to, statSync(to).size]);
+const DEST = {
+  prop: 'public/art/props',
+  part: 'public/art/weapons',
+  figure: 'public/art/figures',
+  tile: 'public/art/ground',
+};
+
+let bytes = 0;
+const sprites = [];
+for (const meta of metrics) {
+  const kind = meta.kind ?? 'prop';
+  const dir = DEST[kind];
+  mkdirSync(dir, { recursive: true });
+  const names = kind === 'figure' ? meta.bones.map((b) => `${meta.id}-${b.id}`) : [meta.id];
+  for (const name of names) {
+    for (const suffix of ['', '-shadow']) {
+      const from = join('art/out', `${name}${suffix}.png`);
+      if (!existsSync(from)) continue;
+      const to = join(dir, `${name}${suffix}.png`);
+      copyFileSync(from, to);
+      bytes += statSync(to).size;
+      const px = pixelsOf(meta, name);
+      sprites.push({
+        id: `${name}${suffix}`,
+        src: to.replace('public/', ''),
+        width: px.width,
+        height: px.height,
+      });
+    }
+  }
 }
-if (files.length === 0) {
-  console.error(`нет рендера art/out/${id}.png — сначала node tools/blender.mjs`);
-  process.exit(1);
+
+// props.rendered и props.footprints — чистая производная от модели. Пишутся
+// сюда целиком: держать их руками значит держать копию того, что уже посчитано.
+const solid = new Set(balance.props.solid ?? []);
+const rendered = {};
+const footprints = {};
+for (const meta of metrics) {
+  if ((meta.kind ?? 'prop') !== 'prop') continue;
+  const base = meta.size.value;
+  rendered[meta.id] = {
+    anchorX: round(meta.anchor.x, 5),
+    anchorY: round(meta.anchor.y, 5),
+    boxW: round(meta.box.width / base, 4),
+    boxH: round(meta.box.height / base, 4),
+  };
+  // След пишется только тому, кто объявлен непроходимым (balance.props.solid).
+  // Из модели этого не вывести: галька и телега одинаково стоят на земле, а
+  // цеплять игрока должна только телега.
+  if (solid.has(meta.id)) footprints[meta.id] = { rx: meta.footprint.rx, ry: meta.footprint.ry };
+}
+writeBlock('rendered', rendered);
+writeBlock('footprints', footprints);
+
+writeFileSync('art/sprites.generated.json', `${JSON.stringify(sprites, null, 2)}\n`);
+
+const figures = metrics.filter((m) => m.kind === 'figure');
+console.log(`перенесено ${sprites.length} файлов, ${(bytes / 1024 / 1024).toFixed(2)} МБ`);
+console.log(`props.rendered: ${Object.keys(rendered).length}, footprints: ${Object.keys(footprints).length}`);
+console.log(`фигур: ${figures.length}, таблица спрайтов: art/sprites.generated.json`);
+
+function pixelsOf(meta, name) {
+  if (meta.kind === 'figure') {
+    const bone = meta.bones.find((b) => `${meta.id}-${b.id}` === name);
+    return bone.pixels;
+  }
+  return meta.pixels;
 }
 
-const base = meta.size.value;
-console.log('перенесено:');
-for (const [path, size] of files) console.log(`  ${path}  ${(size / 1024).toFixed(0)} КБ`);
+/** Замена одного блока внутри props, с сохранением отступов и соседей. */
+function writeBlock(key, value) {
+  const text = readFileSync('balance.json', 'utf-8');
+  const head = `  "${key}": {`;
+  const start = text.indexOf(head);
+  if (start < 0) throw new Error(`нет блока props.${key} в balance.json`);
+  const end = text.indexOf('\n  },\n', start) + '\n  },\n'.length;
+  const body = Object.entries(value)
+    .map(([id, v]) => `   "${id}": ${JSON.stringify(v).replace(/,/g, ', ').replace(/:/g, ': ')}`)
+    .join(',\n');
+  writeFileSync('balance.json', `${text.slice(0, start)}${head}\n${body}\n  },\n${text.slice(end)}`);
+}
 
-console.log('\nв src/ui/AssetManifest.ts:');
-console.log(`  '${id}': { src: 'art/props/${id}.png', width: ${meta.pixels.width}, height: ${meta.pixels.height} },`);
-console.log(`  '${id}-shadow': { src: 'art/props/${id}-shadow.png', width: ${meta.pixels.width}, height: ${meta.pixels.height} },`);
-
-console.log('\nв balance.json → props.rendered:');
-console.log(`  "${id}": { "anchorX": ${meta.anchor.x}, "anchorY": ${meta.anchor.y}, `
-  + `"boxW": ${(meta.box.width / base).toFixed(4)}, "boxH": ${(meta.box.height / base).toFixed(4)} },`);
-
-console.log('\nв balance.json → props.sizes и props.footprints:');
-console.log(`  "${id}": { "fit": "${meta.size.fit}", "value": ${base} },`);
-console.log(`  "${id}": { "rx": ${meta.footprint.rx}, "ry": ${meta.footprint.ry} },`);
-console.log(`\nграней ${meta.tris}, плотность ${meta.pxPerUnit} px на единицу мира, сид ${meta.seed}`);
+function round(n, digits) {
+  return Number(n.toFixed(digits));
+}
 
 /** Тот же набор и порядок значений, что в art/blender/lib/export.py. */
 function opticsHash(props) {

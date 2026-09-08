@@ -13,7 +13,7 @@ import math
 
 import bmesh
 import bpy
-from mathutils import Vector
+from mathutils import Matrix, Vector
 
 from .variants import jitter
 
@@ -146,10 +146,37 @@ def move(obj: bpy.types.Object, dx: float = 0.0, dy: float = 0.0, dz: float = 0.
 
 
 def turn(obj: bpy.types.Object, degrees: float, axis: str = "Z") -> bpy.types.Object:
+    """Поворот вокруг СОБСТВЕННОГО начала координат объекта.
+
+    Blender складывает трансформ как T·R·S, поэтому поворот и сдвиг живут в
+    разных слотах и не зависят от порядка вызовов: объект всегда сначала
+    крутится на месте, потом переезжает. Это то, что нужно детали, — но НЕ то,
+    что нужно наклону всей фигуры (см. orbit).
+    """
     index = {"X": 0, "Y": 1, "Z": 2}[axis]
     euler = list(obj.rotation_euler)
     euler[index] += math.radians(degrees)
     obj.rotation_euler = euler
+    return obj
+
+
+def orbit(obj: bpy.types.Object, degrees: float, axis: str = "X") -> bpy.types.Object:
+    """Поворот вокруг начала координат МОДЕЛИ: крутится и положение тоже.
+
+    Разница с turn() стоила отдельного разбора и потому записана здесь. У
+    объекта, поставленного через move(), сдвиг лежит в location, а turn()
+    правит только rotation — Blender применяет поворот ДО сдвига, и деталь
+    остаётся там же, где стояла, лишь развернувшись. Для наклона фигуры это
+    смертельно: волосы и наплечники уезжают с головы и плеч, а всё, что
+    построено абсолютными координатами прямо в меше, наклоняется правильно.
+    Поэтому здесь поворачивается ещё и вектор положения.
+    """
+    index = {"X": 0, "Y": 1, "Z": 2}[axis]
+    euler = list(obj.rotation_euler)
+    euler[index] += math.radians(degrees)
+    obj.rotation_euler = euler
+    letter = {"X": "X", "Y": "Y", "Z": "Z"}[axis]
+    obj.location = Matrix.Rotation(math.radians(degrees), 3, letter) @ Vector(obj.location)
     return obj
 
 

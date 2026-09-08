@@ -593,6 +593,40 @@ export interface SceneryConfig {
   readonly _clusterNote?: string;
 }
 
+/**
+ * Живность кадра: свет от огня, угли, пыльца, чайки, качание травы. Не
+ * механика и не баланс — но и не «полировка в конце»: GDD §10 требует слой
+ * мелких откликов с первой фазы.
+ */
+export interface AmbientConfig {
+  readonly glowRadius: number;
+  readonly glowAlpha: number;
+  readonly glowPulseHz: number;
+  readonly glowPulseAmount: number;
+  readonly emberCount: number;
+  readonly emberRise: number;
+  readonly emberSize: number;
+  readonly emberSpread: number;
+  readonly emberSeconds: number;
+  readonly moteCount: number;
+  readonly moteSize: number;
+  readonly moteAlpha: number;
+  readonly moteDriftUnits: number;
+  readonly moteSeconds: number;
+  readonly birdCount: number;
+  readonly birdSpan: number;
+  readonly birdSpeed: number;
+  readonly birdFlapHz: number;
+  readonly birdAlpha: number;
+  readonly grassSwayHz: number;
+  readonly grassSwayAmount: number;
+  readonly grassWaveUnits: number;
+  readonly _glowNote?: string;
+  readonly _moteNote?: string;
+  readonly _birdNote?: string;
+  readonly _swayNote?: string;
+}
+
 export interface FogConfig {
   readonly cellSize: number;
   readonly revealRadius: number;
@@ -714,6 +748,7 @@ export interface Balance {
   readonly render: RenderConfig;
   readonly joystick: JoystickConfig;
   readonly scenery: SceneryConfig;
+  readonly ambient: AmbientConfig;
   readonly fog: FogConfig;
   readonly minimap: MinimapConfig;
   readonly patrol: PatrolConfig;

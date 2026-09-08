@@ -1,0 +1,30 @@
+{
+  "id": "prop-cave",
+  "version": 1,
+  "script": "art/blender/assets/stones.py",
+  "seed": 0,
+  "blender": "5.2.1 LTS",
+  "balanceHash": "e74168556604",
+  "pxPerUnit": 3.6,
+  "size": {
+    "fit": "width",
+    "value": 246
+  },
+  "pixels": {
+    "width": 1105,
+    "height": 759
+  },
+  "box": {
+    "width": 306.94,
+    "height": 210.83
+  },
+  "anchor": {
+    "x": 0.58416,
+    "y": 0.64482
+  },
+  "footprint": {
+    "rx": 116.3,
+    "ry": 39.7
+  },
+  "tris": 2952
+}

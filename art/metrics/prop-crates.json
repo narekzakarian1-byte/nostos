@@ -1,0 +1,30 @@
+{
+  "id": "prop-crates",
+  "version": 1,
+  "script": "art/blender/assets/village.py",
+  "seed": 0,
+  "blender": "5.2.1 LTS",
+  "balanceHash": "e74168556604",
+  "pxPerUnit": 3.6,
+  "size": {
+    "fit": "width",
+    "value": 56
+  },
+  "pixels": {
+    "width": 251,
+    "height": 202
+  },
+  "box": {
+    "width": 69.72,
+    "height": 56.11
+  },
+  "anchor": {
+    "x": 0.43134,
+    "y": 0.62509
+  },
+  "footprint": {
+    "rx": 28.0,
+    "ry": 15.5
+  },
+  "tris": 324
+}

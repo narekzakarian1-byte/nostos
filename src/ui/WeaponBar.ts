@@ -1,6 +1,8 @@
 import { getBalance } from '../core/Balance.ts';
 import type { DamageType, Rarity } from '../core/BalanceTypes.ts';
 import { glyph } from './Glyphs.ts';
+import type { SpriteId } from './AssetManifest.ts';
+import { sprites } from './Sprites.ts';
 import { panel, text, ui } from './UiKit.ts';
 import type { UpgradeRow } from './UpgradeScreen.ts';
 
@@ -74,7 +76,13 @@ function drawSlot(
     lineWidth: equipped ? u.outline * equippedOutline : row.ready ? u.outline * 1.6 : u.outline,
   });
 
-  glyph(ctx, row.type, x + size / 2, y + size * 0.46, size * 0.62, u.colors.outline, color);
+  // В слоте лежит САМ предмет, а не значок его типа. Оружие множит стат атаки,
+  // и разрыв между обычным и золотым больше чем вчетверо — при одинаковых
+  // значках самая крупная находка в игре выглядела как та, что уже надета.
+  // Значок типа при этом остаётся в углу: по нему слот находят взглядом.
+  if (!drawWeaponArt(ctx, row.type, row.rarity, x + size / 2, y + size * 0.5, size * 0.82)) {
+    glyph(ctx, row.type, x + size / 2, y + size * 0.46, size * 0.62, u.colors.outline, color);
+  }
 
   // Значок типа в углу — по нему слот находят взглядом, не читая.
   const chip = u.slotChip;
@@ -115,6 +123,49 @@ function drawLockedSlot(ctx: CanvasRenderingContext2D, box: SlotBox): void {
     fill: u.colors.gold,
   });
 }
+
+/** Вид оружия по типу урона. Тот же стол, что у фигуры в руке (ui/Figures.ts). */
+const WEAPON_ART: Record<DamageType, string> = {
+  slash: 'sword',
+  pierce: 'spear',
+  crush: 'club',
+};
+
+/**
+ * Картинка предмета, вписанная в квадрат слота. Наклонена: вертикальное копьё
+ * в квадратном слоте превращается в полоску шириной в пиксель, а под углом
+ * оно занимает диагональ и остаётся узнаваемым.
+ *
+ * Возвращает false, если файла ещё нет, — тогда слот рисует прежний значок.
+ */
+function drawWeaponArt(
+  ctx: CanvasRenderingContext2D,
+  type: DamageType,
+  rarity: Rarity,
+  cx: number,
+  cy: number,
+  box: number,
+): boolean {
+  const id = `weapon-${WEAPON_ART[type]}-${rarity}` as SpriteId;
+  const img = sprites.get(id);
+  if (!img) return false;
+
+  // Вписывание по большей стороне: копьё вчетверо выше своей ширины, и
+  // делить квадрат на обе стороны сразу значит ужать его в шестнадцать раз.
+  const aspect = img.naturalWidth / img.naturalHeight;
+  const h = aspect > 1 ? box / aspect : box;
+  const w = h * aspect;
+
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(SLOT_TILT);
+  ctx.drawImage(img, -w / 2, -h / 2, w, h);
+  ctx.restore();
+  return true;
+}
+
+/** Наклон предмета в слоте, радианы. Техническая константа отрисовки. */
+const SLOT_TILT = -0.55;
 
 export function rarityColor(rarity: Rarity): string {
   return ui().rarityColors[rarity];

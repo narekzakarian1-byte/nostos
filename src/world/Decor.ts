@@ -5,27 +5,22 @@ import { toWorld, zoneRect, type IslandLayout } from './Layout.ts';
 import type { RoadPath } from './Road.ts';
 import { clampRect, clusterCenter, satelliteSpot, type Point } from './Scatter.ts';
 
-/** Совпадает с PropId в ui/props/Models.ts и PicturePropId в ui/props/Pictures.ts
+/** Совпадает с ключами balance.props.sizes и таблицей картинок ui/AssetTable.ts
  *  — типы не импортируются оттуда, чтобы world/ не тянул зависимость на ui/
  *  (CLAUDE.md: слои разделены). Чем проп нарисован — геометрией или картинкой —
  *  world/ не знает и знать не должен: здесь только раскладка по земле. */
 export type DecorId =
-  | 'prop-column'
-  | 'prop-column-broken'
-  | 'prop-column-drum'
-  | 'prop-ruin-gate'
-  | 'prop-amphora'
-  | 'prop-rock'
-  | 'prop-rock-small'
-  | 'prop-rubble'
-  | 'prop-campfire'
-  | 'prop-vine-trellis'
-  | 'prop-wine-press'
-  | 'prop-cart-broken'
-  | 'prop-palisade-burnt'
-  | 'prop-hut-burnt'
-  | 'prop-ship'
-  | 'prop-temple';
+  // Растительность — вертикаль кадра.
+  | 'prop-cypress' | 'prop-pine' | 'prop-olive' | 'prop-shrub' | 'prop-reeds' | 'prop-vines'
+  // Камень.
+  | 'prop-rock' | 'prop-rock-small' | 'prop-slabs' | 'prop-crag' | 'prop-cave'
+  // Обжитое.
+  | 'prop-hut' | 'prop-hut-burnt' | 'prop-palisade' | 'prop-cart' | 'prop-crates'
+  | 'prop-campfire' | 'prop-amphora' | 'prop-press' | 'prop-shards'
+  // Обработанный камень.
+  | 'prop-column' | 'prop-column-broken' | 'prop-drum' | 'prop-altar' | 'prop-stele' | 'prop-gate'
+  // Ландмарки.
+  | 'prop-temple' | 'prop-ship';
 
 export interface DecorPlacement {
   readonly id: DecorId;
@@ -70,22 +65,22 @@ interface DecorSet {
   readonly satellites: readonly DecorId[];
 }
 
-// Якорь кластера — то крупное, вокруг чего собирается группа. Ворота вдвое
-// выше игрока и перекрывают его собой, поэтому это один слот из восьми:
-// попадайся они наравне с обломками, остров превратился бы в частокол,
-// сквозь который не видно врагов.
+// Запасной набор для острова без раскладки. Крупного в якорях мало и оно
+// невысокое: объект выше игрока перекрывает его собой, и остров из таких
+// превращается в частокол, сквозь который не видно врагов.
 //
-// Мелочи большинство, и она намеренно низкая: плитки и камни набирают
-// плотность картинки, но не перекрывают врагов и не спорят за внимание с тремя
-// иконками над ними.
+// Основная масса — ПЛОСКОЕ: плиты, черепки, галька. Они лежат на земле, следа
+// не имеют и набирают плотность картинки, ничего не загораживая. Именно так
+// плотность набрана в референсе: немного крупного и много лежачего, а не
+// сорок стоящих предметов на экран.
 const COMMON: DecorSet = {
   anchors: [
-    'prop-column', 'prop-column-broken', 'prop-ruin-gate', 'prop-column-broken',
-    'prop-campfire', 'prop-column', 'prop-column-broken', 'prop-rock',
+    'prop-rock', 'prop-shrub', 'prop-column-broken', 'prop-olive',
+    'prop-rock', 'prop-shrub', 'prop-crates', 'prop-cart',
   ],
   satellites: [
-    'prop-rubble', 'prop-rock', 'prop-rubble', 'prop-amphora', 'prop-rock-small',
-    'prop-rubble', 'prop-column-drum', 'prop-rock', 'prop-rubble', 'prop-rock-small',
+    'prop-slabs', 'prop-rock-small', 'prop-shards', 'prop-slabs',
+    'prop-amphora', 'prop-rock-small', 'prop-drum', 'prop-slabs',
   ],
 };
 

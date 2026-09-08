@@ -1,0 +1,30 @@
+{
+  "id": "prop-shards",
+  "version": 1,
+  "script": "art/blender/assets/village.py",
+  "seed": 0,
+  "blender": "5.2.1 LTS",
+  "balanceHash": "e74168556604",
+  "pxPerUnit": 3.6,
+  "size": {
+    "fit": "width",
+    "value": 38
+  },
+  "pixels": {
+    "width": 144,
+    "height": 105
+  },
+  "box": {
+    "width": 40.0,
+    "height": 29.17
+  },
+  "anchor": {
+    "x": 0.35066,
+    "y": 0.5039
+  },
+  "footprint": {
+    "rx": 18.8,
+    "ry": 13.2
+  },
+  "tris": 1376
+}

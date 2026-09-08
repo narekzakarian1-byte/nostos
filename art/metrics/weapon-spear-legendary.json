@@ -1,0 +1,19 @@
+{
+  "id": "weapon-spear-legendary",
+  "kind": "part",
+  "version": 1,
+  "script": "art/blender/assets/weapon_spear.py",
+  "seed": 0,
+  "blender": "5.2.1 LTS",
+  "balanceHash": "e74168556604",
+  "pixels": {
+    "width": 57,
+    "height": 361
+  },
+  "pivot": {
+    "x": 0.5,
+    "y": 0.8
+  },
+  "height": 1.1281,
+  "tris": 600
+}

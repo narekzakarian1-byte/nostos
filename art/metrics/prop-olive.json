@@ -1,0 +1,30 @@
+{
+  "id": "prop-olive",
+  "version": 1,
+  "script": "art/blender/assets/trees.py",
+  "seed": 0,
+  "blender": "5.2.1 LTS",
+  "balanceHash": "e74168556604",
+  "pxPerUnit": 3.6,
+  "size": {
+    "fit": "height",
+    "value": 152
+  },
+  "pixels": {
+    "width": 784,
+    "height": 792
+  },
+  "box": {
+    "width": 217.78,
+    "height": 220.0
+  },
+  "anchor": {
+    "x": 0.70119,
+    "y": 0.64865
+  },
+  "footprint": {
+    "rx": 17.8,
+    "ry": 13.6
+  },
+  "tris": 2822
+}

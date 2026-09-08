@@ -1,0 +1,19 @@
+{
+  "id": "weapon-spear-uncommon",
+  "kind": "part",
+  "version": 1,
+  "script": "art/blender/assets/weapon_spear.py",
+  "seed": 0,
+  "blender": "5.2.1 LTS",
+  "balanceHash": "e74168556604",
+  "pixels": {
+    "width": 39,
+    "height": 348
+  },
+  "pivot": {
+    "x": 0.5,
+    "y": 0.7933
+  },
+  "height": 1.0875,
+  "tris": 286
+}

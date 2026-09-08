@@ -1,0 +1,19 @@
+{
+  "id": "weapon-sword-epic",
+  "kind": "part",
+  "version": 1,
+  "script": "art/blender/assets/weapon_sword.py",
+  "seed": 0,
+  "blender": "5.2.1 LTS",
+  "balanceHash": "e74168556604",
+  "pixels": {
+    "width": 56,
+    "height": 177
+  },
+  "pivot": {
+    "x": 0.5,
+    "y": 0.9428
+  },
+  "height": 0.5531,
+  "tris": 376
+}

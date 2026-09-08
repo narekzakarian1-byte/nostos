@@ -3,6 +3,7 @@ import type { Game } from '../core/Game.ts';
 import type { Enemy } from '../world/Enemy.ts';
 import { patrolOutline } from '../world/Patrol.ts';
 import { Camera } from './Camera.ts';
+import { drawAmbient, drawBirds, drawFireGlow } from './Ambient.ts';
 import { drawBossProgress } from './BossProgress.ts';
 import { drawBadge, drawDropTag } from './EnemyBadge.ts';
 import { drawRespawnDial } from './RespawnDial.ts';
@@ -42,6 +43,8 @@ export class Renderer {
     ctx.translate(game.screenshake.x - this.camera.x, game.screenshake.y - this.camera.y);
 
     drawTerrain(ctx, game, this.camera);
+    // Свет костров ложится на землю ДО фигур: он лежит на ней, а не на людях.
+    drawFireGlow(ctx, game, this.camera);
     this.drawBossArena(game);
 
     const visible = this.visibleEnemies(game);
@@ -63,6 +66,8 @@ export class Renderer {
     drawWorldLayer(ctx, game, visible, this.camera);
     drawSlashArc(ctx, game);
     this.drawParticles(game);
+    // Угли и пыльца — поверх фигур: искра, спрятанная за плечом, не читается.
+    drawAmbient(ctx, game, this.camera);
     for (const enemy of visible) {
       // Мёртвый ещё дорисовывает распад, но плашка над ним уже лишняя:
       // цифры на исчезающем трупе читаются как живой враг.
@@ -71,6 +76,7 @@ export class Renderer {
       drawDropTag(ctx, enemy);
     }
     if (game.player.alive) drawPlayerBar(ctx, game);
+    drawBirds(ctx, game, this.camera);
     this.drawDamageNumbers(game);
 
     ctx.restore();

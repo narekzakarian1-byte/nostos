@@ -18,7 +18,10 @@ async function start(session, shot) {
  */
 async function tour(session, shot) {
   await shot('landing');
-  for (let leg = 1; leg <= 6; leg++) {
+  // Семь переходов: пяти хватает, чтобы дойти от прибоя до святилища, ещё два
+  // — на двор с боссом. Больше не надо: на восьмом игрок уже умирает от него и
+  // возрождается на берегу (GDD §4.5), и последние кадры дублируют первые.
+  for (let leg = 1; leg <= 7; leg++) {
     await session.hold(0, -1, 2600);
     await shot(`road-${leg}`);
   }

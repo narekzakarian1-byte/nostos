@@ -1,0 +1,19 @@
+{
+  "id": "weapon-sword-common",
+  "kind": "part",
+  "version": 1,
+  "script": "art/blender/assets/weapon_sword.py",
+  "seed": 0,
+  "blender": "5.2.1 LTS",
+  "balanceHash": "e74168556604",
+  "pixels": {
+    "width": 38,
+    "height": 151
+  },
+  "pivot": {
+    "x": 0.5,
+    "y": 0.9358
+  },
+  "height": 0.4719,
+  "tris": 372
+}

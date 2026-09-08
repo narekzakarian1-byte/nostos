@@ -1,0 +1,19 @@
+{
+  "id": "weapon-sword-legendary",
+  "kind": "part",
+  "version": 1,
+  "script": "art/blender/assets/weapon_sword.py",
+  "seed": 0,
+  "blender": "5.2.1 LTS",
+  "balanceHash": "e74168556604",
+  "pixels": {
+    "width": 63,
+    "height": 186
+  },
+  "pivot": {
+    "x": 0.5,
+    "y": 0.9439
+  },
+  "height": 0.5813,
+  "tris": 376
+}

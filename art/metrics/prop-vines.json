@@ -1,0 +1,30 @@
+{
+  "id": "prop-vines",
+  "version": 1,
+  "script": "art/blender/assets/trees.py",
+  "seed": 0,
+  "blender": "5.2.1 LTS",
+  "balanceHash": "e74168556604",
+  "pxPerUnit": 3.6,
+  "size": {
+    "fit": "width",
+    "value": 156
+  },
+  "pixels": {
+    "width": 737,
+    "height": 346
+  },
+  "box": {
+    "width": 204.72,
+    "height": 96.11
+  },
+  "anchor": {
+    "x": 0.58557,
+    "y": 0.66234
+  },
+  "footprint": {
+    "rx": 65.0,
+    "ry": 2.7
+  },
+  "tris": 3296
+}

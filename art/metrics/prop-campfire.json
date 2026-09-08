@@ -1,0 +1,30 @@
+{
+  "id": "prop-campfire",
+  "version": 1,
+  "script": "art/blender/assets/village.py",
+  "seed": 0,
+  "blender": "5.2.1 LTS",
+  "balanceHash": "e74168556604",
+  "pxPerUnit": 3.6,
+  "size": {
+    "fit": "width",
+    "value": 62
+  },
+  "pixels": {
+    "width": 241,
+    "height": 213
+  },
+  "box": {
+    "width": 66.94,
+    "height": 59.17
+  },
+  "anchor": {
+    "x": 0.5068,
+    "y": 0.52279
+  },
+  "footprint": {
+    "rx": 31.0,
+    "ry": 23.6
+  },
+  "tris": 2396
+}

@@ -1,0 +1,94 @@
+{
+  "id": "odysseus",
+  "kind": "figure",
+  "version": 1,
+  "script": "art/blender/assets/odysseus.py",
+  "seed": 0,
+  "blender": "5.2.1 LTS",
+  "balanceHash": "e74168556604",
+  "figurePx": 320.0,
+  "bones": [
+    {
+      "id": "cloak",
+      "pivotX": 0.5,
+      "pivotY": 0.0816,
+      "height": 0.5813,
+      "behind": false,
+      "pixels": {
+        "width": 161,
+        "height": 186
+      },
+      "socketX": 0.5,
+      "socketY": 0.3499
+    },
+    {
+      "id": "legBack",
+      "pivotX": 0.5,
+      "pivotY": 0.0777,
+      "height": 0.4375,
+      "behind": true,
+      "pixels": {
+        "width": 45,
+        "height": 140
+      },
+      "socketX": 0.6767,
+      "socketY": 0.8863
+    },
+    {
+      "id": "armOff",
+      "pivotX": 0.5,
+      "pivotY": 0.1717,
+      "height": 0.4,
+      "behind": true,
+      "pixels": {
+        "width": 53,
+        "height": 128
+      },
+      "socketX": 1.0714,
+      "socketY": 0.4437
+    },
+    {
+      "id": "torso",
+      "pivotX": 0.5,
+      "pivotY": 1.4469,
+      "height": 0.675,
+      "behind": false,
+      "pixels": {
+        "width": 112,
+        "height": 216
+      },
+      "socketX": 0.5,
+      "socketY": 1.0
+    },
+    {
+      "id": "legFront",
+      "pivotX": 0.5,
+      "pivotY": 0.0777,
+      "height": 0.4375,
+      "behind": false,
+      "pixels": {
+        "width": 45,
+        "height": 140
+      },
+      "socketX": 0.3233,
+      "socketY": 0.91
+    },
+    {
+      "id": "armMain",
+      "pivotX": 0.5,
+      "pivotY": 0.1717,
+      "height": 0.4,
+      "behind": false,
+      "pixels": {
+        "width": 53,
+        "height": 128
+      },
+      "socketX": -0.0714,
+      "socketY": 0.4674
+    }
+  ],
+  "figureHeight": 9.7,
+  "figureWidth": 5.88,
+  "handX": 0.5,
+  "handY": 0.9744
+}

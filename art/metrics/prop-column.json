@@ -1,0 +1,30 @@
+{
+  "id": "prop-column",
+  "version": 1,
+  "script": "art/blender/assets/marble.py",
+  "seed": 0,
+  "blender": "5.2.1 LTS",
+  "balanceHash": "e74168556604",
+  "pxPerUnit": 3.6,
+  "size": {
+    "fit": "height",
+    "value": 196
+  },
+  "pixels": {
+    "width": 723,
+    "height": 906
+  },
+  "box": {
+    "width": 200.83,
+    "height": 251.67
+  },
+  "anchor": {
+    "x": 0.8752,
+    "y": 0.73953
+  },
+  "footprint": {
+    "rx": 28.9,
+    "ry": 14.8
+  },
+  "tris": 1216
+}

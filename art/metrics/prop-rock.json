@@ -1,0 +1,30 @@
+{
+  "id": "prop-rock",
+  "version": 1,
+  "script": "art/blender/assets/stones.py",
+  "seed": 0,
+  "blender": "5.2.1 LTS",
+  "balanceHash": "e74168556604",
+  "pxPerUnit": 3.6,
+  "size": {
+    "fit": "height",
+    "value": 58
+  },
+  "pixels": {
+    "width": 242,
+    "height": 227
+  },
+  "box": {
+    "width": 67.22,
+    "height": 63.06
+  },
+  "anchor": {
+    "x": 0.5607,
+    "y": 0.55627
+  },
+  "footprint": {
+    "rx": 22.5,
+    "ry": 21.5
+  },
+  "tris": 266
+}

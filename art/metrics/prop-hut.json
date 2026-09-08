@@ -1,0 +1,30 @@
+{
+  "id": "prop-hut",
+  "version": 1,
+  "script": "art/blender/assets/village.py",
+  "seed": 0,
+  "blender": "5.2.1 LTS",
+  "balanceHash": "e74168556604",
+  "pxPerUnit": 3.6,
+  "size": {
+    "fit": "width",
+    "value": 212
+  },
+  "pixels": {
+    "width": 1148,
+    "height": 809
+  },
+  "box": {
+    "width": 318.89,
+    "height": 224.72
+  },
+  "anchor": {
+    "x": 0.64808,
+    "y": 0.58932
+  },
+  "footprint": {
+    "rx": 94.6,
+    "ry": 58.6
+  },
+  "tris": 660
+}

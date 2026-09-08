@@ -1,0 +1,19 @@
+{
+  "id": "weapon-club-common",
+  "kind": "part",
+  "version": 1,
+  "script": "art/blender/assets/weapon_club.py",
+  "seed": 0,
+  "blender": "5.2.1 LTS",
+  "balanceHash": "e74168556604",
+  "pixels": {
+    "width": 45,
+    "height": 130
+  },
+  "pivot": {
+    "x": 0.5,
+    "y": 0.9447
+  },
+  "height": 0.4063,
+  "tris": 468
+}

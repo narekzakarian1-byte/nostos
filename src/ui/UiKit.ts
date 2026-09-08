@@ -1,4 +1,5 @@
 import { getBalance } from '../core/Balance.ts';
+import { rgba } from './props/Optics.ts';
 import type { UiColors, UiConfig } from '../core/BalanceTypes.ts';
 
 /**
@@ -135,7 +136,22 @@ export function bar(
 }
 
 /**
- * Мягкая тень-эллипс под ногами: без неё фигуры «висят» над землёй.
+ * Тень под ногами фигуры.
+ *
+ * Мягкая, УМНОЖЕНИЕМ и по размеру самой фигуры. Каждое из трёх слов стоило
+ * отдельной ошибки.
+ *
+ * Умножением — потому что остров не одна поляна: то же пятно ложится и на
+ * траву, и на гальку, и на плиту агоры, и крашеная тень одного цвета читалась
+ * бы грязью на двух из трёх. Умножение темнит ту поверхность, на которую
+ * легло, и цвет земли остаётся своим.
+ *
+ * Мягкая — потому что резкий эллипс с постоянной альфой читается диском, а не
+ * тенью: у настоящей тени от фигуры на солнце край размыт.
+ *
+ * По размеру фигуры — потому что было вдвое шире: пятно в 110 единиц под
+ * фигурой в 56 выглядело лужей, из которой она растёт.
+ *
  * alphaScale гасит её вместе с фигурой, когда та растворяется при смерти.
  */
 export function groundShadow(
@@ -149,15 +165,27 @@ export function groundShadow(
   // тень колонны уезжает влево, а тень игрока лежала бы строго под ним, и
   // сцена читалась бы как два разных освещения на одной поляне.
   const lift = size * u.shadowLean;
+  const rx = size * u.shadowScale;
+  const ry = rx * SHADOW_SQUASH;
+  const cx = x - (p.lightX / p.lightZ) * lift;
+  const cy = y - (p.lightY / p.lightZ) * lift;
+
   ctx.save();
+  ctx.globalCompositeOperation = 'multiply';
   ctx.globalAlpha = u.shadowAlpha * alphaScale;
-  ctx.fillStyle = p.shadowColor;
+  ctx.translate(cx, cy);
+  ctx.scale(1, ry / rx);
+  const grad = ctx.createRadialGradient(0, 0, rx * SHADOW_CORE, 0, 0, rx);
+  grad.addColorStop(0, p.shadowColor);
+  grad.addColorStop(1, rgba(p.shadowColor, 0));
+  ctx.fillStyle = grad;
   ctx.beginPath();
-  ctx.ellipse(
-    x - (p.lightX / p.lightZ) * lift,
-    y - (p.lightY / p.lightZ) * lift,
-    (size / 2) * u.shadowScale * 2, (size / 2) * u.shadowScale, 0, 0, Math.PI * 2,
-  );
+  ctx.arc(0, 0, rx, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 }
+
+/** Сжатие пятна по глубине и доля радиуса, кроющая в полную силу. Технические
+ *  константы отрисовки: движок больше ничего про эту тень не знает. */
+const SHADOW_SQUASH = 0.5;
+const SHADOW_CORE = 0.45;

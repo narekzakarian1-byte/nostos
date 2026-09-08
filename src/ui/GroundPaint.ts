@@ -11,7 +11,8 @@ import { sprites } from './Sprites.ts';
  * Так можно позволить себе то, чего в кадре не позволишь: сотню клякс
  * материала, тысячи крапин, два десятка пятен света. Ни одно из них не
  * меняется от кадра к кадру — считать их шестьдесят раз в секунду незачем.
- * Ровно та же сделка, что у пропов в props/Bake.ts.
+ * Ровно та же сделка, что у фабрики ассетов: посчитать один раз то, что не
+ * меняется от кадра к кадру.
  *
  * Печать идёт в единицах мира: пиксель на единицу. Это та же плотность, что
  * давал прежний тайл (base.png в 512 пикселей кроет 512 единиц), так что
@@ -49,7 +50,7 @@ export interface GroundWorld {
 export function groundImage(world: GroundWorld): BakedGround | null {
   const key = `${world.islandId}|${Math.round(world.width)}x${Math.round(world.height)}`;
   if (cache?.key === key) return cache;
-  if (!sprites.get('ground-base')) return null;
+  if (!sprites.get('ground-grass')) return null;
 
   const made = bake(world);
   if (!made) return null;
@@ -200,7 +201,7 @@ function paintShade(ctx: CanvasRenderingContext2D, blobs: readonly ShadeBlob[]):
 /** Паттерн травы в координатах печати. Свой у каждого холста — общий кэш
  *  Sprites.pattern привязан к чужому контексту. */
 function grassPattern(ctx: CanvasRenderingContext2D): CanvasPattern | null {
-  const img = sprites.get('ground-base');
+  const img = sprites.get('ground-grass');
   return img ? ctx.createPattern(img, 'repeat') : null;
 }
 

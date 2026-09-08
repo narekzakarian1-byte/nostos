@@ -1,0 +1,14 @@
+{
+  "id": "ground-grass",
+  "kind": "tile",
+  "version": 1,
+  "script": "art/blender/assets/ground.py",
+  "seed": 0,
+  "blender": "5.2.1 LTS",
+  "balanceHash": "e74168556604",
+  "pixels": {
+    "width": 512,
+    "height": 512
+  },
+  "unitsPerTile": 512.0
+}

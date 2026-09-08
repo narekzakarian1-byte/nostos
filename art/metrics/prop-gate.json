@@ -1,0 +1,30 @@
+{
+  "id": "prop-gate",
+  "version": 1,
+  "script": "art/blender/assets/marble.py",
+  "seed": 0,
+  "blender": "5.2.1 LTS",
+  "balanceHash": "e74168556604",
+  "pxPerUnit": 3.6,
+  "size": {
+    "fit": "height",
+    "value": 176
+  },
+  "pixels": {
+    "width": 978,
+    "height": 706
+  },
+  "box": {
+    "width": 271.67,
+    "height": 196.11
+  },
+  "anchor": {
+    "x": 0.68732,
+    "y": 0.74264
+  },
+  "footprint": {
+    "rx": 77.4,
+    "ry": 29.0
+  },
+  "tris": 6430
+}

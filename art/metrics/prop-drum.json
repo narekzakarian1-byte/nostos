@@ -1,0 +1,30 @@
+{
+  "id": "prop-drum",
+  "version": 1,
+  "script": "art/blender/assets/marble.py",
+  "seed": 0,
+  "blender": "5.2.1 LTS",
+  "balanceHash": "e74168556604",
+  "pxPerUnit": 3.6,
+  "size": {
+    "fit": "width",
+    "value": 34
+  },
+  "pixels": {
+    "width": 176,
+    "height": 218
+  },
+  "box": {
+    "width": 48.89,
+    "height": 60.56
+  },
+  "anchor": {
+    "x": 0.61233,
+    "y": 0.35035
+  },
+  "footprint": {
+    "rx": 11.2,
+    "ry": 16.4
+  },
+  "tris": 356
+}

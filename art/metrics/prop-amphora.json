@@ -1,0 +1,30 @@
+{
+  "id": "prop-amphora",
+  "version": 1,
+  "script": "art/blender/assets/village.py",
+  "seed": 0,
+  "blender": "5.2.1 LTS",
+  "balanceHash": "e74168556604",
+  "pxPerUnit": 3.6,
+  "size": {
+    "fit": "height",
+    "value": 30
+  },
+  "pixels": {
+    "width": 140,
+    "height": 147
+  },
+  "box": {
+    "width": 38.89,
+    "height": 40.83
+  },
+  "anchor": {
+    "x": 0.71766,
+    "y": 0.70848
+  },
+  "footprint": {
+    "rx": 4.2,
+    "ry": 3.5
+  },
+  "tris": 446
+}

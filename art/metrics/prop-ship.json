@@ -1,0 +1,30 @@
+{
+  "id": "prop-ship",
+  "version": 1,
+  "script": "art/blender/assets/landmarks.py",
+  "seed": 0,
+  "blender": "5.2.1 LTS",
+  "balanceHash": "e74168556604",
+  "pxPerUnit": 3.6,
+  "size": {
+    "fit": "width",
+    "value": 300
+  },
+  "pixels": {
+    "width": 1338,
+    "height": 666
+  },
+  "box": {
+    "width": 371.67,
+    "height": 185.0
+  },
+  "anchor": {
+    "x": 0.57647,
+    "y": 0.58318
+  },
+  "footprint": {
+    "rx": 116.2,
+    "ry": 32.4
+  },
+  "tris": 1488
+}

@@ -1,72 +1,47 @@
 import type { EnemyTier } from '../core/BalanceTypes.ts';
-import { ENEMY_SPRITES_BY_TIER, type SpriteId } from './AssetManifest.ts';
-import { KIKON_RIG, type Rig } from './rig/RigParts.ts';
+import {
+  KIKON_CHIEF_RIG, KIKON_ELITE_RIG, KIKON_RIG, type Rig,
+} from './rig/RigParts.ts';
 
 /**
- * Какой арт берёт остров. Адреса картинок, а не числа, — поэтому здесь, а не
- * в balance.json (CLAUDE.md §1 про магические константы сюда не относится, как
- * и к AssetManifest.ts рядом).
+ * Какой арт берёт остров. Адреса и наборы, а не числа, — поэтому здесь, а не в
+ * balance.json (CLAUDE.md §1 про магические константы сюда не относится).
  *
- * Таблица, а не набор общих файлов, потому что островов тринадцать и у каждого
- * свой народ: киконы Исмары и лотофаги второго острова не могут делить один
- * `enemy-normal.png`. Острова, у которых своего арта ещё нет, в таблице просто
- * отсутствуют и продолжают рисоваться прежними фигурами — новый остров
- * включается одной записью, без правок кода.
+ * Таблица, а не общий набор файлов, потому что островов тринадцать и у каждого
+ * свой народ: киконы Исмары и лотофаги второго острова не могут делить одну
+ * фигуру. Остров, у которого своего арта ещё нет, в таблице отсутствует и
+ * рисуется запасными прямоугольниками — новый остров включается одной записью.
+ *
+ * Дороги и границы здесь больше нет. Тракт рисуется геометрией (ui/Road.ts) —
+ * тёмный кант, тело и кладка отдельными камнями, — а край мира объясняет берег
+ * с прибоем (ui/GroundPaint.ts). Обе текстуры были заявлены, ни одна не
+ * существовала, и обе ветки кода всегда шли по запасному пути.
  */
 export interface IslandArt {
-  /** Фигуры врагов по тиру. Тир без записи падает на общий запасной силуэт. */
-  readonly enemies?: Partial<Record<EnemyTier, SpriteId>>;
   /**
-   * Из чего собран враг острова, ПО ТИРАМ. Тир без записи рисуется цельной
-   * картинкой, как раньше.
-   *
-   * Именно по тирам, а не один риг на остров: элита, вождь и босс отличаются
-   * бронёй, плащом и гребнем (ISLANDS.md §1.5), и общий набор деталей стёр бы
-   * всю эскалацию — на арене вместо бронзового вождя с бычьим черепом стоял
-   * бы увеличенный рядовой кикон.
+   * Из чего собран враг острова, ПО ТИРАМ. Именно по тирам, а не один риг на
+   * остров: элита, вождь и босс отличаются шлемом, панцирем и плащом
+   * (ISLANDS.md §1.5), и общий набор деталей стёр бы всю эскалацию — на арене
+   * вместо бронзового вождя стоял бы увеличенный рядовой кикон.
    */
-  readonly enemyRig?: Partial<Record<EnemyTier, Rig>>;
-  readonly road?: SpriteId;
-  readonly border?: SpriteId;
+  readonly enemyRig: Partial<Record<EnemyTier, Rig>>;
 }
 
 export const ISLAND_ART: Readonly<Record<string, IslandArt>> = {
   ismaros: {
-    enemies: {
-      normal: 'ismaros-normal',
-      elite: 'ismaros-elite',
-      miniboss: 'ismaros-miniboss',
-      boss: 'ismaros-boss',
+    enemyRig: {
+      normal: KIKON_RIG,
+      elite: KIKON_ELITE_RIG,
+      miniboss: KIKON_CHIEF_RIG,
+      // Босс — тот же вождь, только вдвое крупнее (render.enemySizeByTier).
+      // Размер здесь работает лучше отдельного костюма: силуэт уже знаком, и
+      // на арене игрок узнаёт того, кого встречал в боковых карманах.
+      boss: KIKON_CHIEF_RIG,
     },
-    enemyRig: { normal: KIKON_RIG },
-    road: 'ismaros-road',
-    border: 'ismaros-border',
   },
 };
 
-/**
- * Цепочка спрайтов врага: сначала фигура острова, за ней общие запасные.
- * Именно цепочка, а не один id: файл может ещё не лежать в public/art, и
- * тогда Sprites.get вернёт undefined — фигура должна найтись дальше по списку,
- * а не пропасть.
- */
-export function enemySpriteChain(island: string, tier: EnemyTier): readonly SpriteId[] {
-  const own = ISLAND_ART[island]?.enemies?.[tier];
-  const fallback = ENEMY_SPRITES_BY_TIER[tier];
-  return own ? [own, ...fallback] : fallback;
-}
-
-/** Скелет врага этого тира. null — фигура рисуется цельной картинкой. */
+/** Скелет врага этого тира. null — острова нет в таблице, рисуется запасная фигура. */
 export function islandEnemyRig(island: string, tier: EnemyTier): Rig | null {
   return ISLAND_ART[island]?.enemyRig?.[tier] ?? null;
-}
-
-/** Дорога острова, иначе общий сегмент. */
-export function islandRoad(island: string): SpriteId {
-  return ISLAND_ART[island]?.road ?? 'road-segment';
-}
-
-/** Кладка по краю острова, иначе общая стена. */
-export function islandBorder(island: string): SpriteId {
-  return ISLAND_ART[island]?.border ?? 'border-wall';
 }

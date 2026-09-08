@@ -1,0 +1,94 @@
+{
+  "id": "kikon-chief",
+  "kind": "figure",
+  "version": 1,
+  "script": "art/blender/assets/kikon_chief.py",
+  "seed": 0,
+  "blender": "5.2.1 LTS",
+  "balanceHash": "e74168556604",
+  "figurePx": 520.0,
+  "bones": [
+    {
+      "id": "cloak",
+      "pivotX": 0.5,
+      "pivotY": 0.0812,
+      "height": 0.5212,
+      "behind": false,
+      "pixels": {
+        "width": 235,
+        "height": 271
+      },
+      "socketX": 0.5,
+      "socketY": 0.4525
+    },
+    {
+      "id": "legBack",
+      "pivotX": 0.5,
+      "pivotY": 0.0794,
+      "height": 0.3923,
+      "behind": true,
+      "pixels": {
+        "width": 73,
+        "height": 204
+      },
+      "socketX": 0.6569,
+      "socketY": 0.8994
+    },
+    {
+      "id": "armOff",
+      "pivotX": 0.5,
+      "pivotY": 0.1694,
+      "height": 0.3577,
+      "behind": true,
+      "pixels": {
+        "width": 85,
+        "height": 186
+      },
+      "socketX": 1.0072,
+      "socketY": 0.5307
+    },
+    {
+      "id": "torso",
+      "pivotX": 0.5,
+      "pivotY": 1.3666,
+      "height": 0.7269,
+      "behind": false,
+      "pixels": {
+        "width": 184,
+        "height": 378
+      },
+      "socketX": 0.5,
+      "socketY": 1.0
+    },
+    {
+      "id": "legFront",
+      "pivotX": 0.5,
+      "pivotY": 0.0794,
+      "height": 0.3923,
+      "behind": false,
+      "pixels": {
+        "width": 73,
+        "height": 204
+      },
+      "socketX": 0.3431,
+      "socketY": 0.9192
+    },
+    {
+      "id": "armMain",
+      "pivotX": 0.5,
+      "pivotY": 0.1694,
+      "height": 0.3577,
+      "behind": false,
+      "pixels": {
+        "width": 85,
+        "height": 186
+      },
+      "socketX": -0.0072,
+      "socketY": 0.5504
+    }
+  ],
+  "figureHeight": 10.81,
+  "figureWidth": 5.88,
+  "handX": 0.5,
+  "handY": 0.9749
+}

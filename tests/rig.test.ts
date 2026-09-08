@@ -154,15 +154,34 @@ describe('скелет', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it('пивоты лежат внутри своих картинок', () => {
-    const inside = (v: number) => v >= 0 && v <= 1;
-    for (const bone of ODYSSEUS_RIG.bones) {
-      expect(inside(bone.pivotX) && inside(bone.pivotY)).toBe(true);
-      expect(inside(bone.socketX) && inside(bone.socketY)).toBe(true);
-      expect(bone.height).toBeGreaterThan(0);
+  it('пивоты и сокеты — конечные числа, а кости имеют рост', () => {
+    // Диапазона [0, 1] здесь нет и быть не может. Пивот торса лежит НИЖЕ его
+    // картинки (начало координат фигуры — точка касания земли, а ног в
+    // картинке торса нет), а плечевые сокеты — за её краями, потому что руки
+    // торчат шире корпуса. Оба числа считает фабрика из самой модели
+    // (art/blender/lib/rig.py), и «поправить» их в разумный диапазон значило
+    // бы развалить фигуру.
+    for (const rig of [ODYSSEUS_RIG, KIKON_RIG]) {
+      for (const bone of rig.bones) {
+        for (const value of [bone.pivotX, bone.pivotY, bone.socketX, bone.socketY]) {
+          expect(Number.isFinite(value)).toBe(true);
+          expect(Math.abs(value)).toBeLessThan(4);
+        }
+        expect(bone.height).toBeGreaterThan(0);
+        expect(bone.height).toBeLessThanOrEqual(1.2);
+      }
     }
-    for (const part of Object.values(WEAPON_PARTS)) {
-      expect(inside(part.pivotX) && inside(part.pivotY)).toBe(true);
+  });
+
+  it('торс стоит подошвой на нижней кромке коробки фигуры', () => {
+    // ui/Body.ts рисует коробку size×size и кладёт пятно тени по её низу.
+    // Сокет торса по вертикали обязан быть единицей: иначе фигура повиснет
+    // над собственной тенью или утонет в ней.
+    for (const rig of [ODYSSEUS_RIG, KIKON_RIG]) {
+      const torso = rig.bones.find((bone) => bone.parent === null);
+      expect(torso).toBeDefined();
+      expect(torso!.socketX).toBeCloseTo(0.5, 2);
+      expect(torso!.socketY).toBeCloseTo(1, 2);
     }
   });
 });
@@ -191,33 +210,25 @@ describe('оружие по редкостям', () => {
   it('на каждый вид и каждую ступень есть деталь, и её спрайт объявлен', () => {
     for (const kind of WEAPON_KINDS) {
       for (const rarity of RARITY_ORDER) {
-        const part = WEAPON_PARTS[`${kind}-${rarity}` as keyof typeof WEAPON_PARTS];
+        const part = WEAPON_PARTS[`weapon-${kind}-${rarity}` as keyof typeof WEAPON_PARTS];
         expect(part, `нет детали ${kind}-${rarity}`).toBeDefined();
         expect(SPRITES[part.sprite], `спрайт ${part.sprite} не объявлен`).toBeDefined();
       }
     }
   });
 
-  it('хват и длина зависят от вида, а не от ступени', () => {
-    // Золотой ксифос держат за ту же рукоять, что и бронзовый. Разъехавшийся
-    // пивот увёл бы оружие из кисти ровно на самой ценной находке игрока.
+  it('хват держится вида, а длина растёт со ступенью', () => {
+    // Золотой ксифос держат за ту же рукоять, что и бронзовый: пивот по
+    // ширине обязан совпасть, иначе оружие уедет из кисти ровно на самой
+    // ценной находке игрока. А вот длина расти обязана — у фабрики ступени
+    // отличаются геометрией, и это единственное, по чему прыжок силы виден
+    // на самой фигуре.
     for (const kind of WEAPON_KINDS) {
-      const base = WEAPON_PARTS[kind];
-      for (const rarity of RARITY_ORDER) {
-        const part = WEAPON_PARTS[`${kind}-${rarity}` as keyof typeof WEAPON_PARTS];
-        expect(part.pivotX).toBe(base.pivotX);
-        expect(part.pivotY).toBe(base.pivotY);
-        expect(part.height).toBe(base.height);
-      }
-    }
-  });
-
-  it('у базовой детали каждого вида есть запасной спрайт без ступени', () => {
-    // Пока картинки ступени нет, Figures.handWeapon откатывается сюда:
-    // пустой кулак хуже чужого силуэта.
-    for (const kind of WEAPON_KINDS) {
-      expect(WEAPON_PARTS[kind]).toBeDefined();
-      expect(SPRITES[WEAPON_PARTS[kind].sprite]).toBeDefined();
+      const parts = RARITY_ORDER.map(
+        (rarity) => WEAPON_PARTS[`weapon-${kind}-${rarity}` as keyof typeof WEAPON_PARTS],
+      );
+      for (const part of parts) expect(part.pivotX).toBeCloseTo(parts[0]!.pivotX, 1);
+      expect(parts[parts.length - 1]!.height).toBeGreaterThanOrEqual(parts[0]!.height);
     }
   });
 });

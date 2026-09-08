@@ -8,11 +8,9 @@ import { weaponReady } from './rig/DrawRig.ts';
 import { degToRad } from '../juice/Ease.ts';
 import type { Enemy } from '../world/Enemy.ts';
 import { currentIslandId } from '../world/Island.ts';
-import { enemySpriteChain, islandEnemyRig } from './IslandArt.ts';
+import { islandEnemyRig } from './IslandArt.ts';
 import { drawBody } from './Body.ts';
 import { short } from './Format.ts';
-import type { SpriteId } from './AssetManifest.ts';
-import { sprites } from './Sprites.ts';
 import { bar, ui } from './UiKit.ts';
 
 /**
@@ -29,11 +27,13 @@ export function drawEnemyBody(ctx: CanvasRenderingContext2D, enemy: Enemy, game:
   const moving = enemy.alive && !game.isEngaged(enemy) && (enemy.patrol?.speed ?? 0) > 0;
   const walk = walkPhase(enemy.walked, enemy.size);
 
+  const type = enemyStrokeType(enemy);
+
   drawRankRing(ctx, enemy);
   drawBody(ctx, {
     x: enemy.x, y: enemy.y, size: enemy.size,
     facing: enemy.facing,
-    sprite: enemySprite(enemy),
+    sprite: undefined,
     fallback: palette.silhouette,
     anim: enemy.anim,
     pushX: push.x, pushY: push.y,
@@ -48,14 +48,16 @@ export function drawEnemyBody(ctx: CanvasRenderingContext2D, enemy: Enemy, game:
             // кто уязвим к рубящему, тот рубящим и бьёт (GDD §4.2).
             pose: rigPose({
               swing: swingPhase(enemy.attackCooldown, anim.enemyWindupSec),
-              type: enemyStrokeType(enemy),
+              type,
               walk,
               moving,
               elapsed: game.elapsed,
             }),
-            // Оружия в руке у врага пока нет: своей картинки под него не
-            // сделано, а чужая читалась бы как трофей игрока.
-            weapon: null,
+            // Оружие у врага того же типа, каким он бьёт, — то есть того же,
+            // к какому он уязвим (GDD §4.2). Это не украшение: три иконки над
+            // головой говорят то же самое, и предмет в руке подтверждает их
+            // раньше, чем игрок успел их прочесть.
+            weapon: enemyWeapon(type),
           },
         }
       : {}),
@@ -89,7 +91,7 @@ export function drawPlayer(ctx: CanvasRenderingContext2D, game: Game): void {
   drawBody(ctx, {
     x: player.x, y: player.y, size: render.playerSize,
     facing: Math.cos(player.facingAngle) < 0 ? -1 : 1,
-    sprite: 'player',
+    sprite: undefined,
     fallback: palette.accentLight,
     anim: player.anim,
     pushX: push.x, pushY: push.y,
@@ -202,8 +204,7 @@ function toward(
 /**
  * Кольцо под ногами элиты и мини-босса. К ним ходят адресно, и ранг должен
  * читаться раньше плашки над головой: кольцо видно даже когда враг перекрыт
- * соседом. Оно же держит ранг, когда спрайта тира ещё нет и фигура взята
- * запасная (см. ENEMY_SPRITES_BY_TIER).
+ * соседом.
  */
 function drawRankRing(ctx: CanvasRenderingContext2D, enemy: Enemy): void {
   if (enemy.tier === 'normal' || !enemy.alive) return;
@@ -218,14 +219,13 @@ function drawRankRing(ctx: CanvasRenderingContext2D, enemy: Enemy): void {
 }
 
 /**
- * Первый загруженный спрайт из цепочки для тира: сначала фигура своего острова,
- * за ней общие запасные (ui/IslandArt.ts).
+ * Чем вооружён враг. Ступень всегда обычная: редкость — это про снаряжение
+ * игрока, и золотая палица в руках рядового кикона обещала бы дроп, которого
+ * с него не падает.
  */
-function enemySprite(enemy: Enemy): SpriteId | undefined {
-  for (const id of enemySpriteChain(currentIslandId(), enemy.tier)) {
-    if (sprites.get(id)) return id;
-  }
-  return undefined;
+function enemyWeapon(type: DamageType): WeaponPartId | null {
+  const id = `weapon-${WEAPON_ART[type]}-common` as WeaponPartId;
+  return weaponReady(id) ? id : null;
 }
 
 /** Что у Одиссея в руке — вид оружия по типу урона. */
@@ -241,17 +241,19 @@ const WEAPON_ART: Record<DamageType, WeaponKind> = {
  * Оружие множит стат атаки, и разница между обычным и золотым больше чем
  * вчетверо. Одна картинка на все пять ступеней означала, что самый крупный
  * прыжок силы в игре не виден вообще: игрок смотрит на фигуру, а редкость
- * жила только цифрой в меню.
+ * жила только цифрой в меню. У фабрики ступени различаются и геометрией —
+ * крылья на наконечнике, шипы на палице, — поэтому разница читается даже на
+ * силуэте, залитом чёрным.
  *
- * Откат двойной — сначала на базовую деталь своего вида, потом на меч. Пустой
- * кулак хуже чужого силуэта, а жест всё равно остаётся своим: замах из-за
- * головы читается как палица и с мечом в руке.
+ * Откат на обычную ступень, а не на чужой вид: жест всё равно остаётся своим,
+ * а меч в руке у того, кто бьёт палицей, — это ложь про тип урона.
  */
-function handWeapon(type: DamageType, rarity: Rarity): WeaponPartId {
+function handWeapon(type: DamageType, rarity: Rarity): WeaponPartId | null {
   const kind = WEAPON_ART[type];
-  const byRarity = `${kind}-${rarity}` as WeaponPartId;
+  const byRarity = `weapon-${kind}-${rarity}` as WeaponPartId;
   if (weaponReady(byRarity)) return byRarity;
-  return weaponReady(kind) ? kind : 'sword';
+  const common = `weapon-${kind}-common` as WeaponPartId;
+  return weaponReady(common) ? common : null;
 }
 
 /**

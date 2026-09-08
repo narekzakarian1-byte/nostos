@@ -1,0 +1,19 @@
+{
+  "id": "weapon-sword-rare",
+  "kind": "part",
+  "version": 1,
+  "script": "art/blender/assets/weapon_sword.py",
+  "seed": 0,
+  "blender": "5.2.1 LTS",
+  "balanceHash": "e74168556604",
+  "pixels": {
+    "width": 50,
+    "height": 168
+  },
+  "pivot": {
+    "x": 0.5,
+    "y": 0.9416
+  },
+  "height": 0.525,
+  "tris": 376
+}

@@ -1,15 +1,18 @@
 import type { DecorPlacement } from '../../world/Scenery.ts';
-import { drawPropSolid, propMetrics } from './Bake.ts';
-import { drawPicture, isPictureProp, pictureBox } from './Pictures.ts';
+import { drawPicture, pictureBox } from './Pictures.ts';
 
 /**
- * Единственная дверь к пропам для остального рендера. За ней два разных пути:
- * геометрия (Bake.ts) и картинка острова (Pictures.ts).
+ * Единственная дверь к пропам для остального рендера.
  *
- * Отдельным модулем, а не развилкой в двух местах, потому что вызывающих ровно
- * два — Terrain.ts рисует, WorldLayer.ts отсекает невидимое, — и разъехаться
- * они не должны: проп, посчитанный габаритом одного пути и нарисованный
- * другим, пропадал бы с экрана на подходе к нему.
+ * Раньше за ней было две дороги — геометрия движка и картинка острова, — и
+ * половина модуля следила, чтобы вызывающие не разошлись в выборе. Дорога
+ * осталась одна: любой проп это готовый PNG из фабрики вместе со своей тенью.
+ *
+ * Модуль тем не менее не схлопнут в вызов Pictures напрямую: вызывающих двое —
+ * Terrain.ts рисует, WorldLayer.ts отсекает невидимое, — и габарит, по
+ * которому считается отсечение, обязан быть тем же, по которому идёт
+ * отрисовка. Проп, посчитанный одним и нарисованный другим, пропадал бы с
+ * экрана на подходе к нему.
  */
 export interface PropBox {
   readonly width: number;
@@ -24,44 +27,25 @@ export interface PropBox {
  * иначе выросший проп пропадал бы с экрана раньше, чем уйдёт за край.
  */
 export function propBox(prop: DecorPlacement): PropBox {
-  const base = isPictureProp(prop.id)
-    ? pictureBox(prop.id)
-    : (() => {
-        const m = propMetrics(prop.id);
-        return { width: m.width, height: m.height };
-      })();
+  const base = pictureBox(prop.id);
   return { width: base.width * prop.scale, height: base.height * prop.scale };
 }
 
 /**
- * Проп на экран. x, y — точка касания земли, одинаково для обоих путей.
+ * Проп на экран. x, y — точка касания земли.
  *
- * Зеркало и размер применяются здесь, а не внутри каждого пути: отражение — это
- * та же матрица для картинки и для запечённой геометрии, и разъехаться они не
- * должны.
+ * Зеркало и размер применяются здесь, а не внутри Pictures: начало координат
+ * ставится в точку касания, иначе масштабирование уводит подошву, и проп
+ * отъезжает от собственной тени.
  */
 export function paintProp(ctx: CanvasRenderingContext2D, prop: DecorPlacement): void {
-  const plain = prop.scale === 1 && !prop.flip;
-  if (plain) {
-    paintAt(ctx, prop, prop.x, prop.y);
+  if (prop.scale === 1 && !prop.flip) {
+    drawPicture(ctx, prop.id, prop.x, prop.y);
     return;
   }
-
   ctx.save();
-  // Начало координат — в точке касания: масштаб и зеркало не должны сдвигать
-  // подошву, иначе проп отъезжает от собственной тени.
   ctx.translate(prop.x, prop.y);
   ctx.scale(prop.flip ? -prop.scale : prop.scale, prop.scale);
-  paintAt(ctx, prop, 0, 0);
+  drawPicture(ctx, prop.id, 0, 0);
   ctx.restore();
-}
-
-function paintAt(
-  ctx: CanvasRenderingContext2D,
-  prop: DecorPlacement,
-  x: number,
-  y: number,
-): void {
-  if (isPictureProp(prop.id)) drawPicture(ctx, prop.id, x, y);
-  else drawPropSolid(ctx, prop.id, x, y);
 }

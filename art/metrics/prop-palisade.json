@@ -1,0 +1,30 @@
+{
+  "id": "prop-palisade",
+  "version": 1,
+  "script": "art/blender/assets/village.py",
+  "seed": 0,
+  "blender": "5.2.1 LTS",
+  "balanceHash": "e74168556604",
+  "pxPerUnit": 3.6,
+  "size": {
+    "fit": "width",
+    "value": 206
+  },
+  "pixels": {
+    "width": 936,
+    "height": 341
+  },
+  "box": {
+    "width": 260.0,
+    "height": 94.72
+  },
+  "anchor": {
+    "x": 0.58435,
+    "y": 0.72768
+  },
+  "footprint": {
+    "rx": 99.2,
+    "ry": 4.9
+  },
+  "tris": 450
+}

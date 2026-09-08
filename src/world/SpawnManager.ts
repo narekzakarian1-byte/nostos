@@ -1,6 +1,8 @@
 import { getBalance } from '../core/Balance.ts';
 import type { DamageType, EnemyArchetype } from '../core/BalanceTypes.ts';
 import type { Rng } from '../core/Rng.ts';
+import { blocked, blockersOf, type Blocker } from './Blockers.ts';
+import { placeLandmarks } from './Decor.ts';
 import { loadNodes, saveNodes, type NodeSave } from '../save/Save.ts';
 import { bossArenaPoint, createBoss } from './Boss.ts';
 import { createEnemy, type EnemySpec } from './EnemyFactory.ts';
@@ -10,6 +12,13 @@ import { makePatrol, patrolPoint, randomPhase } from './Patrol.ts';
 import type { Enemy, FarmTier } from './Enemy.ts';
 
 const TYPES: readonly DamageType[] = ['pierce', 'slash', 'crush'];
+/** След узла на земле. Чуть шире игрокова: к врагу нужно не просто пролезть,
+ *  а встать рядом и драться. */
+const FOOT = { rx: 22, ry: 11 };
+
+function tierSize(tier: FarmTier): number {
+  return getBalance().render.enemySizeByTier[tier];
+}
 const ARCHETYPES: readonly EnemyArchetype[] = ['fast', 'armored', 'heavy', 'striker'];
 
 export interface WorldBounds {
@@ -31,6 +40,16 @@ export class SpawnManager {
   readonly boss: Enemy;
   private readonly rng: Rng;
   private readonly seed: number;
+  /**
+   * Следы ландмарков зоны. Узел, севший внутрь храма или хижины, молча
+   * выпадает из игры: подойти к нему уже нельзя, а на карте он есть.
+   *
+   * Считаются здесь, а не берутся из Scenery, потому что порядок обратный:
+   * сначала узлы, потом декор — декор обтекает узлы, а не наоборот. Ландмарки
+   * при этом стоят в точках файла раскладки безусловно, то есть известны
+   * заранее и без Scenery.
+   */
+  private landmarks: readonly Blocker[] = [];
 
   constructor(rng: Rng, seed: number, bounds: WorldBounds) {
     this.rng = rng;
@@ -47,7 +66,10 @@ export class SpawnManager {
     this.boss = createBoss(n, arena.x, arena.y);
     this.enemies.push(this.boss);
 
-    if (layout) this.populateByLayout(layout, bounds, n);
+    if (layout) {
+      this.landmarks = blockersOf(placeLandmarks(layout, bounds));
+      this.populateByLayout(layout, bounds, n);
+    }
     else this.populateAtRandom(bounds, n);
 
     this.restore();
@@ -83,7 +105,7 @@ export class SpawnManager {
       for (const zone of layout.zones) {
         const count = zone.nodes[tier] ?? 0;
         for (let i = 0; i < count; i++) {
-          const spot = this.findSpotIn(bounds, zoneRect(zone, bounds));
+          const spot = this.findSpotIn(bounds, zoneRect(zone, bounds), tier);
           this.addNode(bounds, n, {
             x: spot.x, y: spot.y,
             weakness: TYPES[index % TYPES.length]!,
@@ -111,7 +133,7 @@ export class SpawnManager {
     let index = 0;
     for (const [tier, count] of plan) {
       for (let i = 0; i < count; i++) {
-        const spot = this.findSpotIn(bounds, worldRect(bounds));
+        const spot = this.findSpotIn(bounds, worldRect(bounds), tier);
         this.addNode(bounds, n, {
           x: spot.x, y: spot.y,
           weakness: TYPES[index % TYPES.length]!,
@@ -133,8 +155,17 @@ export class SpawnManager {
     enemy.patrol = makePatrol(
       this.rng, spec.tier, spec.x, spec.y, this.roomAround(bounds, spec),
     );
+    // Фаза выбирается не вслепую: маршрут может увести узел на полсотни
+    // единиц от якоря и посадить его внутрь ландмарка, поставленного рукой.
+    // Внутрь препятствия узел попадать не должен вообще — подойти к нему уже
+    // нельзя, а на карте он есть.
     enemy.progress = randomPhase(this.rng);
-    const start = patrolPoint(enemy.patrol, enemy.progress);
+    let start = patrolPoint(enemy.patrol, enemy.progress);
+    for (let tries = 0; tries < 12; tries++) {
+      if (!this.insideLandmark(start.x, start.y, enemy.size)) break;
+      enemy.progress = randomPhase(this.rng);
+      start = patrolPoint(enemy.patrol, enemy.progress);
+    }
     enemy.x = start.x;
     enemy.y = start.y;
     this.enemies.push(enemy);
@@ -142,7 +173,7 @@ export class SpawnManager {
 
   /** Позиция внутри прямоугольника с зазором до соседей: слипшиеся узлы
    *  убивают решение «куда встать». */
-  private findSpotIn(b: WorldBounds, area: Rect): { x: number; y: number } {
+  private findSpotIn(b: WorldBounds, area: Rect, tier: FarmTier): { x: number; y: number } {
     const { enemyMinSpacing, enemySpawnMargin } = getBalance().render;
     const { engageRange } = getBalance().combat;
     // Границы мира режут прямоугольник зоны: у краевых зон часть площади
@@ -157,12 +188,21 @@ export class SpawnManager {
       candidate = { x: this.rng.range(left, right), y: this.rng.range(top, bottom) };
       // Игрок не должен просыпаться уже в бою.
       if (distance(candidate, b.startX, b.startY) < engageRange * 2) continue;
+      if (this.insideLandmark(candidate.x, candidate.y, tierSize(tier))) continue;
       const tooClose = this.enemies.some(
         (e) => distance(candidate, e.x, e.y) < enemyMinSpacing,
       );
       if (!tooClose) break;
     }
     return candidate;
+  }
+
+  /**
+   * Стоит ли фигура внутри следа ландмарка. Считается по ТОЧКЕ КАСАНИЯ земли
+   * (y + половина роста), а не по центру: следом меряется земля под ногами.
+   */
+  private insideLandmark(x: number, y: number, size: number): boolean {
+    return blocked(x, y + size / 2, FOOT, this.landmarks);
   }
 
   /** Сколько места у якоря до ближайшего края: фигура не должна вылезать за остров. */

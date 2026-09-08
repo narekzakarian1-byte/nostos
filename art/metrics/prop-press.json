@@ -1,0 +1,30 @@
+{
+  "id": "prop-press",
+  "version": 1,
+  "script": "art/blender/assets/village.py",
+  "seed": 0,
+  "blender": "5.2.1 LTS",
+  "balanceHash": "e74168556604",
+  "pxPerUnit": 3.6,
+  "size": {
+    "fit": "width",
+    "value": 76
+  },
+  "pixels": {
+    "width": 378,
+    "height": 239
+  },
+  "box": {
+    "width": 105.0,
+    "height": 66.39
+  },
+  "anchor": {
+    "x": 0.57909,
+    "y": 0.62858
+  },
+  "footprint": {
+    "rx": 38.0,
+    "ry": 19.4
+  },
+  "tris": 918
+}

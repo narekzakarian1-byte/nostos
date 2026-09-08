@@ -24,6 +24,14 @@ SAMPLES = 96
 RENDER_SEED = 0
 CAMERA_DISTANCE = 400.0
 
+# Сила трёх источников. Солнце откалибровано (см. add_lights), два других
+# заданы долей от него: заполняющий — фронтальный свет со стороны камеры,
+# отражённый подбивает низ. Держатся здесь, а не в balance.json, потому что
+# движок их не видит: он получает готовый PNG.
+SUN_ENERGY = 4.40
+FILL_ENERGY = 1.25
+BOUNCE_ENERGY = 0.34
+
 
 def balance() -> dict:
     with open(ROOT / "balance.json", encoding="utf-8") as f:
@@ -119,7 +127,7 @@ def add_lights(bounce_color=(0.62, 0.55, 0.42)) -> None:
     # из balance.json, а теневая — в тёмный. Палитра конфига и палитра рендера
     # оказываются одним и тем же набором, а не похожими друг на друга.
     sun_data = bpy.data.lights.new("Sun", type="SUN")
-    sun_data.energy = 5.50
+    sun_data.energy = SUN_ENERGY
     sun_data.color = (1.0, 0.914, 0.769)  # #FFE9C4
     sun_data.angle = math.radians(3.0)
     sun = bpy.data.objects.new("Sun", sun_data)
@@ -133,7 +141,7 @@ def add_lights(bounce_color=(0.62, 0.55, 0.42)) -> None:
     # Отражение от земли — солнце, направленное снизу вверх. Так подсвечиваются
     # ровно нижние грани, чего не сделает ни небо, ни второй ключевой свет.
     bounce_data = bpy.data.lights.new("Bounce", type="SUN")
-    bounce_data.energy = 0.34
+    bounce_data.energy = BOUNCE_ENERGY
     bounce_data.color = bounce_color
     bounce_data.angle = math.radians(60.0)
     bounce = bpy.data.objects.new("Bounce", bounce_data)
@@ -152,9 +160,15 @@ def add_lights(bounce_color=(0.62, 0.55, 0.42)) -> None:
     # грани одинаково и стирает форму вместе с тенью. Зеркальное солнце светит
     # с той же стороны и высоты, но с ближней стороны — фронтальные грани
     # получают тон, а градиент по форме остаётся.
+    #
+    # Доля от солнца — 42%, а не прежние 24%. Считалось по фигуре: у стоящего
+    # человека грудь смотрит почти горизонтально, солнце даёт ей 0.33 своей
+    # силы, и на четверти заполняющего герой выходил темнее собственной тени
+    # на траве. Стены и колонны от подъёма почти не изменились — у них
+    # освещённые грани и так смотрят вверх.
     mirrored = Vector((light.x, -light.y, light.z)).normalized()
     fill_data = bpy.data.lights.new("Fill", type="SUN")
-    fill_data.energy = 1.35
+    fill_data.energy = FILL_ENERGY
     fill_data.color = (1.0, 0.949, 0.878)
     fill_data.angle = math.radians(20.0)
     fill = bpy.data.objects.new("Fill", fill_data)
@@ -175,6 +189,21 @@ def add_lights(bounce_color=(0.62, 0.55, 0.42)) -> None:
     # плёнка, от которой лечимся (GDD.md §3).
     bg.inputs["Strength"].default_value = 0.09
     bpy.context.scene.world = world
+
+
+def only_sun(enabled: bool) -> None:
+    """Гасит заполняющий и отражённый свет на время прохода тени.
+
+    Тень в NOSTOS — величина договорная: движок считает её снос из
+    props.lightX/Y/Z и обязан получить ровно ту же тень, что фабрика. Любой
+    второй направленный источник добавил бы второй снос, и рендер разошёлся бы
+    с геометрическими пропами. В проходе ТЕЛА они, наоборот, нужны вместе со
+    своим самозатенением: без него фигура выходит плоской заливкой.
+    """
+    for name, level in (("Fill", FILL_ENERGY), ("Bounce", BOUNCE_ENERGY)):
+        light = bpy.data.objects.get(name)
+        if light is not None:
+            light.data.energy = level if enabled else 0.0
 
 
 def setup_render(width: int, height: int) -> None:

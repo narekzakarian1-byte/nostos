@@ -1,0 +1,30 @@
+{
+  "id": "prop-reeds",
+  "version": 1,
+  "script": "art/blender/assets/trees.py",
+  "seed": 0,
+  "blender": "5.2.1 LTS",
+  "balanceHash": "e74168556604",
+  "pxPerUnit": 3.6,
+  "size": {
+    "fit": "height",
+    "value": 58
+  },
+  "pixels": {
+    "width": 232,
+    "height": 257
+  },
+  "box": {
+    "width": 64.44,
+    "height": 71.39
+  },
+  "anchor": {
+    "x": 0.83254,
+    "y": 0.72038
+  },
+  "footprint": {
+    "rx": 8.5,
+    "ry": 8.4
+  },
+  "tris": 132
+}

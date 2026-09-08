@@ -1,0 +1,30 @@
+{
+  "id": "prop-hut-burnt",
+  "version": 1,
+  "script": "art/blender/assets/village.py",
+  "seed": 0,
+  "blender": "5.2.1 LTS",
+  "balanceHash": "e74168556604",
+  "pxPerUnit": 3.6,
+  "size": {
+    "fit": "width",
+    "value": 206
+  },
+  "pixels": {
+    "width": 989,
+    "height": 773
+  },
+  "box": {
+    "width": 274.72,
+    "height": 214.72
+  },
+  "anchor": {
+    "x": 0.60563,
+    "y": 0.58813
+  },
+  "footprint": {
+    "rx": 103.0,
+    "ry": 63.8
+  },
+  "tris": 700
+}

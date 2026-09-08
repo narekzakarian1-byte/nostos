@@ -1,0 +1,30 @@
+{
+  "id": "prop-stele",
+  "version": 1,
+  "script": "art/blender/assets/marble.py",
+  "seed": 0,
+  "blender": "5.2.1 LTS",
+  "balanceHash": "e74168556604",
+  "pxPerUnit": 3.6,
+  "size": {
+    "fit": "height",
+    "value": 138
+  },
+  "pixels": {
+    "width": 547,
+    "height": 612
+  },
+  "box": {
+    "width": 151.94,
+    "height": 170.0
+  },
+  "anchor": {
+    "x": 0.81038,
+    "y": 0.76375
+  },
+  "footprint": {
+    "rx": 23.9,
+    "ry": 11.6
+  },
+  "tris": 700
+}

@@ -22,12 +22,33 @@ BEHAVIOUR = {
     "limestone": (0.82, 0.0, 0.0),
     "stone": (0.78, 0.0, 0.0),
     "rubble": (0.85, 0.0, 0.0),
-    "bronze": (0.42, 1.0, 0.0),
-    "gold": (0.22, 1.0, 0.0),
     "clay": (0.60, 0.0, 0.0),
     "wood": (0.80, 0.0, 0.0),
-    "foliageDry": (0.90, 0.0, 0.0),
+    "woodDark": (0.88, 0.0, 0.0),
+    "thatch": (0.92, 0.0, 0.0),
+    "ash": (0.94, 0.0, 0.0),
+    # Металлы. Полированная бронза и золото — металлические, патина уже нет:
+    # окисел рассеивает, и металличность на нём даёт зеркало вместо зелени.
+    "bronze": (0.34, 1.0, 0.0),
+    "patina": (0.66, 0.2, 0.0),
+    "gold": (0.22, 1.0, 0.0),
+    "iron": (0.44, 1.0, 0.0),
     "ember": (0.70, 0.0, 3.0),
+    "foliage": (0.88, 0.0, 0.0),
+    "foliageDark": (0.86, 0.0, 0.0),
+    "foliageDry": (0.90, 0.0, 0.0),
+    "grape": (0.55, 0.0, 0.0),
+    "skin": (0.62, 0.0, 0.0),
+    "linen": (0.86, 0.0, 0.0),
+    "crimson": (0.78, 0.0, 0.0),
+    "hair": (0.80, 0.0, 0.0),
+    "bone": (0.72, 0.0, 0.0),
+    "sand": (0.92, 0.0, 0.0),
+    "grass": (0.92, 0.0, 0.0),
+    "dirt": (0.92, 0.0, 0.0),
+    # Чернота зева пещеры и дверного проёма. Шероховатость на единице, чтобы
+    # ни одна грань не поймала блик: провал обязан оставаться провалом.
+    "voidDark": (1.0, 0.0, 0.0),
 }
 
 # Базовый цвет — СРЕДНИЙ тон из balance.json.
@@ -78,10 +99,36 @@ def make(name: str, seed: int = 0, tone_shift: float = 0.0) -> bpy.types.Materia
     _set(bsdf, "Base Color", (*color, 1.0))
     _set(bsdf, "Roughness", roughness)
     _set(bsdf, "Metallic", metallic)
+    # Зеркальный отблеск у неметаллов почти выключен. При заводских 0.5 грань,
+    # смотрящая на солнце, ловила блик поверх и без того светлого тона и
+    # уходила в чистый белый: замер светлот упирался в 100%, а на картинке это
+    # выглядит пластиком. Камню, ткани и коже блик не нужен вовсе.
+    if metallic < 0.5:
+        _set(bsdf, "Specular IOR Level", 0.12)
     if emission > 0.0:
         lit = hex_to_linear(tones[name][0])
         _set(bsdf, "Emission Color", (*lit, 1.0))
         _set(bsdf, "Emission Strength", emission)
+    return mat
+
+
+def from_tone(name: str, index: int, seed: int = 0) -> bpy.types.Material:
+    """Материал из КОНКРЕТНОГО тона таблицы, а не из среднего.
+
+    Нужен там, где объект обязан отличаться от соседа только светлотой:
+    галька на лугу — это та же трава, но темнее, а не другой материал.
+    Взять для неё чужой материал значит получить цветное пятно на зелёном.
+    """
+    tones = optics.props()["materials"][name]
+    roughness, metallic, emission = BEHAVIOUR.get(name, (0.75, 0.0, 0.0))
+    mat = bpy.data.materials.new(f"{name}.{index}.{seed}")
+    mat.use_nodes = True
+    bsdf = mat.node_tree.nodes["Principled BSDF"]
+    _set(bsdf, "Base Color", (*hex_to_linear(tones[index]), 1.0))
+    _set(bsdf, "Roughness", roughness)
+    _set(bsdf, "Metallic", metallic)
+    if metallic < 0.5:
+        _set(bsdf, "Specular IOR Level", 0.12)
     return mat
 
 

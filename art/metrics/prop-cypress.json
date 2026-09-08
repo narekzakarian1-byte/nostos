@@ -1,0 +1,30 @@
+{
+  "id": "prop-cypress",
+  "version": 1,
+  "script": "art/blender/assets/trees.py",
+  "seed": 0,
+  "blender": "5.2.1 LTS",
+  "balanceHash": "e74168556604",
+  "pxPerUnit": 3.6,
+  "size": {
+    "fit": "height",
+    "value": 215
+  },
+  "pixels": {
+    "width": 834,
+    "height": 976
+  },
+  "box": {
+    "width": 231.67,
+    "height": 271.11
+  },
+  "anchor": {
+    "x": 0.80997,
+    "y": 0.77165
+  },
+  "footprint": {
+    "rx": 32.8,
+    "ry": 26.6
+  },
+  "tris": 2164
+}

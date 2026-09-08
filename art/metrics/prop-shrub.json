@@ -1,0 +1,30 @@
+{
+  "id": "prop-shrub",
+  "version": 1,
+  "script": "art/blender/assets/trees.py",
+  "seed": 0,
+  "blender": "5.2.1 LTS",
+  "balanceHash": "e74168556604",
+  "pxPerUnit": 3.6,
+  "size": {
+    "fit": "height",
+    "value": 44
+  },
+  "pixels": {
+    "width": 192,
+    "height": 186
+  },
+  "box": {
+    "width": 53.33,
+    "height": 51.67
+  },
+  "anchor": {
+    "x": 0.49285,
+    "y": 0.55251
+  },
+  "footprint": {
+    "rx": 18.6,
+    "ry": 13.9
+  },
+  "tris": 898
+}

@@ -1,0 +1,19 @@
+{
+  "id": "weapon-spear-epic",
+  "kind": "part",
+  "version": 1,
+  "script": "art/blender/assets/weapon_spear.py",
+  "seed": 0,
+  "blender": "5.2.1 LTS",
+  "balanceHash": "e74168556604",
+  "pixels": {
+    "width": 57,
+    "height": 356
+  },
+  "pivot": {
+    "x": 0.5,
+    "y": 0.7984
+  },
+  "height": 1.1125,
+  "tris": 494
+}
